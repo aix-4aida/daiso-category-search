@@ -1,0 +1,31 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [0.1.0] - 2026-01-16
+
+### Added
+- **Product Database** (`backend/database/`)
+  - `products.db`: SQLite database with 601 crawled products
+  - `images/`: 601 product images from Daiso Mall ranking
+  - `database.py`: Database operations module
+  - `embeddings.py`: CLIP-based multimodal embeddings (text + image)
+  - `generate_test_data.py`: 3000 test utterances generator (85% normal, 15% hard)
+
+### Database Schema
+- `products`: id, rank, name, price, image_url, image_name, image_path
+- `test_utterances`: utterance, difficulty, expected_product_id
+- `product_embeddings`: text_embedding, image_embedding (CLIP 512-dim vectors)
+
+### Dependencies Added
+- `selenium`, `webdriver-manager`: Web crawling
+- `transformers`, `torch`: CLIP embeddings
+- `Pillow`: Image processing
+
+---
+
+## [0.0.0] - Initial
+
+- Initial project setup
+- Basic FastAPI backend structure
+- Frontend placeholder
