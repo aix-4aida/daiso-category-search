@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6ccaea6e-88c1-4e3b-a3cd-24b3f1be1aa1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/logic/nlu.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/logic/nlu.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-    </list>
+    <list default="true" id="6ccaea6e-88c1-4e3b-a3cd-24b3f1be1aa1" name="Changes" comment="제목: feat: Gemini 기반 NLU 시스템 구축 및 채팅 UI 구현&#10;&#10;본문:&#10;&#10;Gemini 2.0 Flash 모델을 연동하여 자연어 분석(NLU) 모듈 구현&#10;사용자 의도(Intent) 및 슬롯(Slot) 추출, 꼬리 질문 생성 로직 추가&#10;FastAPI 백엔드에 /api/search 엔드포인트 추가 및 CORS 설정&#10;Next.js 프론트엔드에 실시간 채팅 인터페이스 구현&#10;프로젝트 문서화 (README, Failure Cases) 및 .gitignore 설정 추가" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -49,6 +42,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "File.Encoding",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -61,9 +55,22 @@
       <updated>1768467586328</updated>
       <workItem from="1768467587600" duration="1157000" />
     </task>
+    <task id="LOCAL-00001" summary="제목: feat: Gemini 기반 NLU 시스템 구축 및 채팅 UI 구현&#10;&#10;본문:&#10;&#10;Gemini 2.0 Flash 모델을 연동하여 자연어 분석(NLU) 모듈 구현&#10;사용자 의도(Intent) 및 슬롯(Slot) 추출, 꼬리 질문 생성 로직 추가&#10;FastAPI 백엔드에 /api/search 엔드포인트 추가 및 CORS 설정&#10;Next.js 프론트엔드에 실시간 채팅 인터페이스 구현&#10;프로젝트 문서화 (README, Failure Cases) 및 .gitignore 설정 추가">
+      <option name="closed" value="true" />
+      <created>1768526347576</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1768526347577</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="제목: feat: Gemini 기반 NLU 시스템 구축 및 채팅 UI 구현&#10;&#10;본문:&#10;&#10;Gemini 2.0 Flash 모델을 연동하여 자연어 분석(NLU) 모듈 구현&#10;사용자 의도(Intent) 및 슬롯(Slot) 추출, 꼬리 질문 생성 로직 추가&#10;FastAPI 백엔드에 /api/search 엔드포인트 추가 및 CORS 설정&#10;Next.js 프론트엔드에 실시간 채팅 인터페이스 구현&#10;프로젝트 문서화 (README, Failure Cases) 및 .gitignore 설정 추가" />
+    <option name="LAST_COMMIT_MESSAGE" value="제목: feat: Gemini 기반 NLU 시스템 구축 및 채팅 UI 구현&#10;&#10;본문:&#10;&#10;Gemini 2.0 Flash 모델을 연동하여 자연어 분석(NLU) 모듈 구현&#10;사용자 의도(Intent) 및 슬롯(Slot) 추출, 꼬리 질문 생성 로직 추가&#10;FastAPI 백엔드에 /api/search 엔드포인트 추가 및 CORS 설정&#10;Next.js 프론트엔드에 실시간 채팅 인터페이스 구현&#10;프로젝트 문서화 (README, Failure Cases) 및 .gitignore 설정 추가" />
   </component>
 </project>
