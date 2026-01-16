@@ -10,11 +10,17 @@ tiktoken==0.6.0
 pydantic==2.6.1
 requests==2.31.0
 
-# Database & Crawler (v0.1.0)
+# Database & Crawler (v0.1.0) - from search-roca conda env
 selenium>=4.15.0
 webdriver-manager>=4.0.0
 Pillow>=10.0.0
 
-# CLIP Embeddings (v0.1.0)
-transformers>=4.35.0
-torch>=2.1.0
+# CLIP Embeddings (v0.1.0) - from search-roca conda env
+transformers==4.57.5
+torch==2.9.1
+sentence-transformers==5.2.0
+huggingface-hub==0.36.0
+tokenizers==0.22.2
+safetensors==0.7.0
+scipy==1.15.3
+scikit-learn==1.7.2

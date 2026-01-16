@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-01-16
+
+### Added
+- **Category System**: Product categorization with major/middle categories (대분류/중분류)
+- `category_matcher.py`: Keyword-based category matching script
+- `categories` table: 48 category entries (12 major × multiple middle)
+- Products table now has `category_major` and `category_middle` columns
+
+### Stats
+- 401 products matched (67%)
+- 200 products unmatched (to be fixed with full re-crawl)
+
+## [0.1.1] - 2026-01-16
+
+### Fixed
+- Updated `requirements.txt` with exact package versions from search-roca conda environment
+- Added missing dependencies: `sentence-transformers`, `huggingface-hub`, `tokenizers`, `safetensors`, `scipy`, `scikit-learn`
+
 ## [0.1.0] - 2026-01-16
 
 ### Added
