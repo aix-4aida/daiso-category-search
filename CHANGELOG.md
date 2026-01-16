@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-01-16
+
+### Fixed
+- Updated `requirements.txt` with exact package versions from search-roca conda environment
+- Added missing dependencies: `sentence-transformers`, `huggingface-hub`, `tokenizers`, `safetensors`, `scipy`, `scikit-learn`
+
 ## [0.1.0] - 2026-01-16
 
 ### Added
