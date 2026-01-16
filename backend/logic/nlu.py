@@ -1,60 +1,132 @@
+
 import os
 import json
-import google.generativeai as genai
+import uuid
+import time
+import datetime
+import asyncio
+from typing import List, Dict
 from dotenv import load_dotenv
-from .schemas import NLUResponse, Intent
-from .prompts import SYSTEM_PROMPT_V1, TAIL_QUESTION_PROMPT
+from .schemas import NLUResponse, Intent, NLUSlots
+from .prompts import SYSTEM_PROMPT_V1, TAIL_QUESTION_PROMPT, AUX_PROMPT_KEYWORDS
 
 load_dotenv()
 
-# Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# Use a model that supports JSON mode well
+_genai = None
 MODEL_NAME = "gemini-2.0-flash"
 
-async def analyze_text(text: str) -> NLUResponse:
-    """
-    Analyzes the input text using Gemini 1.5 Flash to extract intent and slots.
-    """
+def get_genai():
+    global _genai
+    if _genai is None:
+        import google.generativeai as genai
+        api_key = os.getenv("GEMINI_API_KEY")
+        genai.configure(api_key=api_key)
+        _genai = genai
+    return _genai
+
+def log_debug(msg):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+    print(f"[{timestamp}] {msg}")
     try:
+        with open("nlu_debug.log", "a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] {msg}\n")
+    except:
+        pass
+
+async def analyze_text(text: str, history: List[Dict[str, str]] = []) -> NLUResponse:
+    request_id = str(uuid.uuid4())
+    start_time = time.time()
+    
+    log_debug(f"[{request_id}] Analyzing: {text} | History: {len(history)} turns")
+
+    # Format History
+    history_text = ""
+    if history:
+        history_text = "## Conversation History\n"
+        for turn in history:
+            role = turn["role"]
+            content = turn["text"]
+            history_text += f"{role}: {content}\n"
+    
+    try:
+        genai = get_genai()
         model = genai.GenerativeModel(
             model_name=MODEL_NAME,
-            system_instruction=SYSTEM_PROMPT_V1,
+            system_instruction=SYSTEM_PROMPT_V1, # We will inject history into the prompt text below instead
             generation_config={"response_mime_type": "application/json"}
         )
         
-        # Async generation
-        response = await model.generate_content_async(text)
+        # Combine System Prompt + History + Current Input
+        # Note: Gemini system_instruction is set above, but to be safe and explicit with context:
+        final_prompt = f"{history_text}\nUser's Current Input: {text}"
         
-        content = response.text
-        if not content:
-            raise ValueError("Empty response from Gemini")
+        # Async call
+        response = await asyncio.wait_for(
+            asyncio.to_thread(model.generate_content, final_prompt),
+            timeout=5.0
+        )
+        
+        latency_ms = int((time.time() - start_time) * 1000)
+        
+        usage = {"prompt_tokens": 0, "completion_tokens": 0} 
+        if hasattr(response, "usage_metadata"):
+             usage["prompt_tokens"] = response.usage_metadata.prompt_token_count
+             usage["completion_tokens"] = response.usage_metadata.candidates_token_count
 
-        data = json.loads(content)
-        return NLUResponse(**data)
-
-    except Exception as e:
-        print(f"Error in analyze_text: {e}")
-        # Fallback
+        data = json.loads(response.text)
+        
+        intent_val = data.get("intent", "UNSUPPORTED")
+        if intent_val not in Intent.__members__:
+            intent_val = "UNSUPPORTED"
+            
         return NLUResponse(
-            intent=Intent.CHIT_CHAT,
-            needs_clarification=True,
-            generated_question=f"시스템 오류: {str(e)}"
+            request_id=request_id,
+            intent=Intent[intent_val],
+            slots=NLUSlots(**data.get("slots", {})),
+            needs_clarification=data.get("needs_clarification", False),
+            latency_ms=latency_ms,
+            token_usage=usage
         )
 
-async def generate_tail_question(context: str, slots: dict) -> str:
-    """
-    Generates a clarifying question when the intent is ambiguous.
-    """
+    except Exception as e:
+        latency_ms = int((time.time() - start_time) * 1000)
+        log_debug(f"[{request_id}] Error: {e}")
+        return NLUResponse(
+            request_id=request_id,
+            intent=Intent.UNSUPPORTED,
+            slots=NLUSlots(),
+            needs_clarification=False,
+            generated_question=f"Error: {str(e)}",
+            latency_ms=latency_ms
+        )
+
+async def generate_tail_question(context: str, slots: dict, db_context: str = "") -> str:
     try:
+        genai = get_genai()
         model = genai.GenerativeModel(model_name=MODEL_NAME)
         
-        prompt = TAIL_QUESTION_PROMPT.format(context=context, slots=json.dumps(slots, ensure_ascii=False))
+        formatted_prompt = TAIL_QUESTION_PROMPT.format(
+            context=context, 
+            slots=json.dumps(slots, ensure_ascii=False),
+            db_context=db_context
+        )
         
-        response = await model.generate_content_async(prompt)
+        response = await asyncio.to_thread(model.generate_content, formatted_prompt)
         return response.text.strip()
+    except Exception:
+        return "자세히 말씀해 주시면 찾아드릴게요."
 
-    except Exception as e:
-        print(f"Error in generate_tail_question: {e}")
-        return "조금 더 구체적으로 말씀해 주실 수 있나요?"
+async def infer_product_keywords(text: str) -> list[str]:
+    try:
+        genai = get_genai()
+        model = genai.GenerativeModel(
+            model_name=MODEL_NAME,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        prompt = AUX_PROMPT_KEYWORDS.format(text=text)
+        response = await asyncio.to_thread(model.generate_content, prompt)
+        keywords = json.loads(response.text)
+        if isinstance(keywords, list): return keywords
+        return []
+    except:
+        return []

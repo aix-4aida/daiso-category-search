@@ -3,6 +3,17 @@
 이 프로젝트는 다이소 상품 검색을 위한 AI 기반 애플리케이션입니다.
 Gemini 1.5 Flash (또는 Gemini 2.0 Flash) 모델을 사용하여 사용자의 자연어 쿼리를 이해하고, 의도를 분석하거나 필요한 경우 꼬리 질문을 생성합니다.
 
+## 주요 기능 (v0.3.0)
+
+### 🧠 LangGraph 기반 순환 에이전트
+- **지능형 검색**: 검색 결과가 없거나 애매할 경우, AI가 스스로 판단하여 "재검색"하거나 "꼬리질문"을 던집니다.
+- **Drill-Down 로직**: "청소용품" 같은 포괄적 요청 시, "세제 vs 청소솔" 처럼 구체적인 하위 카테고리를 제안합니다.
+- **문맥 기억**: 사용자의 이전 답변("솔 주세요")을 기억하여 다음 검색에 반영합니다.
+
+### 🖥️ Kiosk Mode (Frontend)
+- **랜딩 페이지**: 매장 대기 화면과 같은 시작 페이지 (`/`)
+- **키오스크 모드**: 실제 상품 검색 및 대화 화면 (`/kioskmode`)
+
 ## 프로젝트 구조
 
 ```
@@ -33,7 +44,7 @@ GEMINI_API_KEY=your_api_key_here
 ```bash
 # 가상환경 활성화 후
 pip install -r requirements.txt
-uvicorn backend.api:app --reload --port 8800
+uvicorn backend.api:app --reload --port 8000
 ```
 
 ### 3. 프론트엔드 실행

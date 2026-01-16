@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-01-16
+
+### Added (LangGraph Migration)
+- **Logic**: Migrated backend logic to `LangGraph` (Cyclic State Machine)
+- **Agent**: Implemented 5-node workflow (`NLU`, `Search`, `AmbiguityCheck`, `Clarification`, `Response`)
+- **Context**: Full conversation history persistence using `MemorySaver`
+- **Frontend**: Added `/kioskmode` route and Landing Page UI
+- **Dependencies**: `langgraph`, `langchain`, `langchain-google-genai`
+
+### Improved
+- **Clarification**: Added "Drill-Down" logic to clarify broad categories (e.g., Cleaning -> Detergent vs Tools)
+- **Loop Prevention**: Fixed infinite loop bug where AI kept asking same questions
+- **Language**: Strictly enforced Korean output in system prompts
+
 ## [0.2.0] - 2026-01-16
 
 ### Added

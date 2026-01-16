@@ -4,7 +4,7 @@ Based on keyword matching from product names
 """
 import sqlite3
 import os
-import re
+from collections import defaultdict
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'products.db')
 
@@ -31,7 +31,7 @@ CATEGORIES = {
     },
     "청소/욕실": {
         "욕실용품": ["비누", "비누케이스", "샤워볼", "수건", "욕실매트", "규조토", "칫솔걸이"],
-        "청소도구": ["청소", "빗자루", "쓰레받기", "밀대", "걸레", "브러쉬", "청소솔"],
+        "청소도구": ["청소", "빗자루", "쓰레받기", "밀대", "걸레", "브러쉬", "청소솔", "솔"],
         "세탁용품": ["세탁", "빨래", "세탁망", "옷걸이", "빨래집게", "건조대"],
         "방향/탈취": ["방향제", "탈취제", "향초", "디퓨저"],
     },
@@ -182,39 +182,44 @@ def update_all_products():
     print(f"   Matched: {matched}")
     print(f"   Unmatched: {unmatched}")
 
-def show_category_stats():
-    """Show category distribution"""
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-        SELECT category_major, category_middle, COUNT(*) as cnt 
-        FROM products 
-        GROUP BY category_major, category_middle 
-        ORDER BY cnt DESC
-    ''')
-    
-    print("\nCategory Distribution:")
-    print("-" * 50)
-    for row in cursor.fetchall():
-        print(f"   {row['category_major']} > {row['category_middle']}: {row['cnt']}")
-    
-    conn.close()
+def get_drill_down_context(products: list) -> str:
+    """
+    Generate the Drill-Down context string for the LLM.
+    Groups products by Major > Middle category.
+    """
+    if not products:
+        return "관련 상품 없음"
 
-def show_unmatched():
-    """Show products that couldn't be matched"""
-    conn = get_connection()
-    cursor = conn.cursor()
+    grouped = defaultdict(lambda: defaultdict(list))
     
-    cursor.execute('''
-        SELECT name FROM products WHERE category_major = '기타' LIMIT 20
-    ''')
+    for p in products:
+        # Check if product dict already has 'category_major' populated
+        # If not, try to match it on the fly (robustness)
+        major = p.get('category_major')
+        middle = p.get('category_middle')
+        
+        if not major or not middle:
+            major, middle = match_product_to_category(p['name'])
+        
+        grouped[major][middle].append(p['name'])
+
+    # Format output
+    lines = []
     
-    print("\nUnmatched products (sample):")
-    for row in cursor.fetchall():
-        print(f"   - {row['name']}")
+    # Sort by major category with most items
+    sorted_majors = sorted(grouped.items(), key=lambda x: sum(len(v) for v in x[1].values()), reverse=True)
     
-    conn.close()
+    for major, middles in sorted_majors[:3]: # Top 3 Majors
+        lines.append(f"[{major}]")
+        for middle, items in list(middles.items())[:3]: # Top 3 Middles per Major
+            items_str = ", ".join(items[:3])
+            lines.append(f"  - {middle}: {items_str}")
+            
+    context = "\n".join(lines)
+    if not context:
+        context = "관련 상품 없음"
+        
+    return context
 
 if __name__ == "__main__":
     print("=" * 50)
@@ -224,5 +229,3 @@ if __name__ == "__main__":
     init_category_tables()
     populate_categories()
     update_all_products()
-    show_category_stats()
-    show_unmatched()

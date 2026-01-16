@@ -109,6 +109,37 @@ def get_utterance_count() -> int:
     conn.close()
     return count
 
+def search_products(keyword: str) -> List[Dict]:
+    """Search products by name (simple LIKE query)"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    # Split keyword by spaces to support multiple terms "blue pen" -> "%blue%" AND "%pen%"
+    terms = keyword.split()
+    query = "SELECT * FROM products WHERE " + " AND ".join(["name LIKE ?"] * len(terms))
+    params = [f"%{term}%" for term in terms]
+    
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+def get_related_products_for_context(keyword: str, limit: int = 5) -> str:
+    """
+    Search products and return a formatted string for LLM context.
+    Example: "- Plastic Box (1000 won)\n- Paper Box (2000 won)"
+    """
+    products = search_products(keyword)
+    if not products:
+        return ""
+    
+    # Take top N matching products
+    context_list = []
+    for p in products[:limit]:
+        context_list.append(f"- {p['name']} ({p.get('price', 'N/A')}원)")
+    
+    return "\n".join(context_list)
+
+
 if __name__ == "__main__":
     init_database()
     print(f"Products: {get_product_count()}")
