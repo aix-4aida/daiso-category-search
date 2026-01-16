@@ -33,7 +33,7 @@ GEMINI_API_KEY=your_api_key_here
 ```bash
 # 가상환경 활성화 후
 pip install -r requirements.txt
-uvicorn backend.api:app --reload --port 8000
+uvicorn backend.api:app --reload --port 8800
 ```
 
 ### 3. 프론트엔드 실행
