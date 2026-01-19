@@ -18,7 +18,7 @@ Pillow>=10.0.0
 # CLIP Embeddings (v0.1.0) - from search-roca conda env
 transformers==4.57.5
 torch==2.9.1
-sentence-transformers==5.2.0
+sentence-transformers
 huggingface-hub==0.36.0
 tokenizers==0.22.2
 safetensors==0.7.0
