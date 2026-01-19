@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-01-19
+
+### Added (RAG Robustness PoC)
+- **Integration**: Merged RAG Optimization PoC from `search-roca` into main repo.
+- **Scripts** (`poc/`):
+    - `RAG_System_experiment_keyword.py`: Verified K=30/Keyword Optimization script.
+    - `RAG_System_experiment_baseline.py`: Sentence-input baseline script.
+    - `generate_large_data.py`: 200-product scaling data generator.
+- **Reports** (`docs/`):
+    - `RAG_ROBUSTNESS.md`: Final optimization report (K=30 Success).
+    - `RAG_BASELINE.md`: Baseline failure analysis.
+- **Prompts**: `poc/prompts/intent_rules_prompt.txt` (Rule-based Intent Classification).
+
+---
+
 ## [0.3.0] - 2026-01-16
 
 ### Added (LangGraph Migration)

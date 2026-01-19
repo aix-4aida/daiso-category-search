@@ -1,0 +1,239 @@
+[
+    {
+        "id": 1,
+        "keyword": "고무장갑",
+        "expected_category": "주방",
+        "target_keyword": "설거지용 고무장갑",
+        "negative_keywords": [
+            "골프",
+            "방한"
+        ]
+    },
+    {
+        "id": 2,
+        "keyword": "라텍스 장갑",
+        "expected_category": "주방",
+        "target_keyword": "니트릴",
+        "negative_keywords": [
+            "골프"
+        ]
+    },
+    {
+        "id": 3,
+        "keyword": "골프 장갑",
+        "expected_category": "운동",
+        "target_keyword": "골프 장갑",
+        "negative_keywords": [
+            "설거지",
+            "털장갑"
+        ]
+    },
+    {
+        "id": 4,
+        "keyword": "양피 장갑",
+        "expected_category": "운동",
+        "target_keyword": "골프 장갑",
+        "negative_keywords": [
+            "고무"
+        ]
+    },
+    {
+        "id": 5,
+        "keyword": "방한 장갑",
+        "expected_category": "의류",
+        "target_keyword": "겨울용 털장갑",
+        "negative_keywords": [
+            "설거지",
+            "골프"
+        ]
+    },
+    {
+        "id": 6,
+        "keyword": "스마트폰 장갑",
+        "expected_category": "의류",
+        "target_keyword": "방한 장갑",
+        "negative_keywords": [
+            "골프"
+        ]
+    },
+    {
+        "id": 7,
+        "keyword": "욕실 매트",
+        "expected_category": "욕실",
+        "target_keyword": "규조토",
+        "negative_keywords": [
+            "요가",
+            "캠핑"
+        ]
+    },
+    {
+        "id": 8,
+        "keyword": "규조토 발매트",
+        "expected_category": "욕실",
+        "target_keyword": "규조토",
+        "negative_keywords": [
+            "요가"
+        ]
+    },
+    {
+        "id": 9,
+        "keyword": "미끄럼방지 매트",
+        "expected_category": "욕실",
+        "target_keyword": "미끄럼방지",
+        "negative_keywords": [
+            "요가",
+            "차량"
+        ]
+    },
+    {
+        "id": 10,
+        "keyword": "요가 매트",
+        "expected_category": "운동",
+        "target_keyword": "요가",
+        "negative_keywords": [
+            "욕실",
+            "현관"
+        ]
+    },
+    {
+        "id": 11,
+        "keyword": "필라테스 매트",
+        "expected_category": "운동",
+        "target_keyword": "필라테스",
+        "negative_keywords": [
+            "욕실"
+        ]
+    },
+    {
+        "id": 12,
+        "keyword": "운동 매트",
+        "expected_category": "운동",
+        "target_keyword": "홈트레이닝",
+        "negative_keywords": [
+            "욕실"
+        ]
+    },
+    {
+        "id": 13,
+        "keyword": "코일 매트",
+        "expected_category": "자동차",
+        "target_keyword": "차량",
+        "negative_keywords": [
+            "욕실",
+            "요가"
+        ]
+    },
+    {
+        "id": 14,
+        "keyword": "자동차 매트",
+        "expected_category": "자동차",
+        "target_keyword": "차량용",
+        "negative_keywords": [
+            "욕실"
+        ]
+    },
+    {
+        "id": 15,
+        "keyword": "변기 솔",
+        "expected_category": "청소",
+        "target_keyword": "변기",
+        "negative_keywords": [
+            "머리",
+            "화장"
+        ]
+    },
+    {
+        "id": 16,
+        "keyword": "화장실 청소 솔",
+        "expected_category": "청소",
+        "target_keyword": "청소용",
+        "negative_keywords": [
+            "머리"
+        ]
+    },
+    {
+        "id": 17,
+        "keyword": "헤어 브러쉬",
+        "expected_category": "미용",
+        "target_keyword": "헤어",
+        "negative_keywords": [
+            "변기",
+            "페인트"
+        ]
+    },
+    {
+        "id": 18,
+        "keyword": "머리빗",
+        "expected_category": "미용",
+        "target_keyword": "우드",
+        "negative_keywords": [
+            "변기"
+        ]
+    },
+    {
+        "id": 19,
+        "keyword": "수채화 붓",
+        "expected_category": "문구",
+        "target_keyword": "수채화",
+        "negative_keywords": [
+            "청소",
+            "메이크업"
+        ]
+    },
+    {
+        "id": 20,
+        "keyword": "페인트 붓",
+        "expected_category": "공구",
+        "target_keyword": "페인트",
+        "negative_keywords": [
+            "메이크업"
+        ]
+    },
+    {
+        "id": 21,
+        "keyword": "메이크업 브러쉬",
+        "expected_category": "미용",
+        "target_keyword": "메이크업",
+        "negative_keywords": [
+            "페인트"
+        ]
+    },
+    {
+        "id": 22,
+        "keyword": "공구함",
+        "expected_category": "공구",
+        "target_keyword": "공구함",
+        "negative_keywords": [
+            "반찬",
+            "도시락"
+        ]
+    },
+    {
+        "id": 23,
+        "keyword": "반찬 통",
+        "expected_category": "주방",
+        "target_keyword": "반찬",
+        "negative_keywords": [
+            "공구",
+            "옷"
+        ]
+    },
+    {
+        "id": 24,
+        "keyword": "도시락 통",
+        "expected_category": "주방",
+        "target_keyword": "도시락",
+        "negative_keywords": [
+            "공구"
+        ]
+    },
+    {
+        "id": 25,
+        "keyword": "유리 밀폐용기",
+        "expected_category": "주방",
+        "target_keyword": "반찬",
+        "negative_keywords": [
+            "공구"
+        ]
+    }
+]
