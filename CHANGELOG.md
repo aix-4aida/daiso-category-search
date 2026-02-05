@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2026-02-05
+
+### Added (PoC v2 Integration)
+- **Integration**: Ported complete PoC v2 AG Module from `search-roca`.
+- **Scripts** (`poc/`):
+    - `poc_v2_step1_query_processor.py`: Intent Extraction.
+    - `poc_v2_step2_hybrid_retrieval.py`: Hybrid Search (BM25+Vector).
+    - `poc_v2_step3_ag_reranker.py`: LLM Reranking & Location Guide.
+    - `poc_v2_generate_mock_data.py`: Mock DB enrichment w/ LLM.
+    - `poc_v2_generate_golden_dataset.py`: 30 Hard Test Cases.
+- **Reports**:
+    - `poc/POC_v2_FINAL_REPORT.md`: Overall PoC summary validation report.
+
 ## [0.3.1] - 2026-01-19
 
 ### Added (RAG Robustness PoC)
