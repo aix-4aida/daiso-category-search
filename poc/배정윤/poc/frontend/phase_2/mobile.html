@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Search-Roca AR Navi (PoC v5)</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        /* Camera Background */
+        #camera-feed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+
+        /* AR Overlays */
+        #overlay-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+            /* Let touches pass to video/hidden controls */
+        }
+
+        /* Top Bar: Target Info */
+        #target-info {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        #target-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffeb3b;
+            /* Yellow accent */
+            margin: 0;
+        }
+
+        #target-location {
+            font-size: 16px;
+            color: #ddd;
+            margin-top: 5px;
+        }
+
+        /* Center: Compass Arrow */
+        #arrow-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #arrow {
+            width: 180px;
+            height: 180px;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+            transition: transform 0.1s linear;
+        }
+
+        /* Bottom Bar: Status & Controls */
+        #bottom-bar {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+        }
+
+        .status {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            pointer-events: auto;
+            background: #d63031;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. Camera Feed (Background) -->
+    <video id="camera-feed" autoplay playsinline muted></video>
+
+    <!-- 2. AR Overlay -->
+    <div id="overlay-container">
+
+        <!-- Top: Product Info -->
+        <div id="target-info">
+            <h1 id="target-name">상품 찾는 중...</h1>
+            <div id="target-location">📍 위치 정보 수신 대기중</div>
+        </div>
+
+        <!-- Center: Compass -->
+        <div id="arrow-container">
+            <!-- SVG Arrow with 3D-like look -->
+            <svg id="arrow" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" stroke="white" stroke-width="2" stroke-opacity="0.5" />
+                <!-- Needle -->
+                <path d="M50 15 L60 50 L50 85 L40 50 Z" fill="rgba(255, 255, 255, 0.2)" />
+                <path d="M50 10 L65 50 L35 50 Z" fill="#ffeb3b" /> <!-- North/Target Pointer -->
+                <circle cx="50" cy="50" r="5" fill="#d63031" />
+            </svg>
+        </div>
+
+        <!-- Bottom: Controls -->
+        <div id="bottom-bar">
+            <div class="status" id="debug-info">카메라 및 센서 권한이 필요합니다</div>
+            <button onclick="startAR()">🚀 AR 안내 시작</button>
+        </div>
+    </div>
+
+    <script>
+        // --- PoC v5 Logic (Ported from search-roca/frontend/app/ar/page.tsx) ---
+
+        const params = new URLSearchParams(window.location.search);
+        // Default Target: A point 10 meters "North-East" (10, 10) relative to (0,0) startup
+        const tx = parseFloat(params.get('tx')) || 10;
+        const ty = parseFloat(params.get('ty')) || 10;
+        const targetName = params.get('name') || "Target Product";
+
+        // Mock User Start: (0,0)
+        let ux = 0;
+        let uy = 0;
+
+        // Display Info
+        document.getElementById("target-name").innerText = targetName;
+        // Calculate Distance
+        const dist = Math.sqrt((tx - ux) * (tx - ux) + (ty - uy) * (ty - uy));
+        document.getElementById("target-location").innerText = `📍 전방 ${Math.round(dist)}m`;
+
+        // Calculate Target Bearing (Angle from North)
+        // atan2(dx, dy) gives angle from Y-axis (North)
+        const dx = tx - ux;
+        const dy = ty - uy;
+        // Convert to Degrees (0=North, 90=East)
+        const targetBearing = ((Math.atan2(dx, dy) * 180 / Math.PI) + 360) % 360;
+
+        // Camera Logic
+        async function startCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: "environment"
+                    }
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('camera-feed');
+                videoElement.srcObject = stream;
+            } catch (err) {
+                console.error("Camera Error:", err);
+            }
+        }
+
+        // Compass Logic
+        function startCompass() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(state => {
+                        if (state === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                        } else {
+                            alert("센서 권한 거부됨");
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('deviceorientation', handleOrientation);
+            }
+        }
+
+        let lastHeading = 0;
+
+        function handleOrientation(e) {
+            let heading = 0;
+
+            if (e.webkitCompassHeading !== undefined) {
+                // iOS: 0=North, CW
+                heading = e.webkitCompassHeading;
+            } else if (e.alpha !== null) {
+                // Android: alpha is 0=North, CCW. We need CW.
+                heading = (360 - e.alpha) % 360;
+            } else {
+                return;
+            }
+
+            // Smoothing (Low-pass filter) to reduce jitter
+            let diff = heading - lastHeading;
+            if (diff > 180) diff -= 360;
+            if (diff < -180) diff += 360;
+            heading = (lastHeading + diff * 0.1 + 360) % 360; // Factor 0.1 for smoothness
+            lastHeading = heading;
+
+            // Arrow Rotation
+            // We want arrow to point to Target.
+            // If Target is 90 (East) and My Heading is 0 (North), Arrow should point Right (90).
+            // Rotation = Target - Heading
+            let rotation = (targetBearing - heading + 360) % 360;
+
+            const arrow = document.getElementById("arrow");
+            arrow.style.transform = `rotate(${rotation}deg)`;
+
+            document.getElementById("debug-info").innerText =
+                `나침반: ${Math.round(heading)}° / 목표: ${Math.round(targetBearing)}° / 회전: ${Math.round(rotation)}°`;
+        }
+
+        function startAR() {
+            startCamera();
+            startCompass();
+            document.querySelector("button").style.display = "none";
+            document.getElementById("debug-info").innerText = "센서 보정 중... (8자 그리기)";
+        }
+    </script>
+</body>
+
+</html>

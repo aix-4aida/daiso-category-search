@@ -1,0 +1,183 @@
+[
+  {
+    "test_id": 1,
+    "synthetic_query": "용기",
+    "candidate_count": 18,
+    "candidates": [
+      {
+        "id": 50,
+        "name": "휘어지는 말랑핏 용기 1.6 L 버터옐로우",
+        "category": "미분류"
+      },
+      {
+        "id": 127,
+        "name": "[국내] 진공 밀폐 용기 정사각 920ml",
+        "category": "진공백"
+      },
+      {
+        "id": 151,
+        "name": "실리콘 용기 500 ml",
+        "category": "미분류"
+      },
+      {
+        "id": 155,
+        "name": "정사각 밀폐 용기 1 L 아이보리",
+        "category": "미분류"
+      },
+      {
+        "id": 173,
+        "name": "실리콘 용기 250 ml",
+        "category": "미분류"
+      },
+      {
+        "id": 265,
+        "name": "실리콘 용기 사각형 100 ml",
+        "category": "미분류"
+      },
+      {
+        "id": 277,
+        "name": "진공 저장 용기 결착형 640 ml",
+        "category": "진공백"
+      },
+      {
+        "id": 282,
+        "name": "바닥을 누르면 쏙 빠지는 알알이쏙 용기 7.5ml X 24구",
+        "category": "미분류"
+      },
+      {
+        "id": 301,
+        "name": "휘어지는 말랑핏 저장 용기 1.3L 스카이블루",
+        "category": "미분류"
+      },
+      {
+        "id": 320,
+        "name": "진공 저장 용기 결착형 390 ml",
+        "category": "진공백"
+      },
+      {
+        "id": 338,
+        "name": "인센스 프리미엄 직사각 밀폐 용기 4호 580ml",
+        "category": "미분류"
+      },
+      {
+        "id": 343,
+        "name": "진공 저장 용기 680 ml",
+        "category": "진공백"
+      },
+      {
+        "id": 378,
+        "name": "진공 저장 용기 1480 ml",
+        "category": "진공백"
+      },
+      {
+        "id": 439,
+        "name": "[국내] 진공 밀폐 용기 정사각 2L",
+        "category": "진공백"
+      },
+      {
+        "id": 472,
+        "name": "진공 저장 용기 400 ml",
+        "category": "진공백"
+      },
+      {
+        "id": 502,
+        "name": "휘어지는 말랑핏 저장 용기 900ml 스카이블루",
+        "category": "미분류"
+      },
+      {
+        "id": 512,
+        "name": "휘어지는 말랑핏 저장 용기 900 ml 그레이",
+        "category": "미분류"
+      },
+      {
+        "id": 575,
+        "name": "휘어지는 말랑핏 저장 용기 2L 스카이블루",
+        "category": "미분류"
+      }
+    ],
+    "challenge": "Re-rank these 18 items for the query '용기' based on specific intent."
+  },
+  {
+    "test_id": 2,
+    "synthetic_query": "케이스",
+    "candidate_count": 15,
+    "candidates": [
+      {
+        "id": 38,
+        "name": "A4 카드 케이스",
+        "category": "미분류"
+      },
+      {
+        "id": 163,
+        "name": "일본제 키링 디스플레이 케이스",
+        "category": "미분류"
+      },
+      {
+        "id": 197,
+        "name": "피규어 케이스 19.7 X 9 X 8 cm",
+        "category": "미분류"
+      },
+      {
+        "id": 206,
+        "name": "PP 투명 케이스 1호",
+        "category": "미분류"
+      },
+      {
+        "id": 304,
+        "name": "오픈형 포토 카드 케이스 2개입",
+        "category": "강아지용품"
+      },
+      {
+        "id": 331,
+        "name": "일본제 뚜껑 수납 케이스 M(약1.7 L)",
+        "category": "미분류"
+      },
+      {
+        "id": 355,
+        "name": "캐릭터 하트 팡팡 퍼프＆케이스 세트",
+        "category": "미분류"
+      },
+      {
+        "id": 358,
+        "name": "원형 멀티 크림 케이스 100ml 3P",
+        "category": "스킨케어"
+      },
+      {
+        "id": 369,
+        "name": "투명 슬라이드 포장 케이스 소형 4매입 핑크",
+        "category": "미분류"
+      },
+      {
+        "id": 381,
+        "name": "PP 투명 케이스 14호",
+        "category": "미분류"
+      },
+      {
+        "id": 504,
+        "name": "일본제 커터 포함 버터 케이스",
+        "category": "미분류"
+      },
+      {
+        "id": 506,
+        "name": "다용도 케이스 5칸",
+        "category": "미분류"
+      },
+      {
+        "id": 525,
+        "name": "B7 UV 차단 경질 카드 케이스 2매입",
+        "category": "음료"
+      },
+      {
+        "id": 548,
+        "name": "스티커 보관 케이스 대형",
+        "category": "노트/메모"
+      },
+      {
+        "id": 551,
+        "name": "콜렉트 투명 하드 케이스",
+        "category": "미분류"
+      }
+    ],
+    "challenge": "Re-rank these 15 items for the query '케이스' based on specific intent."
+  }
+]

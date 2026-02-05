@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Search-Roca Kiosk</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; }
+        .result-box { border: 2px solid #ddd; padding: 20px; border-radius: 10px; display: inline-block; }
+        #qrcode { margin-top: 20px; display: flex; justify-content: center; }
+        h1 { color: #d63031; } /* 다이소 빨간색 */
+    </style>
+</head>
+<body>
+
+    <div class="result-box">
+        <h1 id="product-name">상품명 로딩중...</h1>
+        <p id="tts-text">안내 멘트 로딩중...</p>
+        <hr>
+        <h3>👇 스마트폰으로 스캔하여 길안내 받기</h3>
+        <div id="qrcode"></div>
+    </div>
+
+    <script>
+        // [Step 1 결과물] 가상 데이터 (LLM이 줬다고 가정)
+        const mockData = {
+            "product_name": "스텐 건지기 (채반)",
+            "location_info": { "zone": "Kitchen_A", "x": 150, "y": 400 }, // 목표 좌표
+            "tts_text": "2층 주방코너 A구역에 있습니다. QR을 찍어보세요."
+        };
+
+        // 1. 화면에 정보 뿌리기
+        document.getElementById("product-name").innerText = mockData.product_name;
+        document.getElementById("tts-text").innerText = mockData.tts_text;
+
+        // 2. 모바일로 넘길 URL 생성 (핵심!)
+        // ★중요★: 나중에 실제 호스팅 주소로 바꿔야 함 (지금은 로컬 테스트용)
+        const mobileBaseUrl = window.location.href.replace("kiosk.html", "mobile.html");
+        
+        // 파라미터 인코딩: ?tx=150&ty=400&name=채반
+        const finalUrl = `${mobileBaseUrl}?tx=${mockData.location_info.x}&ty=${mockData.location_info.y}&name=${encodeURIComponent(mockData.product_name)}`;
+
+        console.log("Generated URL:", finalUrl);
+
+        // 3. QR 코드 생성
+        new QRCode(document.getElementById("qrcode"), {
+            text: finalUrl,
+            width: 200,
+            height: 200
+        });
+    </script>
+</body>
+</html>
