@@ -1,0 +1,1046 @@
+[
+  {
+    "query": "주방세제",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "주방세제"
+      ],
+      "category": "주방잡화",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      406,
+      382
+    ]
+  },
+  {
+    "query": "수납함",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "수납함"
+      ],
+      "category": "수납함",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      587,
+      310,
+      93
+    ]
+  },
+  {
+    "query": "미백 세럼",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "미백",
+        "세럼"
+      ],
+      "category": "스킨케어",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      315
+    ]
+  },
+  {
+    "query": "종이컵",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "종이컵"
+      ],
+      "category": "잔/컵/물병",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      192,
+      255
+    ]
+  },
+  {
+    "query": "알카라인 건전지",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "알카라인",
+        "건전지"
+      ],
+      "category": "건전지",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      10
+    ]
+  },
+  {
+    "query": "비닐 봉투",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "비닐",
+        "봉투"
+      ],
+      "category": "미분류",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      557
+    ]
+  },
+  {
+    "query": "커피 필터",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "커피",
+        "필터"
+      ],
+      "category": "음료",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      341
+    ]
+  },
+  {
+    "query": "청소 스펀지",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "청소",
+        "스펀지"
+      ],
+      "category": "청소도구",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      19
+    ]
+  },
+  {
+    "query": "진공 밀폐 용기",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "진공",
+        "밀폐",
+        "용기"
+      ],
+      "category": "진공백",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      127
+    ]
+  },
+  {
+    "query": "면 장갑",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "면",
+        "장갑"
+      ],
+      "category": "우산/장갑",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      562
+    ]
+  },
+  {
+    "query": "곰팡이 제거",
+    "scenario_type": "Implicit Needs",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "곰팡이",
+        "제거"
+      ],
+      "category": "미분류",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      171
+    ]
+  },
+  {
+    "query": "강아지 간식",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "강아지",
+        "간식"
+      ],
+      "category": "반려동물공통",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      37,
+      21
+    ]
+  },
+  {
+    "query": "가성비 좋은 물티슈",
+    "scenario_type": "Subjective Adjectives",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "물티슈"
+      ],
+      "category": "화장지/물티슈",
+      "filters": [
+        "가격"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      39
+    ]
+  },
+  {
+    "query": "비건 주방세제",
+    "scenario_type": "Category Overlap",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "비건",
+        "주방세제"
+      ],
+      "category": "주방잡화",
+      "filters": [
+        "비건"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      382
+    ]
+  },
+  {
+    "query": "필기구",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "필기구"
+      ],
+      "category": "필기구",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      306
+    ]
+  },
+  {
+    "query": "아이폰 강화유리",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "아이폰",
+        "강화유리"
+      ],
+      "category": "음료",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      597
+    ]
+  },
+  {
+    "query": "주방세제 리필",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "주방세제",
+        "리필"
+      ],
+      "category": "주방잡화",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      406
+    ]
+  },
+  {
+    "query": "소독 티슈",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "소독",
+        "티슈"
+      ],
+      "category": "화장지/물티슈",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      248
+    ]
+  },
+  {
+    "query": "수세미",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "수세미"
+      ],
+      "category": "주방잡화",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      373
+    ]
+  },
+  {
+    "query": "테이프",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "테이프"
+      ],
+      "category": "사무용품",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      22,
+      132,
+      388
+    ]
+  },
+  {
+    "query": "기름때 제거",
+    "scenario_type": "Implicit Needs",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "기름때",
+        "제거"
+      ],
+      "category": "미분류",
+      "filters": []
+    },
+    "ground_truth_ids_hint": []
+  },
+  {
+    "query": "민감성 피부 물티슈",
+    "scenario_type": "Category Overlap",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "민감성",
+        "피부",
+        "물티슈"
+      ],
+      "category": "화장지/물티슈",
+      "filters": [
+        "민감성"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      39
+    ]
+  },
+  {
+    "query": "플라스틱 없는 수납함",
+    "scenario_type": "Negative Constraints",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "수납함"
+      ],
+      "category": "수납함",
+      "filters": [
+        "-플라스틱"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      93
+    ]
+  },
+  {
+    "query": "싸고 좋은 청소포",
+    "scenario_type": "Subjective Adjectives",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "청소포"
+      ],
+      "category": "청소도구",
+      "filters": [
+        "가격"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      547
+    ]
+  },
+  {
+    "query": "소독 스프레이 without 알코올",
+    "scenario_type": "Negative Constraints",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "소독",
+        "스프레이"
+      ],
+      "category": "미분류",
+      "filters": [
+        "-알코올"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      295
+    ]
+  },
+  {
+    "query": "수납",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "수납"
+      ],
+      "category": "수납함",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      587,
+      310,
+      93
+    ]
+  },
+  {
+    "query": "머리카락 막힘",
+    "scenario_type": "Implicit Needs",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "머리카락",
+        "막힘"
+      ],
+      "category": "미분류",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      76
+    ]
+  },
+  {
+    "query": "다용도 가위",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "다용도",
+        "가위"
+      ],
+      "category": "조리도구",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      102
+    ]
+  },
+  {
+    "query": "강아지",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "강아지"
+      ],
+      "category": "강아지용품",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      325,
+      134
+    ]
+  },
+  {
+    "query": "빨아쓰는 행주",
+    "scenario_type": "Simple Query",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "빨아쓰는",
+        "행주"
+      ],
+      "category": "주방잡화",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      260
+    ]
+  },
+  {
+    "query": "락스 냄새 안 나는 화장실 곰팡이 제거제",
+    "scenario_type": "Negative Constraints",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "곰팡이",
+        "제거",
+        "화장실"
+      ],
+      "category": "청소용품",
+      "filters": [
+        "-락스",
+        "-냄새"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      171,
+      151
+    ]
+  },
+  {
+    "query": "자취생 필수템 청소도구",
+    "scenario_type": "Implicit Needs",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "청소도구",
+        "자취생"
+      ],
+      "category": "청소도구",
+      "filters": [
+        "가성비",
+        "다용도"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      19,
+      547
+    ]
+  },
+  {
+    "query": "손이 안 트는 주방세제",
+    "scenario_type": "Implicit Needs",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "주방세제"
+      ],
+      "category": "주방잡화",
+      "filters": [
+        "저자극",
+        "순한"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      382,
+      407
+    ]
+  },
+  {
+    "query": "아기 피부에 안전한 섬유유연제",
+    "scenario_type": "Implicit Needs",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "섬유유연제",
+        "아기"
+      ],
+      "category": "세탁용품",
+      "filters": [
+        "저자극",
+        "안전"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      78
+    ]
+  },
+  {
+    "query": "강아지한테 해로운 성분 없는 간식",
+    "scenario_type": "Negative Constraints",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "강아지",
+        "간식"
+      ],
+      "category": "반려동물공통",
+      "filters": [
+        "-유해성분",
+        "안전"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      21,
+      37
+    ]
+  },
+  {
+    "query": "냄새 안 나는 쓰레기 봉투",
+    "scenario_type": "Negative Constraints",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "쓰레기봉투"
+      ],
+      "category": "미분류",
+      "filters": [
+        "-냄새",
+        "탈취"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      1,
+      557
+    ]
+  },
+  {
+    "query": "플라스틱 아닌 천연 소재 도시락통",
+    "scenario_type": "Negative Constraints",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "도시락통"
+      ],
+      "category": "밀폐용기",
+      "filters": [
+        "-플라스틱",
+        "천연소재"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      127
+    ]
+  },
+  {
+    "query": "배터리 오래가는 충전식 건전지",
+    "scenario_type": "Complex Query",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "건전지",
+        "충전식"
+      ],
+      "category": "건전지",
+      "filters": [
+        "오래가는",
+        "충전"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      10,
+      12,
+      20
+    ]
+  },
+  {
+    "query": "다이소에서 노트북 파나요?",
+    "scenario_type": "False Positive",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "노트북"
+      ],
+      "category": "미분류",
+      "filters": []
+    },
+    "ground_truth_ids_hint": []
+  },
+  {
+    "query": "명품 가방 있어요?",
+    "scenario_type": "False Positive",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "명품",
+        "가방"
+      ],
+      "category": "미분류",
+      "filters": []
+    },
+    "ground_truth_ids_hint": []
+  },
+  {
+    "query": "와인 셀러 추천해주세요",
+    "scenario_type": "False Positive",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "와인 셀러"
+      ],
+      "category": "미분류",
+      "filters": []
+    },
+    "ground_truth_ids_hint": []
+  },
+  {
+    "query": "에어컨 설치해주세요",
+    "scenario_type": "False Positive",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "에어컨",
+        "설치"
+      ],
+      "category": "서비스",
+      "filters": []
+    },
+    "ground_truth_ids_hint": []
+  },
+  {
+    "query": "이거.. 튀김 건지는 망 어디 있어?",
+    "scenario_type": "Natural Language",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "채반",
+        "뜰채",
+        "튀김",
+        "망"
+      ],
+      "category": "주방잡화",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      602
+    ]
+  },
+  {
+    "query": "저기.. 그.. 화장실 청소할 때 쓰는.. 스펀지 같은 거 있나요?",
+    "scenario_type": "Hesitation/Fillers",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "화장실",
+        "청소",
+        "스펀지"
+      ],
+      "category": "청소도구",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      19
+    ]
+  },
+  {
+    "query": "음.. 뭐냐.. 그.. 튀김 건지는 거..",
+    "scenario_type": "Hesitation/Fillers",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "튀김",
+        "건지기",
+        "채반",
+        "망"
+      ],
+      "category": "주방잡화",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      602
+    ]
+  },
+  {
+    "query": "요리할 때 국물 우려내는 주머니 같은 거요.",
+    "scenario_type": "Description without Name",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "국물",
+        "우려내는",
+        "주머니",
+        "육수"
+      ],
+      "category": "조리도구",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      600
+    ]
+  },
+  {
+    "query": "쓰레기 부피 줄여주는 봉투 있어요?",
+    "scenario_type": "Description without Name",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "쓰레기",
+        "부피",
+        "줄여주는",
+        "봉투",
+        "압축"
+      ],
+      "category": "청소용품",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      1
+    ]
+  },
+  {
+    "query": "쇠로 된 수세미 말고.. 일회용으로 쓰는 수세미 있나요?",
+    "scenario_type": "Negative/Comparative",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "일회용",
+        "수세미"
+      ],
+      "category": "주방잡화",
+      "filters": [
+        "-쇠",
+        "-스테인리스",
+        "일회용"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      598
+    ]
+  },
+  {
+    "query": "락스 냄새 안 나는 화장실 청소 세제 주세요.",
+    "scenario_type": "Negative Constraint",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "화장실",
+        "청소",
+        "세제"
+      ],
+      "category": "청소용품",
+      "filters": [
+        "-락스냄새",
+        "-락스"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      5,
+      27
+    ]
+  },
+  {
+    "query": "집에 강아지가 있는데 삑삑 소리 나는 장난감 사주려고요.",
+    "scenario_type": "Context-based",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "강아지",
+        "장난감",
+        "삑삑"
+      ],
+      "category": "애완용품",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      4
+    ]
+  },
+  {
+    "query": "자취 시작하는데 필요한 청소 도구 추천해주세요.",
+    "scenario_type": "Context-based",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "자취",
+        "청소도구",
+        "추천"
+      ],
+      "category": "청소도구",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      1,
+      5,
+      19,
+      598
+    ]
+  },
+  {
+    "query": "건전지.",
+    "scenario_type": "Short/Keyword",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "건전지"
+      ],
+      "category": "공구/디지털",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      10,
+      12,
+      20
+    ]
+  },
+  {
+    "query": "제가 지금 손을 다쳐서 설거지하기가 힘든데 간편하게 쓸 수 있는 수세미 있을까요?",
+    "scenario_type": "Long/Narrative",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "설거지",
+        "간편",
+        "수세미"
+      ],
+      "category": "주방잡화",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      598
+    ]
+  },
+  {
+    "query": "AA 건전지 10개짜리",
+    "scenario_type": "Specific Attribute",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "AA",
+        "건전지",
+        "10개"
+      ],
+      "category": "공구/디지털",
+      "filters": [
+        "10개입"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      10
+    ]
+  },
+  {
+    "query": "그.. 멍멍이 간식 좀 찾으려는데요.. 닭고기 들어간거요..",
+    "scenario_type": "Hesitation + Attribute",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "멍멍이",
+        "간식",
+        "닭고기"
+      ],
+      "category": "애완용품",
+      "filters": [
+        "닭고기"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      21
+    ]
+  },
+  {
+    "query": "책상 위에 두는 철망으로 된 바구니?",
+    "scenario_type": "Description",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "책상",
+        "철망",
+        "바구니"
+      ],
+      "category": "수납용품",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      18
+    ]
+  },
+  {
+    "query": "어.. 저기.. 물티슈인데.. 캡 달려있는거.. 150매 정도?",
+    "scenario_type": "Hesitation + Specifics",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "물티슈",
+        "캡",
+        "150매"
+      ],
+      "category": "위생용품",
+      "filters": [
+        "캡형",
+        "150매"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      6
+    ]
+  },
+  {
+    "query": "그.. 아이들 장난감 세탁기 있나요?",
+    "scenario_type": "Specific Product",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "아이들",
+        "장난감",
+        "세탁기"
+      ],
+      "category": "완구",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      599
+    ]
+  },
+  {
+    "query": "믹스커피.",
+    "scenario_type": "Short/Keyword",
+    "difficulty": "Easy",
+    "expected_intent": {
+      "keywords": [
+        "믹스커피"
+      ],
+      "category": "식품",
+      "filters": []
+    },
+    "ground_truth_ids_hint": [
+      29
+    ]
+  },
+  {
+    "query": "다이소에 TV도 파나요?",
+    "scenario_type": "False Positive",
+    "difficulty": "Hard",
+    "expected_intent": {
+      "keywords": [
+        "TV"
+      ],
+      "category": "가전",
+      "filters": []
+    },
+    "ground_truth_ids_hint": []
+  },
+  {
+    "query": "화장실 수건.. 베이지색으로.. 좀 부드러운거..",
+    "scenario_type": "Description + Attribute",
+    "difficulty": "Medium",
+    "expected_intent": {
+      "keywords": [
+        "화장실",
+        "수건",
+        "베이지",
+        "부드러운"
+      ],
+      "category": "욕실용품",
+      "filters": [
+        "베이지"
+      ]
+    },
+    "ground_truth_ids_hint": [
+      601
+    ]
+  }
+]

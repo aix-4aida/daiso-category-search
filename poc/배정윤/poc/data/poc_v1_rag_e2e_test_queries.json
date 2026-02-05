@@ -1,0 +1,443 @@
+[
+    {
+        "id": 1,
+        "query": "설거지할 때 끼는 고무장갑 추천해줘",
+        "expected_category": "주방",
+        "target_keyword": "설거지용 고무장갑",
+        "negative_keywords": [
+            "겨울",
+            "골프"
+        ]
+    },
+    {
+        "id": 2,
+        "query": "설거지할 때 끼는 고무장갑 찾아줘",
+        "expected_category": "주방",
+        "target_keyword": "설거지용 고무장갑",
+        "negative_keywords": [
+            "겨울",
+            "골프"
+        ]
+    },
+    {
+        "id": 3,
+        "query": "설거지할 때 끼는 고무장갑 있나요?",
+        "expected_category": "주방",
+        "target_keyword": "설거지용 고무장갑",
+        "negative_keywords": [
+            "겨울",
+            "골프"
+        ]
+    },
+    {
+        "id": 4,
+        "query": "안 미끄러지는 설거지 장갑 추천해줘",
+        "expected_category": "주방",
+        "target_keyword": "고무장갑",
+        "negative_keywords": [
+            "골프"
+        ]
+    },
+    {
+        "id": 5,
+        "query": "안 미끄러지는 설거지 장갑 찾아줘",
+        "expected_category": "주방",
+        "target_keyword": "고무장갑",
+        "negative_keywords": [
+            "골프"
+        ]
+    },
+    {
+        "id": 6,
+        "query": "안 미끄러지는 설거지 장갑 있나요?",
+        "expected_category": "주방",
+        "target_keyword": "고무장갑",
+        "negative_keywords": [
+            "골프"
+        ]
+    },
+    {
+        "id": 7,
+        "query": "필드 나갈 때 쓰는 골프 장갑 추천해줘",
+        "expected_category": "운동",
+        "target_keyword": "골프 장갑",
+        "negative_keywords": [
+            "설거지",
+            "털장갑"
+        ]
+    },
+    {
+        "id": 8,
+        "query": "필드 나갈 때 쓰는 골프 장갑 찾아줘",
+        "expected_category": "운동",
+        "target_keyword": "골프 장갑",
+        "negative_keywords": [
+            "설거지",
+            "털장갑"
+        ]
+    },
+    {
+        "id": 9,
+        "query": "필드 나갈 때 쓰는 골프 장갑 있나요?",
+        "expected_category": "운동",
+        "target_keyword": "골프 장갑",
+        "negative_keywords": [
+            "설거지",
+            "털장갑"
+        ]
+    },
+    {
+        "id": 10,
+        "query": "그립감 좋은 양피 장갑 추천해줘",
+        "expected_category": "운동",
+        "target_keyword": "골프 장갑",
+        "negative_keywords": [
+            "고무"
+        ]
+    },
+    {
+        "id": 11,
+        "query": "그립감 좋은 양피 장갑 찾아줘",
+        "expected_category": "운동",
+        "target_keyword": "골프 장갑",
+        "negative_keywords": [
+            "고무"
+        ]
+    },
+    {
+        "id": 12,
+        "query": "그립감 좋은 양피 장갑 있나요?",
+        "expected_category": "운동",
+        "target_keyword": "골프 장갑",
+        "negative_keywords": [
+            "고무"
+        ]
+    },
+    {
+        "id": 13,
+        "query": "겨울에 끼는 스마트폰 터치 장갑 추천해줘",
+        "expected_category": "의류",
+        "target_keyword": "겨울용 털장갑",
+        "negative_keywords": [
+            "설거지",
+            "골프"
+        ]
+    },
+    {
+        "id": 14,
+        "query": "겨울에 끼는 스마트폰 터치 장갑 찾아줘",
+        "expected_category": "의류",
+        "target_keyword": "겨울용 털장갑",
+        "negative_keywords": [
+            "설거지",
+            "골프"
+        ]
+    },
+    {
+        "id": 15,
+        "query": "겨울에 끼는 스마트폰 터치 장갑 있나요?",
+        "expected_category": "의류",
+        "target_keyword": "겨울용 털장갑",
+        "negative_keywords": [
+            "설거지",
+            "골프"
+        ]
+    },
+    {
+        "id": 16,
+        "query": "화장실 앞에 깔아두는 매트 추천해줘",
+        "expected_category": "욕실",
+        "target_keyword": "욕실",
+        "negative_keywords": [
+            "요가",
+            "캠핑",
+            "차량"
+        ]
+    },
+    {
+        "id": 17,
+        "query": "화장실 앞에 깔아두는 매트 찾아줘",
+        "expected_category": "욕실",
+        "target_keyword": "욕실",
+        "negative_keywords": [
+            "요가",
+            "캠핑",
+            "차량"
+        ]
+    },
+    {
+        "id": 18,
+        "query": "화장실 앞에 깔아두는 매트 있나요?",
+        "expected_category": "욕실",
+        "target_keyword": "욕실",
+        "negative_keywords": [
+            "요가",
+            "캠핑",
+            "차량"
+        ]
+    },
+    {
+        "id": 19,
+        "query": "물기 잘 마르는 규조토 발매트 추천해줘",
+        "expected_category": "욕실",
+        "target_keyword": "규조토",
+        "negative_keywords": [
+            "요가"
+        ]
+    },
+    {
+        "id": 20,
+        "query": "물기 잘 마르는 규조토 발매트 찾아줘",
+        "expected_category": "욕실",
+        "target_keyword": "규조토",
+        "negative_keywords": [
+            "요가"
+        ]
+    },
+    {
+        "id": 21,
+        "query": "물기 잘 마르는 규조토 발매트 있나요?",
+        "expected_category": "욕실",
+        "target_keyword": "규조토",
+        "negative_keywords": [
+            "요가"
+        ]
+    },
+    {
+        "id": 22,
+        "query": "집에서 스트레칭할 때 까요는 매트 추천해줘",
+        "expected_category": "운동",
+        "target_keyword": "요가",
+        "negative_keywords": [
+            "욕실",
+            "현관"
+        ]
+    },
+    {
+        "id": 23,
+        "query": "집에서 스트레칭할 때 까요는 매트 찾아줘",
+        "expected_category": "운동",
+        "target_keyword": "요가",
+        "negative_keywords": [
+            "욕실",
+            "현관"
+        ]
+    },
+    {
+        "id": 24,
+        "query": "집에서 스트레칭할 때 까요는 매트 있나요?",
+        "expected_category": "운동",
+        "target_keyword": "요가",
+        "negative_keywords": [
+            "욕실",
+            "현관"
+        ]
+    },
+    {
+        "id": 25,
+        "query": "층간소음 방지용 두꺼운 운동 매트 추천해줘",
+        "expected_category": "운동",
+        "target_keyword": "요가",
+        "negative_keywords": [
+            "욕실"
+        ]
+    },
+    {
+        "id": 26,
+        "query": "층간소음 방지용 두꺼운 운동 매트 찾아줘",
+        "expected_category": "운동",
+        "target_keyword": "요가",
+        "negative_keywords": [
+            "욕실"
+        ]
+    },
+    {
+        "id": 27,
+        "query": "층간소음 방지용 두꺼운 운동 매트 있나요?",
+        "expected_category": "운동",
+        "target_keyword": "요가",
+        "negative_keywords": [
+            "욕실"
+        ]
+    },
+    {
+        "id": 28,
+        "query": "자동차 바닥에 까는 코일 매트 추천해줘",
+        "expected_category": "자동차",
+        "target_keyword": "차량",
+        "negative_keywords": [
+            "욕실",
+            "요가"
+        ]
+    },
+    {
+        "id": 29,
+        "query": "자동차 바닥에 까는 코일 매트 찾아줘",
+        "expected_category": "자동차",
+        "target_keyword": "차량",
+        "negative_keywords": [
+            "욕실",
+            "요가"
+        ]
+    },
+    {
+        "id": 30,
+        "query": "자동차 바닥에 까는 코일 매트 있나요?",
+        "expected_category": "자동차",
+        "target_keyword": "차량",
+        "negative_keywords": [
+            "욕실",
+            "요가"
+        ]
+    },
+    {
+        "id": 31,
+        "query": "변기 안쪽 닦는 청소 솔 추천해줘",
+        "expected_category": "청소",
+        "target_keyword": "변기",
+        "negative_keywords": [
+            "머리",
+            "화장"
+        ]
+    },
+    {
+        "id": 32,
+        "query": "변기 안쪽 닦는 청소 솔 찾아줘",
+        "expected_category": "청소",
+        "target_keyword": "변기",
+        "negative_keywords": [
+            "머리",
+            "화장"
+        ]
+    },
+    {
+        "id": 33,
+        "query": "변기 안쪽 닦는 청소 솔 있나요?",
+        "expected_category": "청소",
+        "target_keyword": "변기",
+        "negative_keywords": [
+            "머리",
+            "화장"
+        ]
+    },
+    {
+        "id": 34,
+        "query": "머리 빗는 나무 빗 추천해줘",
+        "expected_category": "미용",
+        "target_keyword": "헤어",
+        "negative_keywords": [
+            "변기",
+            "청소"
+        ]
+    },
+    {
+        "id": 35,
+        "query": "머리 빗는 나무 빗 찾아줘",
+        "expected_category": "미용",
+        "target_keyword": "헤어",
+        "negative_keywords": [
+            "변기",
+            "청소"
+        ]
+    },
+    {
+        "id": 36,
+        "query": "머리 빗는 나무 빗 있나요?",
+        "expected_category": "미용",
+        "target_keyword": "헤어",
+        "negative_keywords": [
+            "변기",
+            "청소"
+        ]
+    },
+    {
+        "id": 37,
+        "query": "그림 그릴 때 쓰는 수채화 붓 추천해줘",
+        "expected_category": "문구",
+        "target_keyword": "수채화",
+        "negative_keywords": [
+            "청소",
+            "화장"
+        ]
+    },
+    {
+        "id": 38,
+        "query": "그림 그릴 때 쓰는 수채화 붓 찾아줘",
+        "expected_category": "문구",
+        "target_keyword": "수채화",
+        "negative_keywords": [
+            "청소",
+            "화장"
+        ]
+    },
+    {
+        "id": 39,
+        "query": "그림 그릴 때 쓰는 수채화 붓 있나요?",
+        "expected_category": "문구",
+        "target_keyword": "수채화",
+        "negative_keywords": [
+            "청소",
+            "화장"
+        ]
+    },
+    {
+        "id": 40,
+        "query": "망치랑 드라이버 넣는 통 추천해줘",
+        "expected_category": "공구",
+        "target_keyword": "공구함",
+        "negative_keywords": [
+            "반찬",
+            "도시락"
+        ]
+    },
+    {
+        "id": 41,
+        "query": "망치랑 드라이버 넣는 통 찾아줘",
+        "expected_category": "공구",
+        "target_keyword": "공구함",
+        "negative_keywords": [
+            "반찬",
+            "도시락"
+        ]
+    },
+    {
+        "id": 42,
+        "query": "망치랑 드라이버 넣는 통 있나요?",
+        "expected_category": "공구",
+        "target_keyword": "공구함",
+        "negative_keywords": [
+            "반찬",
+            "도시락"
+        ]
+    },
+    {
+        "id": 43,
+        "query": "김치 담아서 냉장고에 넣는 통 추천해줘",
+        "expected_category": "주방",
+        "target_keyword": "반찬",
+        "negative_keywords": [
+            "공구",
+            "옷"
+        ]
+    },
+    {
+        "id": 44,
+        "query": "김치 담아서 냉장고에 넣는 통 찾아줘",
+        "expected_category": "주방",
+        "target_keyword": "반찬",
+        "negative_keywords": [
+            "공구",
+            "옷"
+        ]
+    },
+    {
+        "id": 45,
+        "query": "김치 담아서 냉장고에 넣는 통 있나요?",
+        "expected_category": "주방",
+        "target_keyword": "반찬",
+        "negative_keywords": [
+            "공구",
+            "옷"
+        ]
+    }
+]

@@ -1,0 +1,91 @@
+
+import json
+import os
+
+# ==========================================
+# Mock Input Generator (Simulated Agent Output)
+# ==========================================
+# Assumption: Agent successfully extracted "Product Keyword" and "Intent".
+# This dataset validates the robustness of Step 4-6 (Search Engine).
+
+TEST_KEYWORDS = [
+    # [주방] 고무장갑/수세미 관련
+    {"id": 1, "keyword": "고무장갑", "expected_category": "주방", "target_keyword": "설거지용 고무장갑", "negative_keywords": []},
+    {"id": 2, "keyword": "라텍스 장갑", "expected_category": "주방", "target_keyword": "니트릴", "negative_keywords": []},
+    {"id": 3, "keyword": "니트릴 장갑", "expected_category": "주방", "target_keyword": "니트릴", "negative_keywords": []},
+    {"id": 4, "keyword": "설거지 장갑", "expected_category": "주방", "target_keyword": "고무장갑", "negative_keywords": []},
+    {"id": 5, "keyword": "주방 장갑", "expected_category": "주방", "target_keyword": "고무장갑", "negative_keywords": []},
+    {"id": 6, "keyword": "수세미", "expected_category": "주방", "target_keyword": "수세미", "negative_keywords": []},
+    {"id": 7, "keyword": "철수세미", "expected_category": "주방", "target_keyword": "스텐", "negative_keywords": []},
+    {"id": 8, "keyword": "스펀지", "expected_category": "주방", "target_keyword": "수세미", "negative_keywords": []},
+    
+    # [주방] 보관용기
+    {"id": 9, "keyword": "반찬통", "expected_category": "주방", "target_keyword": "반찬", "negative_keywords": []},
+    {"id": 10, "keyword": "김치통", "expected_category": "주방", "target_keyword": "김치", "negative_keywords": []},
+    {"id": 11, "keyword": "도시락통", "expected_category": "주방", "target_keyword": "도시락", "negative_keywords": []},
+    {"id": 12, "keyword": "밀폐용기", "expected_category": "주방", "target_keyword": "반찬", "negative_keywords": []},
+    {"id": 13, "keyword": "유리용기", "expected_category": "주방", "target_keyword": "반찬", "negative_keywords": []},
+    
+    # [욕실] 매트/청소
+    {"id": 14, "keyword": "욕실매트", "expected_category": "욕실", "target_keyword": "욕실", "negative_keywords": ["요가"]},
+    {"id": 15, "keyword": "규조토매트", "expected_category": "욕실", "target_keyword": "규조토", "negative_keywords": ["요가"]},
+    {"id": 16, "keyword": "발매트", "expected_category": "욕실", "target_keyword": "욕실", "negative_keywords": ["요가"]},
+    {"id": 17, "keyword": "화장실매트", "expected_category": "욕실", "target_keyword": "욕실", "negative_keywords": ["요가"]},
+    {"id": 18, "keyword": "미끄럼방지매트", "expected_category": "욕실", "target_keyword": "미끄럼방지", "negative_keywords": ["차량"]},
+    {"id": 19, "keyword": "변기솔", "expected_category": "청소", "target_keyword": "변기", "negative_keywords": ["머리"]},
+    {"id": 20, "keyword": "화장실 청소솔", "expected_category": "청소", "target_keyword": "욕실", "negative_keywords": ["머리"]},
+    
+    # [운동] 골프/요가
+    {"id": 21, "keyword": "골프장갑", "expected_category": "운동", "target_keyword": "골프", "negative_keywords": ["고무"]},
+    {"id": 22, "keyword": "양피장갑", "expected_category": "운동", "target_keyword": "골프", "negative_keywords": ["고무"]},
+    {"id": 23, "keyword": "필드장갑", "expected_category": "운동", "target_keyword": "골프", "negative_keywords": []},
+    {"id": 24, "keyword": "요가매트", "expected_category": "운동", "target_keyword": "요가", "negative_keywords": ["욕실"]},
+    {"id": 25, "keyword": "운동매트", "expected_category": "운동", "target_keyword": "요가", "negative_keywords": ["욕실"]},
+    {"id": 26, "keyword": "필라테스매트", "expected_category": "운동", "target_keyword": "요가", "negative_keywords": ["욕실"]},
+    {"id": 27, "keyword": "폼롤러", "expected_category": "운동", "target_keyword": "폼롤러", "negative_keywords": []},
+    {"id": 28, "keyword": "아령", "expected_category": "운동", "target_keyword": "아령", "negative_keywords": []},
+
+    # [의류] 장갑
+    {"id": 29, "keyword": "방한장갑", "expected_category": "의류", "target_keyword": "털장갑", "negative_keywords": ["고무"]},
+    {"id": 30, "keyword": "털장갑", "expected_category": "의류", "target_keyword": "털장갑", "negative_keywords": ["고무"]},
+    {"id": 31, "keyword": "스마트폰장갑", "expected_category": "의류", "target_keyword": "터치", "negative_keywords": []},
+    {"id": 32, "keyword": "겨울장갑", "expected_category": "의류", "target_keyword": "털장갑", "negative_keywords": []},
+    
+    # [자동차]
+    {"id": 33, "keyword": "코일매트", "expected_category": "자동차", "target_keyword": "차량", "negative_keywords": ["욕실"]},
+    {"id": 34, "keyword": "카매트", "expected_category": "자동차", "target_keyword": "차량", "negative_keywords": ["욕실"]},
+    {"id": 35, "keyword": "세차타월", "expected_category": "자동차", "target_keyword": "세차", "negative_keywords": ["수세미"]},
+    {"id": 36, "keyword": "왁스", "expected_category": "자동차", "target_keyword": "광택", "negative_keywords": []},
+
+    # [미용]
+    {"id": 37, "keyword": "헤어브러쉬", "expected_category": "미용", "target_keyword": "헤어", "negative_keywords": ["청소"]},
+    {"id": 38, "keyword": "머리빗", "expected_category": "미용", "target_keyword": "우드", "negative_keywords": ["청소"]},
+    {"id": 39, "keyword": "메이크업 브러쉬", "expected_category": "미용", "target_keyword": "메이크업", "negative_keywords": ["페인트"]},
+    {"id": 40, "keyword": "화장솜", "expected_category": "미용", "target_keyword": "화장솜", "negative_keywords": []},
+
+    # [문구/공구]
+    {"id": 41, "keyword": "수채화 붓", "expected_category": "문구", "target_keyword": "수채화", "negative_keywords": ["청소"]},
+    {"id": 42, "keyword": "미술 붓", "expected_category": "문구", "target_keyword": "수채화", "negative_keywords": []},
+    {"id": 43, "keyword": "공구함", "expected_category": "공구", "target_keyword": "공구함", "negative_keywords": ["반찬"]},
+    {"id": 44, "keyword": "망치", "expected_category": "공구", "target_keyword": "망치", "negative_keywords": []},
+    {"id": 45, "keyword": "드라이버", "expected_category": "공구", "target_keyword": "드라이버", "negative_keywords": []},
+    {"id": 46, "keyword": "페인트 붓", "expected_category": "공구", "target_keyword": "페인트", "negative_keywords": ["메이크업"]},
+    {"id": 47, "keyword": "줄자", "expected_category": "공구", "target_keyword": "줄자", "negative_keywords": []},
+    
+    # [난이도 상] 애매한 검색어
+    {"id": 48, "keyword": "청소 솔", "expected_category": "청소", "target_keyword": "청소", "negative_keywords": ["머리"]},
+    {"id": 49, "keyword": "바닥 매트", "expected_category": "욕실", "target_keyword": "매트", "negative_keywords": []}, # 욕실 or 운동? (Intent가 욕실로 쏠리나 확인)
+    {"id": 50, "keyword": "작업 장갑", "expected_category": "공구", "target_keyword": "코팅", "negative_keywords": ["고무"]} 
+]
+
+def generate_keywords():
+    return TEST_KEYWORDS
+
+if __name__ == "__main__":
+    output_dir = os.path.join(os.path.dirname(__file__), "data")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    keywords = generate_keywords()
+    with open(os.path.join(output_dir, "rag_test_keywords.json"), "w", encoding="utf-8") as f:
+        json.dump(keywords, f, indent=4, ensure_ascii=False)
+    print(f"✅ Generated {len(keywords)} test keywords in 'rag_test_keywords.json'")
