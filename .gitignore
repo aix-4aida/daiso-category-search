@@ -1,4 +1,4 @@
-# Python
+Ôªø# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -19,4 +19,5 @@ frontend/.env.local
 .vscode/
 *.swp
 
-poc/πË¡§¿±/old/
+# Custom
+poc/bjy/old/

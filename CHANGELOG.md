@@ -5,11 +5,11 @@ All notable changes to this project will be documented in this file.
 ## [0.6.0] - 2026-02-05
 
 ### Synced (Search-Roca v0.8.1)
-- **PoC Integration**: Synced latest `search-roca` PoC v5 & v6 files to `poc/배정윤/`.
+- **PoC Integration**: Synced latest `search-roca` PoC v5 & v6 files to `poc/bjy/`.
   - **Modules**: `backend`, `frontend`, `poc` (Reasoning Engine, Map Debugger, Latency Benchmark).
   - **Data**: Updated Mock Product DB and Map Data.
 - **Dependencies**: Updated `requirements.txt` to match `search-roca` environment.
-- **Maintenance**: Moved old PoC files to `poc/배정윤/old/` and gitignored them.
+- **Maintenance**: Moved old PoC files to `poc/bjy/old/` and gitignored them.
 
 ## [0.5.0] - 2026-02-05
 
