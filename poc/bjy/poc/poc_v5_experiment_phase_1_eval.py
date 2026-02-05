@@ -5,7 +5,7 @@ from poc_v5_experiment_phase_1 import advanced_rerank
 
 # Configuration
 TEST_CASES_PATH = "data/poc_v5_golden_test_cases.json"
-PRODUCT_DB_PATH = "data/poc_v5_mock_product_db.json"
+PRODUCT_DB_PATH = "data/poc_v6_mock_product_db.json"
 REPORT_PATH = "document/poc_v5_experiment_resalts_phase_1.md"
 
 def load_products():
