@@ -67,3 +67,17 @@ pandas==2.2.0
 selenium>=4.15.0
 webdriver-manager>=4.0.0
 Pillow>=10.0.0
+
+# Merged from sub-projects (poc/*, backend/stt)
+accelerate
+bitsandbytes
+cohere>=5.0.0
+faster-whisper
+google-cloud-speech
+google-genai>=1.0.0
+langchain
+langchain-google-genai
+langgraph
+openai
+rich>=13.7
+sentencepiece

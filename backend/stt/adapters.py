@@ -75,6 +75,16 @@ class WhisperAdapter(BaseAdapter):
                 compute_type=self.compute_type
             )
             print(f"[OK] {self.model_size} model loaded successfully")
+        except OSError as e:
+            if getattr(e, 'winerror', 0) == 1314:
+                print(f"\n[CRITICAL] 윈도우 권한 오류 발생 (WinError 1314)")
+                print("HuggingFace 모델 로드 중 심볼릭 링크 생성에 실패했습니다.")
+                print("해결 방법:")
+                print("1. 터미널(CMD/PowerShell)을 '관리자 권한'으로 다시 실행해주세요.")
+                print("2. 또는 윈도우 설정 > 개인정보 및 보안 > 개발자용 > '개발자 모드'를 켜주세요.\n")
+                raise RuntimeError("관리자 권한이 필요합니다 (WinError 1314)") from e
+            raise
+
         except (RuntimeError, Exception) as e:
             print(f"[WARN] {self.model_size} model load failed: {e}")
             if self.fallback_model:

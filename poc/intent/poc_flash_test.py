@@ -68,55 +68,48 @@ except Exception as e:
     print(f"Error initializing model '{MODEL_NAME}': {e}")
     exit(1)
 
-INPUT_FILE = 'daiso_poc_data.csv'
 
-def process_csv():
-    print(f"Reading {INPUT_FILE}...")
 
-    # [수정] 헤더와 데이터 로딩 방식 안전하게 변경
-    data_rows = []
-    header = []
+# Default paths
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+INPUT_JSON_PATH = os.path.join(BASE_DIR, "poc", "data", "stt_output.json")
+OUTPUT_JSON_PATH = os.path.join(BASE_DIR, "poc", "data", "intent_output.json")
 
-    try:
-        with open(INPUT_FILE, 'r', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            header = next(reader) # 첫 줄(헤더) 읽기
-            data_rows = list(reader) # 나머지 데이터 읽기
-    except FileNotFoundError:
-        print(f"Error: File {INPUT_FILE} not found.")
+def process_data(input_path=None, output_path=None):
+    if not input_path: input_path = INPUT_JSON_PATH
+    if not output_path: output_path = OUTPUT_JSON_PATH
+    
+    print(f"Reading {input_path}...")
+
+    if not os.path.exists(input_path):
+        print(f"Error: File {input_path} not found.")
         return
 
-    try:
-        idx_utterance = header.index('사용자 발화 (Utterance)')
-        idx_gt = header.index('[GT] 정답')
-        idx_pred = header.index('[M1] Flash 예측')
-        idx_speed = header.index('[M1] 속도(ms)')
-        idx_judge = header.index('[M1] 판정')
-    except ValueError as e:
-        print(f"Error: CSV Header mismatch. {e}")
-        return
+    with open(input_path, 'r', encoding='utf-8') as f:
+        data_list = json.load(f)
 
-    total_count = len(data_rows)
-    print(f"Total rows: {total_count}")
-    print(f"Model: {MODEL_NAME} (Billing Enabled Mode)")
+    total_count = len(data_list)
+    print(f"Total items: {total_count}")
+    print(f"Model: {MODEL_NAME}")
 
     delay_sec = 0.5
-    print(f"Speed Limit: Waiting {delay_sec}s between requests...")
+    
+    processed_data = []
 
-    correct_count = 0
-
-    for i, row in enumerate(data_rows):
-        utterance = row[idx_utterance]
-        gt = row[idx_gt].strip().upper()
-
+    for i, item in enumerate(data_list):
+        # Support both STT JSON format and original CSV row logic (if needed)
+        # Here we assume STT JSON format: {"utterance": "..."}
+        utterance = item.get("utterance", "")
+        
+        # Skip if empty
         if not utterance:
+            processed_data.append(item)
             continue
 
-        print(f"[{i+1}/{total_count}] Processing: {utterance}", end="... ", flush=True)
+        print(f"[{i+1}/{total_count}] Checking Intent: {utterance}", end="... ", flush=True)
 
         start_time = time.time()
         prediction = "ERROR"
-        judge = "Error"
 
         try:
             response = model.generate_content(utterance, safety_settings=safety_settings)
@@ -129,12 +122,6 @@ def process_csv():
             else:
                 prediction = raw_text
 
-            if prediction == gt:
-                judge = 'O'
-                correct_count += 1
-            else:
-                judge = 'X'
-
         except Exception as e:
             print(f"\n  Error: {e}")
             prediction = "ERROR"
@@ -142,29 +129,32 @@ def process_csv():
         end_time = time.time()
         duration_ms = int((end_time - start_time) * 1000)
 
-        row[idx_pred] = prediction
-        row[idx_speed] = str(duration_ms)
-        row[idx_judge] = judge
-
-        print(f"Pred: {prediction}, GT: {gt}, Time: {duration_ms}ms ({judge})")
-
-        # [핵심 수정] 저장할 때 헤더와 데이터(data_rows)를 모두 씁니다.
-        if (i + 1) % 10 == 0:
-            with open(INPUT_FILE, 'w', encoding='utf-8', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(header)   # 헤더 쓰고
-                writer.writerows(data_rows) # 데이터 씁니다
+        print(f" -> Result: {prediction} ({duration_ms}ms)")
+        
+        # Add intent result to item
+        item["intent_validation"] = {
+            "is_valid": prediction,
+            "latency_ms": duration_ms
+        }
+        processed_data.append(item)
 
         time.sleep(delay_sec)
 
-    # 최종 저장
-    with open(INPUT_FILE, 'w', encoding='utf-8', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(header)
-        writer.writerows(data_rows)
+    # Save to JSON
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(processed_data, f, ensure_ascii=False, indent=2)
 
-    accuracy = (correct_count / total_count) * 100 if total_count > 0 else 0
-    print(f"\nDone! Accuracy: {accuracy:.2f}%")
+    print(f"\nIntent Check Complete. Saved to {output_path}")
 
 if __name__ == "__main__":
-    process_csv()
+    import argparse
+    import json # Import json inside here if needed or top level
+    
+    # Check if run directly or imported
+    # Add simple argument parsing for integration
+    if len(os.sys.argv) > 1:
+        # Simple heuristic: if arg ends with json, use it
+        # For simplicity, just use defaults or modify via fun call
+        pass
+        
+    process_data()
