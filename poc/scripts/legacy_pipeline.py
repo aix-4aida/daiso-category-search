@@ -31,13 +31,19 @@ def run_script(script_path, description):
         return False
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input-audio", help="Path to input audio file for Step 1")
+    args_cli = parser.parse_args()
+
     base_dir = Path(__file__).resolve().parent
     
     # Define steps
     steps = [
         {
-            "script": "stt_to_json.py",
-            "desc": "1. STT (Speech to Text) - Audio to JSON"
+            "script": "poc/scripts/stt_to_json.py",
+            "desc": "1. STT (Speech to Text) - Audio to JSON",
+            "args": [] # Will be populated if input audio is provided
         },
         {
             "script": "poc/intent/poc_flash_test.py",
@@ -78,6 +84,10 @@ def main():
         script_full_path = str(base_dir / step["script"])
         args = step.get("args", [])
         
+        # Inject Input Audio for Step 1
+        if "stt_to_json.py" in step["script"] and args_cli.input_audio:
+            args = ["--input", args_cli.input_audio, "--output", "poc/data/stt_output.json"]
+        
         # Special check for Step 4 config existence
         if "run_benchmark.py" in step["script"]:
              if not os.path.exists(str(base_dir / args[1])): # vendors
@@ -117,7 +127,7 @@ def main():
     latest_run_dir = max(subdirs, key=lambda d: d.stat().st_mtime)
     print(f"Latest Benchmark Run: {latest_run_dir.name}")
     
-    rerank_script = str(base_dir / "rerank_benchmark_results.py")
+    rerank_script = str(base_dir / "poc/scripts/rerank_benchmark_results.py")
     catalog_path = str(base_dir / "poc/lyg/data/catalog.30cat.tsv") # Fallback to standard name
     if (base_dir / "poc/lyg/data/catalog.30cat.v3.tsv").exists():
         catalog_path = str(base_dir / "poc/lyg/data/catalog.30cat.v3.tsv")

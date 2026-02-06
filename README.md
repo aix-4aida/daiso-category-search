@@ -1,62 +1,104 @@
-# Daiso Category Search (AI Powered)
+# Daiso Category Search (Search-Roca)
 
-이 프로젝트는 다이소 상품 검색을 위한 AI 기반 애플리케이션입니다.
-Gemini 1.5 Flash (또는 Gemini 2.0 Flash) 모델을 사용하여 사용자의 자연어 쿼리를 이해하고, 의도를 분석하거나 필요한 경우 꼬리 질문을 생성합니다.
+다이소 물품 찾기 및 매장 내비게이션 서비스의 통합 저장소입니다.  
+FastAPI 백엔드와 키오스크/모바일 프론트엔드로 구성되어 있습니다.
 
-## 주요 기능 (v0.3.0)
-
-### 🧠 LangGraph 기반 순환 에이전트
-- **지능형 검색**: 검색 결과가 없거나 애매할 경우, AI가 스스로 판단하여 "재검색"하거나 "꼬리질문"을 던집니다.
-- **Drill-Down 로직**: "청소용품" 같은 포괄적 요청 시, "세제 vs 청소솔" 처럼 구체적인 하위 카테고리를 제안합니다.
-- **문맥 기억**: 사용자의 이전 답변("솔 주세요")을 기억하여 다음 검색에 반영합니다.
-
-### 🖥️ Kiosk Mode (Frontend)
-- **랜딩 페이지**: 매장 대기 화면과 같은 시작 페이지 (`/`)
-- **키오스크 모드**: 실제 상품 검색 및 대화 화면 (`/kioskmode`)
-
-## 프로젝트 구조
+## 📁 디렉토리 구조
 
 ```
 daiso-category-search/
-├── backend/                # FastAPI 백엔드
-│   ├── logic/              # NLU 및 핵심 로직
-│   │   ├── nlu.py          # Gemini API 연동
-│   │   ├── prompts.py      # 프롬프트 템플릿
-│   │   └── schemas.py      # 데이터 스키마
-│   ├── api.py              # API 엔드포인트
-│   └── experiments/        # 검증 스크립트
-├── frontend/               # Next.js 프론트엔드
-│   └── src/app/page.tsx    # 채팅 UI
-└── requirements.txt        # Python 의존성
+├── app/                  # FastAPI 백엔드
+│   └── main.py           # 메인 서버 실행 파일
+├── frontend/             # 프론트엔드 (정적 파일)
+│   ├── kiosk/            # 키오스크 UI (Tablet)
+│   ├── mobile/           # 모바일 지도/AR 뷰
+│   └── assets/           # 공통 자원 (지도 데이터 등)
+├── poc/                  # PoC (개념 증명) 연구 코드 및 아카이브
+│   ├── bjy, kms, ...     # 각 담당자별 연구 모듈
+│   └── ...
+└── run_all_pipeline.py   # 검색 파이프라인 실행 스크립트 (CLI)
 ```
 
-## 시작하기
+## 🚀 실행 방법
 
-### 1. 환경 설정
+### 1. 가상환경 설정 (권장)
+프로젝트 실행 전 격리된 가상환경을 사용하는 것을 권장합니다.
 
-`.env` 파일을 루트 디렉토리에 생성하고 Gemini API Key를 입력하세요.
-```
-GEMINI_API_KEY=your_api_key_here
-```
-
-### 2. 백엔드 실행
-
+**Case A: venv (Python 내장)**
 ```bash
-# 가상환경 활성화 후
+# 가상환경 생성
+python -m venv venv
+
+# 활성화 (Windows PowerShell)
+.\venv\Scripts\activate
+
+# 활성화 (Mac/Linux)
+source venv/bin/activate
+```
+
+**Case B: Conda**
+```bash
+# 가상환경 생성 (Python 3.12)
+conda create -n daiso-search python=3.12
+
+# 활성화
+conda activate daiso-search
+```
+
+### 2. 패키지 설치 및 환경 설정
+**Python (Backend)**
+필요한 패키지를 설치합니다. (`requirements.txt`에 FastAPI 등 모든 의존성이 포함되어 있습니다)
+```bash
 pip install -r requirements.txt
-uvicorn backend.api:app --reload --port 8000
 ```
-
-### 3. 프론트엔드 실행
-
+API 키 설정을 위해 `.env` 파일을 생성하세요.
 ```bash
-cd frontend
-npm install
-npm run dev
+copy .env.example .env
+# .env 파일 내 GOOGLE_API_KEY 등을 입력
 ```
 
-### 4. 사용 방법
+**Node.js (Frontend - Optional)**
+프론트엔드(`frontend/kiosk` 등)를 단독으로 테스트하고 싶을 때 사용합니다.
+```bash
+npm install
+npm run lite
+# -> 브라우저가 자동으로 실행되며 Kiosk 화면이 열립니다. (bs-config.json)
+```
 
-브라우저에서 `http://localhost:3000`으로 접속하여 검색어를 입력합니다.
-- **검색**: "파란색 볼펜 찾아줘"
-- **대화**: AI가 의도가 불분명할 경우 꼬리 질문을 합니다.
+**External Search Server (Hybrid Search)** (Optional but recommended)
+Docker 기반의 Qdrant(Vector DB)와 Elasticsearch(BM25)를 사용하려면:
+1. Docker Desktop 설치 및 실행
+2. 컨테이너 실행:
+   ```bash
+   docker-compose up -d
+   ```
+3. 데이터 인덱싱 (최초 1회):
+   ```bash
+   python index_to_external.py
+   ```
+
+
+### 3. 모바일 연결 가이드 (QR 코드)
+1. **PC 터미널**: `ipconfig` (Windows) 또는 `ifconfig` (Mac/Linux)를 입력하여 **내 PC의 IP 주소**를 확인합니다. (예: `192.168.0.x`)
+2. **Kiosk 화면 설정**: 상단 노란색 **[설정]** 박스의 `1. Ngrok URL` 칸에 `http://<IP주소>:3000`을 입력하고 **[설정 저장]**을 누릅니다.
+   - 예: `http://192.168.0.142:3000`
+3. **QR 스캔**: 상품을 검색하고 생성된 QR 코드를 핸드폰으로 스캔합니다.
+4. **모바일 접속**: 핸드폰 브라우저에서 지도 및 AR 화면이 정상적으로 열리는지 확인합니다.
+
+### 3. 서버 실행
+프로젝트 루트 경로에서 다음 명령어를 실행합니다.
+```bash
+python app/main.py
+```
+또는
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 4. 접속
+- **키오스크**: [http://localhost:8000/frontend/kiosk/index.html](http://localhost:8000/frontend/kiosk/index.html)
+- **모바일**: QR코드 스캔 시 `/frontend/mobile/index.html`로 자동 연결됩니다.
+
+## 🛠️ 개발 가이드
+- **백엔드**: `app/main.py`에서 API 엔드포인트를 관리합니다. 현재 `run_all_pipeline.py`를 호출하여 검색 로직을 수행합니다.
+- **프론트엔드**: `frontend/` 폴더 내의 HTML/JS를 수정합니다. `assets/map_data.js`에서 지도/상품 데이터를 관리합니다.

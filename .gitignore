@@ -21,3 +21,8 @@ frontend/.env.local
 
 # Custom
 poc/bjy/old/
+
+# Data Volumes
+es_data/
+qdrant_data/
+outputs/

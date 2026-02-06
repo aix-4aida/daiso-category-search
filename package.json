@@ -1,0 +1,16 @@
+{
+    "name": "daiso-category-search-frontend",
+    "version": "1.0.0",
+    "description": "Frontend assets for Daiso Category Search Kiosk & Mobile",
+    "scripts": {
+        "lite": "lite-server"
+    },
+    "dependencies": {
+        "qrcodejs": "^1.0.0"
+    },
+    "devDependencies": {
+        "lite-server": "^2.6.1"
+    },
+    "author": "",
+    "license": "ISC"
+}

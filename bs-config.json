@@ -1,0 +1,10 @@
+{
+    "port": 3000,
+    "files": [
+        "./frontend/**/*.{html,htm,css,js}"
+    ],
+    "server": {
+        "baseDir": "./"
+    },
+    "startPath": "/frontend/kiosk/index.html"
+}

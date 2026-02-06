@@ -6,14 +6,17 @@ from pathlib import Path
 
 # Add project root to sys.path
 current_dir = Path(__file__).resolve().parent
-sys.path.append(str(current_dir))
+project_root = current_dir.parent.parent
+sys.path.append(str(project_root))
 
 # Import STT adapter from backend/stt
 try:
     from backend.stt.adapters import get_adapter
     from backend.stt.audio_converter import normalize_audio
-except ImportError:
-    sys.path.append(str(current_dir / 'backend'))
+except ImportError as e:
+    print(f"Import Error: {e}")
+    print(f"Sys Path: {sys.path}")
+    sys.exit(1)
     from stt.adapters import get_adapter
     from stt.audio_converter import normalize_audio
     from stt.adapters import get_adapter
@@ -104,11 +107,14 @@ def convert_stt_to_json(input_dir: str, output_json: str):
         print(f"Error saving JSON: {e}")
 
 if __name__ == "__main__":
-    INPUT_AUDIO_DIR = "data/test_audio/01_general/김동국_일반1.m4a"
-    OUTPUT_JSON_FILE = "poc/data/stt_output.json"
+    import argparse
+    parser = argparse.ArgumentParser(description="Convert Audio to STT JSON")
+    parser.add_argument("--input", default="data/test_audio/01_general/김동국_일반1.m4a", help="Input audio file or directory")
+    parser.add_argument("--output", default="poc/data/stt_output.json", help="Output JSON file path")
     
-    if not os.path.exists(INPUT_AUDIO_DIR):
-        print(f"Directory not found: {INPUT_AUDIO_DIR}")
-        print("Please ensure your audio files are in this folder.")
+    args = parser.parse_args()
+    
+    if not os.path.exists(args.input):
+        print(f"Directory/File not found: {args.input}")
     else:
-        convert_stt_to_json(INPUT_AUDIO_DIR, OUTPUT_JSON_FILE)
+        convert_stt_to_json(args.input, args.output)
