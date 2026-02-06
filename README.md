@@ -106,5 +106,5 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 - **모바일**: QR코드 스캔 시 `/frontend/mobile/index.html`로 자동 연결됩니다.
 
 ## 🛠️ 개발 가이드
-- **백엔드**: `app/main.py`에서 API 엔드포인트를 관리합니다. 현재 `run_all_pipeline.py`를 호출하여 검색 로직을 수행합니다.
+- **백엔드**: `app/main.py`에서 API 엔드포인트를 관리합니다. `backend/services/pipeline_service.py`가 핵심 검색 로직을 수행합니다.
 - **프론트엔드**: `frontend/` 폴더 내의 HTML/JS를 수정합니다. `assets/map_data.js`에서 지도/상품 데이터를 관리합니다.
