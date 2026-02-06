@@ -29,9 +29,9 @@ Jinja2==3.1.6
 joblib==1.5.3
 MarkupSafe==3.0.3
 mpmath==1.3.0
-networkx==3.4.2
-numpy==2.2.6
-packaging==25.0
+networkx
+numpy
+packaging<25.0
 proto-plus==1.27.0
 protobuf==5.29.5
 pyasn1==0.6.1
@@ -45,16 +45,16 @@ regex==2026.1.15
 requests==2.32.5
 rsa==4.9.1
 safetensors==0.7.0
-scikit-learn==1.7.2
-scipy==1.15.3
-sentence-transformers==5.2.0
-starlette==0.50.0
-sympy==1.14.0
-threadpoolctl==3.6.0
-tokenizers==0.22.2
-torch==2.9.1
-tqdm==4.67.1
-transformers==4.57.5
+scikit-learn
+scipy
+sentence-transformers
+starlette
+sympy
+threadpoolctl
+tokenizers
+torch
+tqdm
+transformers
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uritemplate==4.2.0
@@ -62,8 +62,8 @@ urllib3==2.6.3
 uvicorn==0.40.0
 
 # Additional dependencies from original daiso-category-search
-python-dotenv==1.0.1
-pandas==2.2.0
+python-dotenv
+pandas
 selenium>=4.15.0
 webdriver-manager>=4.0.0
 Pillow>=10.0.0

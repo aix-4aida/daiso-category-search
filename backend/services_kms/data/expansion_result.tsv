@@ -1,0 +1,2 @@
+id	raw_text	intent_text	expected_doc_ids	expected_category	needs_clarification	notes
+STT-00001	실리콘 용기 500ml	실리콘용기			false	Src:김민서_일반01.m4a|Exp:실리콘 밥솥,실리콘 찜기,실리콘 밀폐용기,실리콘 도시락,실리콘 반찬통

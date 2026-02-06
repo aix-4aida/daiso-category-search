@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "filename": "김민서_일반01.m4a",
+    "utterance": "실리콘 용기 500ml",
+    "stt_meta": {
+      "confidence": 0.7760998796332966,
+      "latency_ms": 7220,
+      "error": null
+    },
+    "intent_validation": {
+      "is_valid": "Y",
+      "latency_ms": 960
+    },
+    "extraction": {
+      "keyword": "실리콘용기",
+      "latency": 2.1120779514312744,
+      "tokens": {
+        "prompt": 568,
+        "completion": 54,
+        "total": 622
+      }
+    },
+    "expansion": {
+      "expanded_keywords": [
+        "실리콘 밥솥",
+        "실리콘 찜기",
+        "실리콘 밀폐용기",
+        "실리콘 도시락",
+        "실리콘 반찬통",
+        "실리콘 조리도구",
+        "실리콘 주방용품",
+        "실리콘 이유식 용기",
+        "실리콘 보관용기",
+        "실리콘 뚜껑",
+        "실리콘 접이식 용기",
+        "실리콘 전자레인지 용기",
+        "실리콘 냉동 용기",
+        "실리콘 스팀 용기",
+        "실리콘 식기",
+        "실리콘 소재 용기",
+        "친환경 실리콘 용기",
+        "BPA FREE 실리콘 용기",
+        "실리콘 런치박스",
+        "실리콘 간식 용기"
+      ],
+      "meta": {
+        "total_time_seconds": 4.254359483718872,
+        "api_latency_seconds": 4.254359483718872,
+        "processing_overhead_seconds": 0.0,
+        "total_tokens": 0,
+        "prompt_tokens": 0,
+        "completion_tokens": 0
+      }
+    }
+  }
+]
