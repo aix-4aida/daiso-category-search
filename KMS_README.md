@@ -202,7 +202,7 @@ convert_stt_to_json(
   {
     "id": 1,
     "filename": "김민서_일반01.m4a",
-    "utterance": "혹시 얼굴 팩 있나요?",  // ⚠️ 필드명 주의: "utterance" 사용
+    "utterance": "혹시 얼굴 팩 있나요?",
     "stt_meta": { "confidence": 0.95, "latency_ms": 1200 }
   }
 ]
