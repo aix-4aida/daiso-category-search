@@ -7,3 +7,18 @@
     @apply antialiased text-gray-900;
   }
 }
+
+/* Audio Visualizer Animation */
+@keyframes audioBar {
+  0%, 100% {
+    transform: scaleY(0.5);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.audio-bar {
+  animation: audioBar 0.5s ease-in-out infinite;
+  transform-origin: bottom;
+}

@@ -20,6 +20,7 @@ from stt.types import (
     PipelineResult, STTResult, QualityGateResult, PolicyIntent,
     ProviderResult, ComparisonPipelineResult
 )
+from backend.database.database import search_products, get_products_by_category, get_product_by_id
 
 # Audio converter for normalizing audio to WAV/LINEAR16/16kHz/mono
 audio_converter = AudioConverter(output_dir="outputs/normalized")
@@ -152,7 +153,42 @@ def generate_final_response(provider_result: ProviderResult) -> str:
     return "죄송합니다. 음성을 인식할 수 없었습니다."
 
 
-@app.post("/stt/compare", response_model=ComparisonPipelineResult)
+@app.post("/api/search/voice")
+async def voice_search_api(file: UploadFile = File(...)):
+    """
+    Voice Search API for Frontend
+    Simple endpoint that returns transcribed text directly
+    """
+    request_id = str(uuid.uuid4())[:8]
+    Path("outputs").mkdir(exist_ok=True)
+    
+    # Generate temp filename
+    original_filename = file.filename or f"voice_{request_id}.wav"
+    temp_audio_path = f"outputs/voice_{request_id}_{original_filename}"
+    
+    try:
+        # Save uploaded file
+        with open(temp_audio_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        print(f"🎤 Voice search request: {temp_audio_path}")
+        
+        # Run Whisper STT using existing adapter
+        # Use attempt=1 as default
+        result = run_single_provider(temp_audio_path, "whisper", 1)
+        
+        text = result.stt.text_raw
+        print(f"🗣️ Transcribed: '{text}'")
+        
+        if not text:
+            return {"text": "", "error": "No speech detected"}
+            
+        return {"text": text}
+        
+    except Exception as e:
+        print(f"❌ Voice search error: {e}")
+        return {"text": "", "error": str(e)}
+
 async def compare_audio(
     audio: UploadFile = File(...),
     attempt: int = 1

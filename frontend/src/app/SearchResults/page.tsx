@@ -1,19 +1,27 @@
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/router'
+'use client';
+
+import React, { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { MapPin, Search, ArrowLeft, QrCode } from 'lucide-react'
-import Layout from '../components/Layout'
-import Button from '../components/Button'
-import { searchProducts, getProductsByCategory } from '../lib/api'
-import { mapConfig, findProductLocation } from '../config/mapConfig'
+import Layout from '../../components/Layout'
+import Button from '../../components/Button'
+import { searchProducts, getProductsByCategory } from '../../lib/api'
+import { findProductLocation } from '../../config/mapConfig'
 
-const SimpleMap = ({ targetLocation, productName }) => {
-    // Find target shelf based on location (from DB) or product name
-    const target = findProductLocation(targetLocation || productName)
+interface Product {
+    id: string | number;
+    name: string;
+    price?: number;
+    location?: string;
+    image_url?: string;
+}
 
-    // State to track image aspect ratios for B1 and B2
-    const [ratios, setRatios] = useState({ B1: 1.4, B2: 1.4 }); // Default vertical ratio approx A4
+const SimpleMap = ({ targetLocation, productName }: { targetLocation?: string, productName?: string }) => {
+    const target = findProductLocation(targetLocation || productName || '')
 
-    const handleImageLoad = (floor) => (e) => {
+    const [ratios, setRatios] = useState({ B1: 1.4, B2: 1.4 });
+
+    const handleImageLoad = (floor: string) => (e: React.SyntheticEvent<HTMLImageElement>) => {
         const { naturalWidth, naturalHeight } = e.currentTarget;
         if (naturalWidth > 0) {
             setRatios(prev => ({
@@ -23,42 +31,23 @@ const SimpleMap = ({ targetLocation, productName }) => {
         }
     };
 
-    // Calculate path ensuring 90-degree turns
-    const getPath = (floor, target) => {
+    const getPath = (floor: string, target: any) => {
         if (!target) return "";
 
         if (floor === "B1") {
-            // Start: (50, 15) - Entrance
-            // Strategy: "Clear Entrance Box & Middle Safe Passage"
-            // 1. Move down to y=25 to clear the Entrance/Checkout box.
-            // 2. Move right to x=65 (Gap between Season and Beauty).
-            // 3. Move down to y=85 (Gap above Packaging/Below Party).
-
-            const entranceClearY = 25; // Clear the entrance box
-            const middleAisleX = 65; // Safe passage between Center and Right islands
+            const entranceClearY = 25;
+            const middleAisleX = 65;
             const bottomAisleY = 85;
 
-            // 1. Start from Entrance
             let d = `M 50 15`;
-
-            // 2. Move Down to clear Entrance Box
             d += ` L 50 ${entranceClearY}`;
-
-            // 3. Move Right to Middle Aisle
             d += ` L ${middleAisleX} ${entranceClearY}`;
-
-            // 4. Move Down Middle Aisle
             d += ` L ${middleAisleX} ${bottomAisleY}`;
-
-            // 5. Move across Bottom Aisle to Target X
             d += ` L ${target.x} ${bottomAisleY}`;
-
-            // 6. Move up to Target Y
             d += ` L ${target.x} ${target.y}`;
 
             return d;
         } else {
-            // B2 Logic (Stairs at 25, 90)
             const aisleY = 80;
             if (target.y > aisleY) {
                 return `M 25 90 L 25 ${target.y} L ${target.x} ${target.y}`;
@@ -67,11 +56,9 @@ const SimpleMap = ({ targetLocation, productName }) => {
         }
     }
 
-    const renderMapFloor = (floor, imgSrc, title, startLabel, startPos, startPointStr) => {
-        const ratio = ratios[floor];
+    const renderMapFloor = (floor: string, imgSrc: string, title: string, startPos: { x: number, y: number }) => {
+        const ratio = ratios[floor as keyof typeof ratios];
         const viewBoxHeight = 100 * ratio;
-
-        // Target is valid only if it's on the current floor
         const isTargetOnFloor = target && target.floor === floor;
         const pathData = isTargetOnFloor ? getPath(floor, target) : "";
 
@@ -81,7 +68,6 @@ const SimpleMap = ({ targetLocation, productName }) => {
                     <span className="text-2xl font-black text-gray-800">{floor}</span>
                 </div>
 
-                {/* Container for Image & SVG - Centered and constrained */}
                 <div className="relative w-full flex flex-col items-center">
                     <h3 className="text-lg font-bold mb-2 flex items-center">
                         <span className="text-blue-600 text-2xl mr-2">{floor}</span>
@@ -99,22 +85,18 @@ const SimpleMap = ({ targetLocation, productName }) => {
                             viewBox={`0 0 100 ${viewBoxHeight}`}
                             preserveAspectRatio="xMidYMid meet"
                         >
-                            {/* Define Markers */}
                             <defs>
                                 <marker id={`arrow${floor}`} markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto" markerUnits="strokeWidth">
                                     <path d="M0,0 L0,4 L4,2 z" fill="#ef4444" />
                                 </marker>
                             </defs>
 
-                            {/* Start Point (Blue Circle) - Always Visible */}
                             <circle cx={startPos.x} cy={startPos.y} r="3" fill="white" stroke="#2563eb" strokeWidth="2" />
                             <circle cx={startPos.x} cy={startPos.y} r="1.5" fill="#2563eb" />
 
-                            {/* Start Label */}
                             <rect x={startPos.x - 12} y={startPos.y + 4} width="24" height="6" rx="3" fill="#2563eb" opacity="0.9" />
                             <text x={startPos.x} y={startPos.y + 8} fontSize="3" textAnchor="middle" fill="white" fontWeight="bold">현재위치</text>
 
-                            {/* Path and Destination - Only if Target is on this floor */}
                             {isTargetOnFloor && (
                                 <>
                                     <path
@@ -126,7 +108,6 @@ const SimpleMap = ({ targetLocation, productName }) => {
                                         markerEnd={`url(#arrow${floor})`}
                                         className="animate-dash"
                                     />
-                                    {/* Destination Marker (Red Circle Ripple effect) */}
                                     <circle cx={target.x} cy={target.y} r="4" fill="#ef4444" opacity="0.3">
                                         <animate attributeName="r" from="2" to="6" dur="1.5s" repeatCount="indefinite" />
                                         <animate attributeName="opacity" from="0.6" to="0" dur="1.5s" repeatCount="indefinite" />
@@ -143,43 +124,28 @@ const SimpleMap = ({ targetLocation, productName }) => {
 
     return (
         <div className="flex gap-4 w-full h-full">
-            {renderMapFloor("B1", "/map_b1.jpg", "B1", "현재위치", { x: 50, y: 15 })}
-            {renderMapFloor("B2", "/map_b2.jpg", "B2", "계단입구", { x: 25, y: 90 })}
+            {renderMapFloor("B1", "/map_b1.jpg", "B1", { x: 50, y: 15 })}
+            {renderMapFloor("B2", "/map_b2.jpg", "B2", { x: 25, y: 90 })}
         </div>
     );
 };
 
-const SearchResults = () => {
+function SearchResultsContent() {
     const router = useRouter()
-    const { q: query, category } = router.query
+    const searchParams = useSearchParams()
+    const query = searchParams.get('q')
+    const category = searchParams.get('category')
 
-    // In Next.js pages router, router.query might be empty on first render
-    // Use effective query to trigger effects
-    const [results, setResults] = useState([])
+    const [results, setResults] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
-    const [selectedProduct, setSelectedProduct] = useState(null)
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
     useEffect(() => {
-        if (!router.isReady) return
-
         const fetchData = async () => {
             setLoading(true)
-            let data = []
+            let data: Product[] = []
             if (query) {
-                // Determine if query is JSON string (from VoiceSearch mostly) or plain text
-                let searchQuery = query
-                try {
-                    // Start with basic check if it looks like JSON
-                    if (typeof query === 'string' && (query.startsWith('{') || query.startsWith('['))) {
-                        // Attempt to parse if needed, though usually we pass plain string now
-                        // But if we passed complex object in query, we handle it
-                        // For now assume query is string from VoiceSearch plain text
-                    }
-                } catch (e) {
-                    // specific handling if needed
-                }
-
-                data = await searchProducts(searchQuery)
+                data = await searchProducts(query)
             } else if (category) {
                 data = await getProductsByCategory(category)
             }
@@ -189,9 +155,9 @@ const SearchResults = () => {
             setLoading(false)
         }
         fetchData()
-    }, [router.isReady, query, category])
+    }, [query, category])
 
-    const handleProductSelect = (product) => {
+    const handleProductSelect = (product: Product) => {
         setSelectedProduct(product)
     }
 
@@ -331,4 +297,10 @@ const SearchResults = () => {
     )
 }
 
-export default SearchResults
+export default function SearchResults() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <SearchResultsContent />
+        </Suspense>
+    )
+}

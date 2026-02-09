@@ -1,11 +1,15 @@
+'use client';
+
 import React from 'react'
-import { useRouter } from 'next/router'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Bell, Search } from 'lucide-react'
-import Layout from '../components/Layout'
-import Button from '../components/Button'
+import Layout from '../../components/Layout'
+import Button from '../../components/Button'
 
 const NoResult = () => {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const message = searchParams.get('message')
 
     return (
         <Layout className="bg-white">
@@ -18,7 +22,7 @@ const NoResult = () => {
             <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-12">
                 <div className="text-center space-y-4">
                     <h1 className="text-4xl font-bold text-gray-900">죄송합니다</h1>
-                    <p className="text-xl text-gray-500">해당 상품의 위치를 찾을 수 없습니다</p>
+                    <p className="text-xl text-gray-500">{message || '해당 상품의 위치를 찾을 수 없습니다'}</p>
                 </div>
 
                 {/* Suggestion Box */}

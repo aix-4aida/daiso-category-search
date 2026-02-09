@@ -1,15 +1,17 @@
+'use client';
+
 import React from 'react'
-import { useRouter } from 'next/router'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Home, Smartphone, QrCode, MapPin } from 'lucide-react'
-import Layout from '../components/Layout'
-import Button from '../components/Button'
+import Layout from '../../components/Layout'
+import Button from '../../components/Button'
 
 const MapNavigation = () => {
     const router = useRouter()
-    const { shelf, product } = router.query
+    const searchParams = useSearchParams()
 
-    const shelfNumber = shelf || '12'
-    const productName = product || '선택한 상품'
+    const shelfNumber = searchParams.get('shelf') || '12'
+    const productName = searchParams.get('product') || '선택한 상품'
 
     return (
         <Layout className="bg-white">

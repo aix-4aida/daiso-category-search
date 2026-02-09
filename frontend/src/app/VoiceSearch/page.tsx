@@ -1,13 +1,15 @@
+'use client';
+
 import React, { useState, useRef } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
-import Layout from '../components/Layout'
+import Layout from '../../components/Layout'
 
 const VoiceSearch = () => {
     const router = useRouter()
     const [isProcessing, setIsProcessing] = useState(false)
     const [transcribedText, setTranscribedText] = useState('')
-    const fileInputRef = useRef(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     // Audio visualizer bars animation
     const AudioVisualizer = () => {
@@ -28,8 +30,8 @@ const VoiceSearch = () => {
         )
     }
 
-    const handleFileUpload = async (e) => {
-        const file = e.target.files[0]
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
         if (!file) return
 
         setIsProcessing(true)
@@ -53,36 +55,22 @@ const VoiceSearch = () => {
                 setTranscribedText(`"${data.text}"`)
                 // Short delay to show the transcribed text
                 setTimeout(() => {
-                    // Next.js router doesn't support state like react-router-dom
-                    // Passing data via query params or just q for re-fetching
-                    router.push({
-                        pathname: '/SearchResults',
-                        query: { q: data.text }
-                    })
+                    router.push(`/SearchResults?q=${encodeURIComponent(data.text)}`)
                 }, 1000)
             } else {
                 setTranscribedText('')
-                router.push({
-                    pathname: '/search/fail',
-                    query: { message: '음성을 인식하지 못했습니다.' }
-                })
+                router.push('/NoResult?message=' + encodeURIComponent('음성을 인식하지 못했습니다.'))
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Voice search error:", error)
-            router.push({
-                pathname: '/search/fail',
-                query: { message: `오류가 발생했습니다: ${error.message}` }
-            })
+            router.push('/NoResult?message=' + encodeURIComponent(`오류가 발생했습니다: ${error.message}`))
         }
     }
 
     const handleConfirm = () => {
         if (transcribedText) {
             const cleanText = transcribedText.replace(/^"|"$/g, '')
-            router.push({
-                pathname: '/SearchResults',
-                query: { q: cleanText }
-            })
+            router.push(`/SearchResults?q=${encodeURIComponent(cleanText)}`)
         }
     }
 

@@ -1,9 +1,8 @@
-'use client';
-
 import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/router'
 import { HelpCircle, Search } from 'lucide-react'
 import Layout from '../components/Layout'
+import Button from '../components/Button'
 
 const CATEGORIES = [
     { id: '위생', name: '의약품' },
@@ -13,7 +12,7 @@ const CATEGORIES = [
     { id: '잡화', name: '잡화' },
 ]
 
-export default function Home() {
+const Home = () => {
     const router = useRouter()
     const [query, setQuery] = useState('')
 
@@ -21,7 +20,7 @@ export default function Home() {
         router.push('/VoiceSearch')
     }
 
-    const handleSearch = (e: React.FormEvent) => {
+    const handleSearch = (e) => {
         e.preventDefault()
         if (query.trim()) {
             router.push(`/SearchResults?q=${encodeURIComponent(query)}`)
@@ -81,3 +80,5 @@ export default function Home() {
         </Layout>
     )
 }
+
+export default Home

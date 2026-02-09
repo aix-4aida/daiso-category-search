@@ -123,6 +123,27 @@ def search_products(keyword: str) -> List[Dict]:
     conn.close()
     return [dict(row) for row in rows]
 
+def get_products_by_category(category: str) -> List[Dict]:
+    """
+    Search products by category
+    Since we don't have a direct category column, we search by the category keyword
+    or map specific categories to keywords if needed.
+    """
+    # For now, simplistic approach: search for the category name itself
+    # e.g. "주방" -> search "주방"
+    # "위생" -> search "위생"
+    # Logic can be enhanced later with KEYWORD mapping
+    return search_products(category)
+
+def get_product_by_id(product_id: int) -> Optional[Dict]:
+    """Get product by ID"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM products WHERE id = ?', (product_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
 def get_related_products_for_context(keyword: str, limit: int = 5) -> str:
     """
     Search products and return a formatted string for LLM context.
