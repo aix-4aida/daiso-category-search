@@ -36,11 +36,14 @@ Optional env:
 - TEXT_TEMPLATE     (default: "{title} {text} {category}")  # to build bm25_text
 """
 
-import os, csv, time, json, re
+import os, csv, time, json, re, uuid as uuid_module
 from typing import Dict, List, Any, Tuple, Optional
 
 import requests
 from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # -----------------------------
 # ENV
@@ -64,7 +67,7 @@ ELASTIC_INDEX = os.environ.get("ELASTIC_INDEX", "products").strip()
 
 EMBED_MODEL = os.environ.get("EMBED_MODEL", "text-embedding-3-small").strip()
 
-CATALOG_TSV = os.environ.get("CATALOG_TSV", "data/catalog.30cat.v3.tsv")
+CATALOG_TSV = os.environ.get("CATALOG_TSV", os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../backend/services_kms/data/products_exported.tsv")))
 TESTCASES_TSV = os.environ.get("TESTCASES_TSV", "templates/testcases.v6.tsv")
 
 BATCH = int(os.environ.get("BATCH", "128"))
@@ -112,6 +115,10 @@ def compact_space(s: str) -> str:
     s = (s or "").replace("\u00a0", " ").strip()
     s = re.sub(r"\s+", " ", s)
     return s
+
+def str_to_uuid(s: str) -> str:
+    """Convert string to deterministic UUID5 for Qdrant point ID"""
+    return str(uuid_module.uuid5(uuid_module.NAMESPACE_DNS, s))
 
 def build_bm25_text(title: str, text: str, category: str) -> str:
     # For fairness: identical text goes to BM25 index and embedding input.
@@ -357,7 +364,8 @@ def main():
         # Qdrant upsert for this embed batch
         if ids:
             vecs = embed_texts(embed_inputs)
-            points = [{"id": did, "vector": v, "payload": pl} for did, v, pl in zip(ids, vecs, q_payloads)]
+            # Convert string IDs to UUIDs for Qdrant (doc_id kept in payload for reference)
+            points = [{"id": str_to_uuid(did), "vector": v, "payload": pl} for did, v, pl in zip(ids, vecs, q_payloads)]
             qdrant_upsert(points)
             sent_qdrant += len(points)
 

@@ -179,26 +179,37 @@ def process_benchmark_output(run_dir, catalog_path, output_file):
             
             # Get candidates from retrieval phase
             # run_benchmark outputs 'predicted_doc_ids' (Top N)
-            # We take Top 10 for reranking (save tokens/time)
-            top_ids = case.get("predicted_doc_ids", [])[:10]
+            # User request: Limit to Top 5
+            top_ids = case.get("predicted_doc_ids", [])[:5]
             
             candidates = []
+            retrieved_display = [] # To show ID + Name
+            
             for doc_id in top_ids:
                 if doc_id in catalog:
-                    candidates.append(catalog[doc_id])
+                    item = catalog[doc_id]
+                    candidates.append(item)
+                    retrieved_display.append(f"{doc_id} ({item['name']})")
                 else:
                     candidates.append({"id": doc_id, "name": "Unknown", "desc": ""})
+                    retrieved_display.append(f"{doc_id} (Unknown)")
             
             print(f"Reranking Query: '{query}' ({len(candidates)} candidates)...")
             
             # Call KDG Reranker
             rerank_result = advanced_rerank(query, candidates)
             
+            # Add selected item name for clarity
+            sel_id = rerank_result.get("selected_id")
+            sel_name = ""
+            if sel_id and sel_id in catalog:
+                sel_name = f" ({catalog[sel_id]['name']})"
+            
             output_item = {
                 "case_id": case.get("case_id"),
                 "query": query,
-                "retrieved_ids": top_ids,
-                "selected_id": rerank_result.get("selected_id"),
+                "retrieved_ids": retrieved_display,
+                "selected_id": f"{sel_id}{sel_name}" if sel_id else None,
                 "reason": rerank_result.get("reason"),
                 "latency_ms": rerank_result.get("latency", 0) * 1000
             }

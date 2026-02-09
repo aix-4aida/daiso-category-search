@@ -10,7 +10,7 @@ import sys
 
 # Import Gemini logic from existing nlu.py
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from backend.logic.nlu import expand_search_keywords as expand_gemini_func
+from poc.kms.nlu import expand_search_keywords as expand_gemini_func
 
 load_dotenv()
 

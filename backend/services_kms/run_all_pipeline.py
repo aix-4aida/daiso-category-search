@@ -18,6 +18,12 @@ from backend.services_kms.stt_to_json import convert_stt_to_json
 from backend.services_kms.poc_flash_test import process_data as check_intent
 from backend.services_kms.simple_keyword_extractor_gemini import main as extract_keywords
 from backend.services_kms.expand_keywords_comparison_gemini import main as expand_keywords
+from backend.services_kms.export_db_to_tsv import export_db_to_tsv
+from dotenv import load_dotenv
+
+# Load env immediately
+load_dotenv()
+
 from backend.services_kms.poc_v5_experiment_phase_1 import process_benchmark_output
 
 
@@ -32,8 +38,8 @@ def get_latest_benchmark_dir(base_out_dir):
     return sorted(subdirs, key=lambda x: x.name, reverse=True)[0]
 
 
-def run_step(step_name: str, func, *args, **kwargs):
-    """단일 스텝 실행 및 시간 측정"""
+async def run_step(step_name: str, func, *args, **kwargs):
+    """단일 스텝 실행 및 시간 측정 (Async)"""
     print(f"\n{'='*60}")
     print(f"STEP: {step_name}")
     print(f"{'='*60}\n")
@@ -41,46 +47,65 @@ def run_step(step_name: str, func, *args, **kwargs):
     start_time = time.time()
     try:
         if asyncio.iscoroutinefunction(func):
-            result = asyncio.run(func(*args, **kwargs))
+            result = await func(*args, **kwargs)
         else:
             result = func(*args, **kwargs)
         elapsed = time.time() - start_time
         print(f"\n[SUCCESS] {step_name} completed. ({elapsed:.2f}s)")
-        return elapsed, True
+        return elapsed, True, result
     except Exception as e:
         elapsed = time.time() - start_time
         print(f"\n[FAILURE] {step_name} failed: {e} ({elapsed:.2f}s)")
-        return elapsed, False
+        return elapsed, False, None
 
 
-def main():
+async def run_pipeline_for_voice(audio_path: str, stt_text: str, stt_elapsed: float = 0.0) -> dict:
+    """
+    음성 검색용 파이프라인 실행 (Async)
+    """
+    import json
+    
     pipeline_start = time.time()
     base_dir = Path(__file__).resolve().parent
     data_dir = base_dir / "data"
+    data_dir.mkdir(exist_ok=True)
     
     # 경로 설정
-    AUDIO_INPUT = str(project_root / "data/test_audio/01_general/김민서_일반01.m4a")
     STT_OUTPUT = str(data_dir / "stt_output.json")
     INTENT_OUTPUT = str(data_dir / "intent_output.json")
     KEYWORD_OUTPUT = str(data_dir / "extracted_keywords.json")
     EXPANSION_OUTPUT = str(data_dir / "expansion_result.json")
-    CATALOG_PATH = str(project_root / "poc/lyg/data/catalog.sqlite_export.tsv")
+    CATALOG_PATH = str(project_root / "backend/services_kms/data/products_exported.tsv")
     FINAL_OUTPUT = str(data_dir / "final_reranked_results.json")
+    
+    # Ensure fresh data from DB
+    if not export_db_to_tsv():
+        print("⚠️ Warning: DB export failed. Using existing TSV if available.")
     
     step_times = []
     
-    print("Starting Daiso Category Search Pipeline (Direct Call Mode)...")
+    # Add STT time to step_times
+    step_times.append(("STT", stt_elapsed))
     
-    # Step 1: STT
-    elapsed, success = run_step(
-        "1. STT (Speech to Text)",
-        convert_stt_to_json,
-        AUDIO_INPUT, STT_OUTPUT
-    )
-    step_times.append(("STT", elapsed))
+    results = {
+        "stt_text": stt_text,
+        "audio_path": audio_path,
+        "stt_time_seconds": stt_elapsed
+    }
+    
+    print(f"\n🚀 Starting Voice Search Pipeline for: '{stt_text}'")
+    
+    # Step 1: STT 결과 저장
+    stt_data = {
+        "id": 1,
+        "filename": Path(audio_path).name,
+        "utterance": stt_text
+    }
+    with open(STT_OUTPUT, 'w', encoding='utf-8') as f:
+        json.dump([stt_data], f, ensure_ascii=False, indent=2)
     
     # Step 2: Intent Classification
-    elapsed, success = run_step(
+    elapsed, success, _ = await run_step(
         "2. Intent Classification",
         check_intent,
         STT_OUTPUT, INTENT_OUTPUT
@@ -88,23 +113,39 @@ def main():
     step_times.append(("Intent", elapsed))
     
     # Step 3: Keyword Extraction
-    elapsed, success = run_step(
+    elapsed, success, _ = await run_step(
         "3. Keyword Extraction",
         extract_keywords
     )
+    
+    try:
+        items = None
+        with open(KEYWORD_OUTPUT, "r", encoding="utf-8") as f:
+            items = json.load(f)
+        if items and len(items) > 0:
+            # Check different possible structures (it was in extraction.keyword)
+            extraction = items[0].get("extraction", {})
+            keyword = extraction.get("keyword", "")
+            
+            # Clean up slash-separated keywords (e.g. "마스크팩/시트마스크" -> "마스크팩")
+            if "/" in keyword:
+                keyword = keyword.split("/")[0].strip()
+            results["keyword"] = keyword
+    except Exception as e:
+        print(f"⚠️ Error reading keyword output: {e}")
+    
     step_times.append(("Keyword", elapsed))
     
-    # Step 4: Keyword Expansion (async)
-    elapsed, success = run_step(
+    # Step 4: Keyword Expansion
+    elapsed, success, _ = await run_step(
         "4. Keyword Expansion",
         expand_keywords
     )
     step_times.append(("Expansion", elapsed))
     
-    # Step 5: Benchmark (외부 명령 필요 - subprocess 유지)
+    # Step 5: Benchmark
     print(f"\n{'='*60}")
     print("STEP: 5. Retrieval Benchmark")
-    print("(subprocess - 외부 Qdrant/Elastic 연동)")
     print(f"{'='*60}\n")
     
     import subprocess
@@ -114,8 +155,8 @@ def main():
     
     cmd = [
         sys.executable, str(base_dir / "run_benchmark.py"),
-        "--vendors", "poc/data/benchmark_out/20260205_071633/configs/vendors.yaml",
-        "--pipelines", "poc/data/benchmark_out/20260205_071633/configs/pipelines.yaml",
+        "--vendors", str(project_root / "poc/lyg/templates/vendors.yaml"),
+        "--pipelines", str(project_root / "poc/lyg/templates/pipeline.yaml"),
         "--vendor-set", "ext_qdrant_elastic",
         "--pipeline", "hybrid_fuse",
         "--catalog", CATALOG_PATH,
@@ -123,36 +164,89 @@ def main():
         "--out", benchmark_out
     ]
     
+    env = os.environ.copy()
+    env["CATALOG_TSV"] = CATALOG_PATH
+    src_path = str(project_root / "poc/lyg/src")
+    if "PYTHONPATH" in env:
+        env["PYTHONPATH"] = f"{src_path}{os.pathsep}{env['PYTHONPATH']}"
+    else:
+        env["PYTHONPATH"] = src_path
+
+    # Subprocess는 블로킹이므로 비동기로 실행하거나, 짧으면 그냥 실행
+    # 여기서는 그냥 실행 (오래 걸리면 loop.run_in_executor 사용 권장)
     try:
-        subprocess.run(cmd, check=True, env={**os.environ, "CATALOG_TSV": CATALOG_PATH})
+        subprocess.run(cmd, check=True, env=env)
         print(f"[SUCCESS] Benchmark completed. ({time.time() - benchmark_start:.2f}s)")
     except subprocess.CalledProcessError as e:
         print(f"[FAILURE] Benchmark failed: {e}")
+    except Exception as e:
+        print(f"[ERROR] Benchmark execution error: {e}")
+    
     step_times.append(("Benchmark", time.time() - benchmark_start))
     
     # Step 6: Reranking
     latest_run = get_latest_benchmark_dir(benchmark_out)
     if latest_run:
-        elapsed, success = run_step(
+        elapsed, success, _ = await run_step(
             "6. Advanced Reranking",
             process_benchmark_output,
             str(latest_run), CATALOG_PATH, FINAL_OUTPUT
         )
         step_times.append(("Rerank", elapsed))
+        
+        if Path(FINAL_OUTPUT).exists():
+            with open(FINAL_OUTPUT, 'r', encoding='utf-8') as f:
+                results["final_results"] = json.load(f)
     else:
         print("[SKIP] No benchmark output found for reranking.")
     
-    # Summary
-    print(f"\n{'='*60}")
-    print("PIPELINE COMPLETED!")
-    print(f"{'='*60}")
-    
-    print("\nStep Timing:")
-    for name, elapsed in step_times:
-        print(f"  - {name}: {elapsed:.2f}s")
-    
     total_time = time.time() - pipeline_start
-    print(f"\n[Total Time] {total_time:.2f} seconds ({total_time/60:.1f} minutes)")
+    results["step_times"] = step_times
+    results["total_time_seconds"] = total_time
+    
+    print(f"\nVOICE SEARCH PIPELINE COMPLETED! ({total_time:.2f}s)")
+    return results
+
+
+async def main_async():
+    pipeline_start = time.time()
+    base_dir = Path(__file__).resolve().parent
+    data_dir = base_dir / "data"
+    
+    # 경로 설정
+    AUDIO_INPUT = str(project_root / "data/test_audio/01_general/김민서_일반01.m4a")
+    STT_OUTPUT = str(data_dir / "stt_output.json")
+    INTENT_OUTPUT = str(data_dir / "intent_output.json")
+    # ... (나머지 경로는 run_pipeline_for_voice와 동일하므로 생략하거나 재사용 가능하지만,
+    # 편의상 직접 구현되어 있던 main 로직을 async로 변환)
+    
+    # 여기서는 main 함수가 CLI용 테스트이므로 run_pipeline_for_voice를 호출하는 게 깔끔함
+    # 단, STT는 이미 되었다고 가정하거나 모킹해야 함.
+    # 기존 main()은 stt_to_json부터 실행했음.
+    
+    print("Starting Daiso Category Search Pipeline (Async Direct Call)...")
+    
+    # STT 실행
+    elapsed, success, _ = await run_step(
+        "1. STT", convert_stt_to_json, AUDIO_INPUT, STT_OUTPUT
+    )
+    
+    # 이후 단계는 run_pipeline_for_voice를 재사용하면 좋겠지만, 
+    # run_pipeline_for_voice는 STT 이후부터 시작함.
+    # 코드 중복을 피하기 위해 여기서는 run_pipeline_for_voice 호출로 대체 가능?
+    # 하지만 run_pipeline_for_voice는 audio_path와 text를 인자로 받음.
+    
+    # STT 결과 읽기
+    with open(STT_OUTPUT, 'r', encoding='utf-8') as f:
+        stt_data = json.load(f)
+        text = stt_data[0]['utterance']
+    
+    # 파이프라인 호출
+    await run_pipeline_for_voice(AUDIO_INPUT, text, elapsed)
+
+
+def main():
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":

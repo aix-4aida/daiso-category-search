@@ -34,6 +34,11 @@ const VoiceSearch = () => {
 
         setIsProcessing(true)
         setTranscribedText('음성을 분석하고 있습니다...')
+
+        // Clear previous results
+        localStorage.removeItem('voiceSearchResults');
+        localStorage.removeItem('voiceSearchKeyword');
+
         const formData = new FormData()
         formData.append('file', file)
 
@@ -49,19 +54,43 @@ const VoiceSearch = () => {
             }
 
             const data = await response.json()
+            setIsProcessing(false)
+
             if (data.text) {
                 setTranscribedText(`"${data.text}"`)
-                // Short delay to show the transcribed text
+
+                // Store keyword for handleConfirm fallback
+                if (data.keyword) {
+                    localStorage.setItem('voiceSearchKeyword', data.keyword);
+                }
+
+                // Store pipeline results if available (from main.py 'results' key)
+                if (data.results && data.results.length > 0) {
+                    localStorage.setItem('voiceSearchResults', JSON.stringify(data.results));
+                    console.log("Stored voice results:", data.results.length);
+                }
+
+                // Navigate after a short delay so user sees the transcription
                 setTimeout(() => {
-                    // Next.js router doesn't support state like react-router-dom
-                    // Passing data via query params or just q for re-fetching
+                    let queryText = data.text;
+                    if (data.keyword) {
+                        queryText = data.keyword;
+                        console.log("Using extracted keyword for search:", queryText);
+                    }
+
+                    const queryParams = { q: queryText };
+                    if (data.results && data.results.length > 0) {
+                        queryParams.source = 'voice';
+                    }
+
+                    console.log("Final Navigation Query:", queryParams);
                     router.push({
                         pathname: '/SearchResults',
-                        query: { q: data.text }
+                        query: queryParams
                     })
-                }, 1000)
+                }, 500)
             } else {
-                setTranscribedText('')
+                setIsProcessing(false)
                 router.push({
                     pathname: '/search/fail',
                     query: { message: '음성을 인식하지 못했습니다.' }
@@ -69,6 +98,7 @@ const VoiceSearch = () => {
             }
         } catch (error) {
             console.error("Voice search error:", error)
+            setIsProcessing(false)
             router.push({
                 pathname: '/search/fail',
                 query: { message: `오류가 발생했습니다: ${error.message}` }
@@ -78,10 +108,21 @@ const VoiceSearch = () => {
 
     const handleConfirm = () => {
         if (transcribedText) {
+            // Priority: Stored keyword > Current Transcription
+            const storedKeyword = localStorage.getItem('voiceSearchKeyword');
+            const storedResults = localStorage.getItem('voiceSearchResults');
+
             const cleanText = transcribedText.replace(/^"|"$/g, '')
+            let queryText = storedKeyword || cleanText;
+
+            const queryParams = { q: queryText };
+            if (storedResults) {
+                queryParams.source = 'voice';
+            }
+
             router.push({
                 pathname: '/SearchResults',
-                query: { q: cleanText }
+                query: queryParams
             })
         }
     }

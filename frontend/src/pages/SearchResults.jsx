@@ -151,7 +151,7 @@ const SimpleMap = ({ targetLocation, productName }) => {
 
 const SearchResults = () => {
     const router = useRouter()
-    const { q: query, category } = router.query
+    const { q: query, category, source } = router.query
 
     // In Next.js pages router, router.query might be empty on first render
     // Use effective query to trigger effects
@@ -165,23 +165,40 @@ const SearchResults = () => {
         const fetchData = async () => {
             setLoading(true)
             let data = []
-            if (query) {
-                // Determine if query is JSON string (from VoiceSearch mostly) or plain text
-                let searchQuery = query
+
+            // Check if this is a voice search result
+            if (source === 'voice') {
                 try {
-                    // Start with basic check if it looks like JSON
-                    if (typeof query === 'string' && (query.startsWith('{') || query.startsWith('['))) {
-                        // Attempt to parse if needed, though usually we pass plain string now
-                        // But if we passed complex object in query, we handle it
-                        // For now assume query is string from VoiceSearch plain text
+                    const storedResults = localStorage.getItem('voiceSearchResults');
+                    if (storedResults) {
+                        data = JSON.parse(storedResults);
+                        console.log("Loaded voice results:", data);
                     }
                 } catch (e) {
-                    // specific handling if needed
+                    console.error("Failed to load voice results:", e);
                 }
+            }
 
-                data = await searchProducts(searchQuery)
-            } else if (category) {
-                data = await getProductsByCategory(category)
+            // Fallback to normal search if no voice data or not voice search
+            if (data.length === 0) {
+                if (query) {
+                    // Determine if query is JSON string (from VoiceSearch mostly) or plain text
+                    let searchQuery = query
+                    try {
+                        // Start with basic check if it looks like JSON
+                        if (typeof query === 'string' && (query.startsWith('{') || query.startsWith('['))) {
+                            // Attempt to parse if needed, though usually we pass plain string now
+                            // But if we passed complex object in query, we handle it
+                            // For now assume query is string from VoiceSearch plain text
+                        }
+                    } catch (e) {
+                        // specific handling if needed
+                    }
+
+                    data = await searchProducts(searchQuery)
+                } else if (category) {
+                    data = await getProductsByCategory(category)
+                }
             }
 
             setResults(data)

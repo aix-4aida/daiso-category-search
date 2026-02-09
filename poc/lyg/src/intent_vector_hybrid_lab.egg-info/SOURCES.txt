@@ -25,3 +25,4 @@ src/ivhl/core/runlog.py
 src/ivhl/core/tokenize.py
 src/ivhl/core/types.py
 src/ivhl/core/utils.py
+src/team4/run_meta.py

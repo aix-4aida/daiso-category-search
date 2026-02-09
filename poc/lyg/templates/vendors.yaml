@@ -19,12 +19,10 @@ vendor_sets:
     vector_db:
       provider: qdrant
       endpoint_env: QDRANT_URL
-      api_key_env: QDRANT_API_KEY
       index: products
     bm25:
       provider: elastic
       endpoint_env: ELASTIC_URL
-      api_key_env: ELASTIC_API_KEY
       index: products
     rerank:
       provider: mock
@@ -37,12 +35,10 @@ vendor_sets:
     vector_db:
       provider: qdrant
       endpoint_env: QDRANT_URL
-      api_key_env: QDRANT_API_KEY
       index: products
     bm25:
       provider: elastic
       endpoint_env: ELASTIC_URL
-      api_key_env: ELASTIC_API_KEY
       index: products
     rerank:
       provider: mock

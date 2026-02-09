@@ -21,8 +21,9 @@ backend/
 │   │   ├── audio_converter.py       # 오디오 변환 유틸리티
 │   │   ├── quality_gate.py          # 품질 검증
 │   │   └── types.py                 # 타입 정의
-│   └── services_kms/                # ⭐ KMS 파이프라인
+│   ├── services_kms/                # ⭐ KMS 파이프라인
 │       ├── run_all_pipeline.py      # 통합 파이프라인 (음성→검색결과)
+│       ├── export_db_to_tsv.py      # DB → TSV 변환 (벤치마크용) ✅
 │       ├── stt_to_json.py           # STT 변환
 │       ├── poc_flash_test.py        # Intent 분류
 │       ├── simple_keyword_extractor_gemini.py    # 키워드 추출
@@ -72,6 +73,46 @@ frontend/
 
 ---
 
+---
+
+## 🛠 설치 및 환경 설정 (필수)
+
+### 1. Python 패키지 설치
+이 프로젝트는 Python 3.10+ 환경을 권장합니다.
+
+```bash
+# 1. 기본 의존성 설치
+pip install -r requirements.txt
+
+# 2. IVHL (검색 라이브러리) 설치 ⭐ 중요
+# (루트 디렉토리에서 실행)
+pip install -e poc/lyg
+```
+
+### 2. 외부 프로그램 설치
+- **FFmpeg**: 오디오 변환(`stt_to_json.py`)을 위해 필수입니다.
+  - [다운로드 링크](https://ffmpeg.org/download.html)
+  - 설치 후 `bin` 폴더 경로를 시스템 환경변수 `Path`에 추가해야 합니다.
+  - **확인**: 터미널에서 `ffmpeg -version` 입력 시 버전 정보가 출력되어야 합니다.
+
+### 3. Docker 서비스 실행 (DB)
+Qdrant(벡터DB)와 Elasticsearch(검색엔진)를 실행합니다.
+
+```bash
+docker-compose up -d
+```
+
+### 4. 환경 변수 확인 (.env)
+루트 디렉토리의 `.env` 파일에 아래 내용이 있는지 확인하세요.
+
+```env
+GEMINI_API_KEY=...
+QDRANT_URL=http://localhost:6333
+ELASTIC_URL=http://localhost:9200
+```
+
+---
+
 ## 🚀 실행 방법
 
 ### Backend 실행
@@ -98,6 +139,10 @@ npm run dev
 # Google Gemini API (필수)
 GEMINI_API_KEY=your_gemini_api_key_here
 
+# Search Engine (필수) ✅
+QDRANT_URL=http://localhost:6333
+ELASTIC_URL=http://localhost:9200
+
 # STT API (선택)
 GOOGLE_APPLICATION_CREDENTIALS=path/to/credentials.json
 ```
@@ -115,8 +160,9 @@ from backend.services_kms.run_all_pipeline import run_daiso_pipeline
 | 파일 | 경로 | 설명 |
 |------|------|------|
 | 상품 DB | `backend/database/products.db` | SQLite, ~3.4MB |
-| 카탈로그 TSV | `poc/lyg/data/catalog.sqlite_export.tsv` | 벤치마크용 |
-| 벤치마크 설정 | `poc/data/benchmark_out/20260205_071633/configs/` | YAML 설정 |
+| 카탈로그 TSV | `backend/services_kms/data/products_exported.tsv` | ✅ DB에서 자동 추출됨 |
+| 벤치마크 설정 | `poc/lyg/templates/pipeline.yaml` | ✅ 검색 파이프라인 설정 |
+| 공급자 설정 | `poc/lyg/templates/vendors.yaml` | ✅ DB 연결/인증 설정 |
 
 ### 4. 지도 매대 좌표 설정
 `frontend/src/config/mapConfig.js`에서 매대별 좌표를 관리합니다.
@@ -136,12 +182,23 @@ export const SHELF_COORDINATES = {
 | GET | `/api/products/category/{name}` | 카테고리별 조회 |
 | GET | `/api/products/{id}` | 상품 상세 |
 
+### 6. PYTHONPATH 설정 (중요) ✅
+`run_benchmark.py` 실행 시 `ivhl` 패키지(소스 코드)를 찾을 수 있도록 `PYTHONPATH` 설정이 필요합니다.
+`backend/services_kms/run_all_pipeline.py`에서는 자동으로 설정되지만, 수동 실행 시에는 아래와 같이 실행해야 합니다.
+
+```powershell
+# Windows PowerShell
+$env:PYTHONPATH="poc/lyg/src"; python backend/services_kms/run_benchmark.py ...
+```
+
 ---
 
 ## 🔄 파이프라인 흐름
 
 ```
 [음성 입력] 
+    ↓
+0. DB 동기화 (export_db_to_tsv.py) : products.db → tsv ✅
     ↓
 1. STT (stt_to_json.py)
     ↓
@@ -238,6 +295,10 @@ process_benchmark_output(
     catalog_tsv="poc/lyg/data/catalog.sqlite_export.tsv",
     output_json="backend/services_kms/data/final_reranked_results.json"
 )
+
+# ✅ 출력 형식 (Updated)
+# - retrieved_results: Top 5 (ID + 상품명)
+# - selected_id: ID + 상품명
 ```
 
 #### 주의사항
@@ -268,13 +329,15 @@ pip install pyyaml
 | pipelines.yaml | `poc/data/benchmark_out/20260205_071633/configs/pipelines.yaml` | 파이프라인 단계 설정 |
 
 #### 사용법 (CLI)
+#### 사용법 (CLI) ✅ PYTHONPATH 설정 필수
 ```bash
+# Windows: $env:PYTHONPATH="poc/lyg/src" 선행 필요
 python backend/services_kms/run_benchmark.py \
-    --vendors poc/data/benchmark_out/20260205_071633/configs/vendors.yaml \
-    --pipelines poc/data/benchmark_out/20260205_071633/configs/pipelines.yaml \
+    --vendors poc/lyg/templates/vendors.yaml \
+    --pipelines poc/lyg/templates/pipeline.yaml \
     --vendor-set ext_qdrant_elastic \
     --pipeline hybrid_fuse \
-    --catalog poc/lyg/data/catalog.sqlite_export.tsv \
+    --catalog backend/services_kms/data/products_exported.tsv \
     --testcases backend/services_kms/data/expansion_result.tsv \
     --out backend/services_kms/data/benchmark_out
 ```

@@ -11,6 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import shutil
 import time
 import uuid
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 import sys
 sys.path.append(str(Path(__file__).parent))
@@ -157,8 +162,10 @@ def generate_final_response(provider_result: ProviderResult) -> str:
 async def voice_search_api(file: UploadFile = File(...)):
     """
     Voice Search API for Frontend
-    Simple endpoint that returns transcribed text directly
+    Runs full pipeline: STT → Intent → Keyword → Expansion → Benchmark → Rerank
     """
+    import threading
+    
     request_id = str(uuid.uuid4())[:8]
     Path("outputs").mkdir(exist_ok=True)
     
@@ -173,21 +180,177 @@ async def voice_search_api(file: UploadFile = File(...)):
             
         print(f"🎤 Voice search request: {temp_audio_path}")
         
-        # Run Whisper STT using existing adapter
-        # Use attempt=1 as default
+        # Run Whisper STT using existing adapter (with timing)
+        stt_start = time.time()
         result = run_single_provider(temp_audio_path, "whisper", 1)
+        stt_elapsed = time.time() - stt_start
         
         text = result.stt.text_raw
-        print(f"🗣️ Transcribed: '{text}'")
+        print(f"🗣️ Transcribed: '{text}' (STT: {stt_elapsed:.2f}s)")
         
         if not text:
-            return {"text": "", "error": "No speech detected"}
-            
-        return {"text": text}
+            return {"text": "", "error": "No speech detected", "stt_time_seconds": round(stt_elapsed, 2)}
         
+        if not text:
+            return {"text": "", "error": "No speech detected", "stt_time_seconds": round(stt_elapsed, 2)}
+        
+        # Run full pipeline synchronously to get results
+        try:
+            from backend.services_kms.run_all_pipeline import run_pipeline_for_voice
+            pipeline_result = await run_pipeline_for_voice(temp_audio_path, text, stt_elapsed)
+            
+            # Parse final results
+            final_json = pipeline_result.get('final_results', [])
+            product_list = []
+            
+            if final_json and len(final_json) > 0:
+                # Get retrieved items from the first result (assuming single query)
+                first_result = final_json[0]
+                
+                # Try multiple keys for robustness
+                retrieved_items = first_result.get("retrieved_ids", first_result.get("retrieved_results", []))
+                
+                # Also consider intended selection if available
+                selected_val = first_result.get("selected_id")
+                if selected_val and selected_val not in retrieved_items:
+                    retrieved_items.insert(0, selected_val)
+                
+                print(f"📦 Pipeline retrieved {len(retrieved_items)} items")
+                
+                for item_str in retrieved_items:
+                    # Extract ID (parse "123 (Name)" or just "123")
+                    try:
+                        if "(" in item_str:
+                            doc_id = item_str.split("(")[0].strip()
+                        else:
+                            doc_id = item_str.strip()
+                            
+                        # Fetch full product details from DB
+                        product = get_product_by_id(int(doc_id))
+                        if product:
+                            # Avoid duplicates
+                            if product['id'] not in [p['id'] for p in product_list]:
+                                product_list.append(product)
+                    except Exception as e:
+                        print(f"⚠️ Error fetching product {item_str}: {e}")
+            
+            print(f"✅ Voice Search complete. Found {len(product_list)} products.")
+            
+            return {
+                "text": text, 
+                "results": product_list,
+                "keyword": pipeline_result.get("keyword"),
+                "pipeline_status": "completed",
+                "stt_time_seconds": round(stt_elapsed, 2),
+                "total_time_seconds": pipeline_result.get("total_time_seconds", 0)
+            }
+            
+        except Exception as e:
+            print(f"❌ Pipeline error: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            # CRITICAL: Attempt to recover the keyword even if pipeline failed
+            keyword_fallback = None
+            try:
+                import json
+                # Use absolute path relative to this file
+                kw_path = os.path.join(os.path.dirname(__file__), "services_kms/data/extracted_keywords.json")
+                if os.path.exists(kw_path):
+                    with open(kw_path, "r", encoding="utf-8") as f:
+                        items = json.load(f)
+                        if items and len(items) > 0:
+                            keyword_fallback = items[0].get("extraction", {}).get("keyword", "").split("/")[0].strip()
+                
+                # If still no keyword, try to extract last resort from text (if it's a known product name)
+                if not keyword_fallback and "팩" in text:
+                    keyword_fallback = "마스크팩"
+            except Exception as fe:
+                print(f"⚠️ Keyword recovery failed: {fe}")
+
+            return {
+                "text": text, 
+                "results": [],
+                "keyword": keyword_fallback or text, # Still return something, but hope for fallback
+                "error": str(e),
+                "pipeline_status": "failed"
+            }
+            
     except Exception as e:
         print(f"❌ Voice search error: {e}")
         return {"text": "", "error": str(e)}
+
+
+# ============== Product Search Endpoints ==============
+
+@app.get("/api/products/search")
+async def products_search_api(q: str = ""):
+    """
+    Text-based product search API
+    Called by frontend after voice transcription
+    """
+    if not q:
+        return []
+    
+    print(f"🔍 Product search: '{q}'")
+    results = search_products(q)
+    print(f"📦 Found {len(results)} products")
+    return results
+
+
+@app.get("/api/products/category/{category}")
+async def products_by_category_api(category: str):
+    """
+    Get products by category
+    """
+    print(f"📂 Category search: '{category}'")
+    results = get_products_by_category(category)
+    return results
+
+
+@app.get("/api/products/{product_id}")
+async def product_by_id_api(product_id: int):
+    """
+    Get single product by ID
+    """
+    result = get_product_by_id(product_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return result
+
+
+# ============== Full Pipeline Endpoint ==============
+
+@app.post("/api/pipeline/run")
+async def run_pipeline_api():
+    """
+    Run the full Daiso Category Search Pipeline
+    STT → Intent → Keyword → Expansion → Benchmark → Rerank
+    """
+    import threading
+    
+    print("🚀 Starting full pipeline...")
+    
+    # Run pipeline in background thread to avoid blocking
+    def run_pipeline_thread():
+        try:
+            # Lazy import to avoid startup errors
+            from backend.services_kms.run_all_pipeline import main as run_full_pipeline
+            run_full_pipeline()
+            print("✅ Pipeline completed successfully")
+        except Exception as e:
+            print(f"❌ Pipeline error: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    thread = threading.Thread(target=run_pipeline_thread)
+    thread.start()
+    
+    return {
+        "status": "started",
+        "message": "Pipeline execution started in background. Check server logs for progress."
+    }
+
 
 async def compare_audio(
     audio: UploadFile = File(...),
