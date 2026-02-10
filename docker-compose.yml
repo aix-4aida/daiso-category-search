@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  # [1] 파이썬 백엔드 (우리가 만든 것)
+  backend:
+    build: .             # 현재 폴더의 Dockerfile을 보고 이미지를 만들어라!
+    container_name: daiso-backend
+    ports:
+      - "8000:8000"      # 외부 8000번 -> 내부 8000번 연결
+    depends_on:          # DB들이 먼저 켜진 뒤에 백엔드가 켜져라
+      - qdrant
+      - elasticsearch
+    environment:
+      - QDRANT_URL=http://qdrant:6333       # 도커 내부에서는 서비스 이름으로 통신
+      - ES_URL=http://elasticsearch:9200
+    restart: always
+
+  # [2] 큐드런트 (벡터 DB) - 팀원 코드 유지
   qdrant:
     image: qdrant/qdrant:latest
     container_name: daiso-qdrant
@@ -10,13 +25,14 @@ services:
       - ./qdrant_data:/qdrant/storage
     restart: always
 
+  # [3] 엘라스틱서치 (검색 엔진) - 팀원 코드 유지
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
     container_name: daiso-elastic
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"  # 중요: Lightsail 1GB 램에 맞게 512m -> 256m로 줄임!
     ports:
       - "9200:9200"
       - "9300:9300"

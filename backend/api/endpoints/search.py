@@ -49,7 +49,23 @@ import shutil
 import uuid
 import os
 from pathlib import Path
-from backend.services.pipeline_service import run_full_pipeline
+from backend.services.pipeline_service import run_full_pipeline, run_text_pipeline
+
+
+class TextSearchRequest(BaseModel):
+    query: str
+
+
+@router.post("/text")
+async def search_text(request: TextSearchRequest):
+    """
+    Text Search Pipeline: Intent -> Keyword -> Search -> Rerank -> Result
+    """
+    try:
+        result = run_text_pipeline(request.query)
+        return result
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @router.post("/audio")
 async def search_audio(file: UploadFile = File(...)):

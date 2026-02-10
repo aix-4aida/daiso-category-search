@@ -10,6 +10,102 @@ from backend.services.keyword_service import extract_keyword
 from backend.services.search_service import search_products
 from backend.services.rerank_service import rerank_products
 
+def run_text_pipeline(query: str):
+    """
+    Run the text-only pipeline (skips STT):
+    Intent -> Keyword -> Search -> Rerank
+    """
+    start_time = time.time()
+    steps = {}
+
+    if not query or not query.strip():
+        return {"status": "error", "message": "검색어가 비어있습니다.", "steps": steps}
+
+    query = query.strip()
+
+    # 1. Intent Check
+    intent_res = check_intent(query)
+    print(f"🧠 [TextPipeline] Intent: {intent_res}")
+    steps["intent"] = intent_res
+
+    if intent_res["is_valid"] == "N":
+        print("⛔ [TextPipeline] Filtered by Intent")
+        return {
+            "status": "filtered",
+            "message": "죄송합니다. 상품 검색과 관련된 질문만 답변할 수 있습니다.",
+            "steps": steps
+        }
+
+    # 2. Keyword Extraction
+    keyword_res = extract_keyword(query)
+    search_query = keyword_res["keyword"] or query
+    print(f"🔑 [TextPipeline] Keyword: '{search_query}'")
+    steps["keyword"] = keyword_res
+
+    # 3. Search (Retrieval)
+    t1 = time.time()
+    candidates = search_products(search_query, top_k=30)
+    search_duration = time.time() - t1
+    print(f"🔍 [TextPipeline] Search Candidates: {len(candidates)} items ({search_duration:.2f}s)")
+    steps["search"] = {
+        "count": len(candidates),
+        "top_1": candidates[0]["name"] if candidates else None,
+        "latency": search_duration
+    }
+
+    if not candidates:
+        return {
+            "status": "empty",
+            "message": f"'{search_query}'에 대한 상품을 찾을 수 없습니다.",
+            "steps": steps
+        }
+
+    # 4. Rerank (LLM)
+    t2 = time.time()
+    print("⚖️ [TextPipeline] Reranking...")
+    rerank_res = rerank_products(query, candidates)
+    rerank_duration = time.time() - t2
+    print(f"🏆 [TextPipeline] Rerank Result: {rerank_res} ({rerank_duration:.2f}s)")
+    steps["rerank"] = rerank_res
+
+    selected_id = rerank_res.get("selected_id")
+
+    if not selected_id:
+        return {
+            "status": "empty",
+            "message": "적절한 상품을 선택하지 못했습니다.",
+            "steps": steps
+        }
+
+    # Find selected product details
+    final_product = next((c for c in candidates if c["id"] == selected_id), None)
+
+    if not final_product:
+        return {"status": "error", "message": "선택된 상품 ID를 찾을 수 없습니다.", "steps": steps}
+
+    location = final_product.get("meta", {})
+
+    processing_time = time.time() - start_time
+    print(f"⏱️ [TextPipeline] Total: {processing_time:.2f}s")
+
+    return {
+        "status": "success",
+        "result": {
+            "product": final_product["name"],
+            "id": final_product["id"],
+            "location": {
+                "section": location.get("section", "Unknown"),
+                "floor": location.get("floor", "B1"),
+                "id": location.get("id", "Unknown")
+            }
+        },
+        "candidates": candidates,
+        "query": query,
+        "processing_time": processing_time,
+        "steps": steps
+    }
+
+
 def run_full_pipeline(audio_file_path: str):
     """
     Run the full Daiso Search Pipeline:

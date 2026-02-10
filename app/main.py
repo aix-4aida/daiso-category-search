@@ -1,3 +1,12 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# 프로젝트 루트에 있는 .env 파일을 명시적으로 지정해서 로드합니다.
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
+print(f"DEBUG: GOOGLE_API_KEY loaded: {os.environ.get('GOOGLE_API_KEY')[:10]}...")
 
 import sys
 from pathlib import Path

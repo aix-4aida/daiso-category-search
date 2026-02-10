@@ -10,6 +10,9 @@ import pickle
 import numpy as np
 from pathlib import Path
 import sqlite3
+# 에러 해결을 위해 PROJECT_ROOT를 현재 파일 위치 기준으로 정의합니다.
+# 현재 파일: backend/services/search_service.py -> 상위로 2번 가면 프로젝트 루트입니다.
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 # ============================================================
 # Import Search Infrastructure (Refactored to backend/search)
