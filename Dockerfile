@@ -1,24 +1,31 @@
-# Python 3.11 슬림 버전 사용 (가벼움)
-FROM python:3.11-slim
+# ===== Stage 1: Build (C 확장 컴파일용) =====
+FROM python:3.10-slim AS builder
 
-# 작업 폴더 설정
-WORKDIR /app
+WORKDIR /build
 
-# 필수 패키지 설치 (curl 등)
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 의존성 파일 복사 및 설치
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
-# 소스 코드 전체 복사
-COPY backend .
+# ===== Stage 2: Runtime (최소 이미지) =====
+FROM python:3.10-slim
 
-# 8000번 포트 열기
+WORKDIR /app
+
+# 런타임 의존성만 (ffmpeg for pydub, build-essential 제외)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# 빌드 단계에서 설치된 패키지만 복사
+COPY --from=builder /install /usr/local
+
+COPY app/ app/
+COPY backend/ backend/
+
 EXPOSE 8000
 
-# 서버 실행 (FastAPI)
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

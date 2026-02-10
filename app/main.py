@@ -1,15 +1,23 @@
 import os
+import sys
+import io
 from pathlib import Path
+
+# Windows cp949 인코딩 문제 해결 (이모지 print 지원)
+if sys.stdout.encoding != "utf-8":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 from dotenv import load_dotenv
 
-# 프로젝트 루트에 있는 .env 파일을 명시적으로 지정해서 로드합니다.
 env_path = Path(__file__).parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
-print(f"DEBUG: GOOGLE_API_KEY loaded: {os.environ.get('GOOGLE_API_KEY')[:10]}...")
-
-import sys
-from pathlib import Path
+api_key = os.environ.get('GOOGLE_API_KEY')
+if api_key:
+    print(f"DEBUG: GOOGLE_API_KEY loaded: {api_key[:10]}...")
+else:
+    print("WARNING: GOOGLE_API_KEY not found in environment")
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware

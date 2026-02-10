@@ -4,8 +4,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from ivhl.core.config import load_pipelines, load_vendor_sets
-from ivhl.core.pipeline import run_benchmark
+from backend.search.core.config import load_pipelines, load_vendor_sets
+from backend.search.core.pipeline import run_benchmark
 
 
 def _default_path(p: str) -> str:

@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 from typing import Dict, Iterable, List
 
-from ivhl.core.types import Document, QueryCase
+from backend.search.core.types import Document, QueryCase
 
 
 def _iter_tsv_rows(path: Path) -> Iterable[Dict[str, str]]:

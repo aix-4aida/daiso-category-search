@@ -8,7 +8,7 @@ import os
 import time
 import requests
 
-from ivhl.core.types import Document, ScoredDoc
+from backend.search.core.types import Document, ScoredDoc
 
 
 def _simple_tokenize(text: str) -> List[str]:

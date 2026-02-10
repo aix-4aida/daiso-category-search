@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List
 
-from ivhl.core.types import Document, ScoredDoc
+from backend.search.core.types import Document, ScoredDoc
 
 
 @dataclass

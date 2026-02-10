@@ -8,17 +8,17 @@ from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
 
-from ivhl.adapters.bm25 import LocalBM25, ElasticBM25Retriever
-from ivhl.adapters.embedding import build_embedding_adapter
-from ivhl.adapters.filtering import FilterRules, apply_filters
-from ivhl.adapters.fusion import rrf_fusion, weighted_fusion
-from ivhl.adapters.rerank import build_reranker
-from ivhl.adapters.retrieval import BruteForceVectorRetriever, QdrantVectorRetriever
-from ivhl.core.config import PipelineSpec, VendorSet
-from ivhl.core.io import load_catalog_tsv, load_testcases_tsv
-from ivhl.core.metrics import aggregate, mrr, ndcg_at_k, precision_at_k, recall_at_k
-from ivhl.core.runlog import RunLogger, write_json
-from ivhl.core.types import Document, RunArtifacts, ScoredDoc
+from backend.search.adapters.bm25 import LocalBM25, ElasticBM25Retriever
+from backend.search.adapters.embedding import build_embedding_adapter
+from backend.search.adapters.filtering import FilterRules, apply_filters
+from backend.search.adapters.fusion import rrf_fusion, weighted_fusion
+from backend.search.adapters.rerank import build_reranker
+from backend.search.adapters.retrieval import BruteForceVectorRetriever, QdrantVectorRetriever
+from backend.search.core.config import PipelineSpec, VendorSet
+from backend.search.core.io import load_catalog_tsv, load_testcases_tsv
+from backend.search.core.metrics import aggregate, mrr, ndcg_at_k, precision_at_k, recall_at_k
+from backend.search.core.runlog import RunLogger, write_json
+from backend.search.core.types import Document, RunArtifacts, ScoredDoc
 
 
 def _mk_run_id() -> str:

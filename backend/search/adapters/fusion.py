@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List
 
-from ivhl.core.types import ScoredDoc
+from backend.search.core.types import ScoredDoc
 
 
 def rrf_fusion(dense: List[ScoredDoc], sparse: List[ScoredDoc], *, rrf_k: int = 60, top_k: int = 50) -> List[ScoredDoc]:
