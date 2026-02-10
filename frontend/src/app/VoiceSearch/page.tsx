@@ -51,11 +51,25 @@ const VoiceSearch = () => {
             }
 
             const data = await response.json()
+
+            // DEBUG: Log & Alert to verify correct file execution
+            // console.log("API RESPONSE:", data);
+            // alert("App Router VoiceSearch DEBUG:\n" + JSON.stringify(data, null, 2));
+
             if (data.text) {
                 setTranscribedText(`"${data.text}"`)
+
+                // Priority: Keyword > Text
+                const queryText = data.keyword || data.text;
+
                 // Short delay to show the transcribed text
                 setTimeout(() => {
-                    router.push(`/SearchResults?q=${encodeURIComponent(data.text)}`)
+                    const params = new URLSearchParams();
+                    params.set('q', queryText);
+                    if (data.results && data.results.length > 0) {
+                        params.set('source', 'voice');
+                    }
+                    router.push(`/SearchResults?${params.toString()}`);
                 }, 1000)
             } else {
                 setTranscribedText('')

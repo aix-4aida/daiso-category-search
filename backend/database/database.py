@@ -110,13 +110,21 @@ def get_utterance_count() -> int:
     return count
 
 def search_products(keyword: str) -> List[Dict]:
-    """Search products by name (simple LIKE query)"""
+    """Search products by name or category (simple LIKE query)"""
     conn = get_connection()
     cursor = conn.cursor()
     # Split keyword by spaces to support multiple terms "blue pen" -> "%blue%" AND "%pen%"
     terms = keyword.split()
-    query = "SELECT * FROM products WHERE " + " AND ".join(["name LIKE ?"] * len(terms))
-    params = [f"%{term}%" for term in terms]
+    
+    # Construct query: (name LIKE ? OR category_major LIKE ? OR category_middle LIKE ?) AND ...
+    clauses = []
+    params = []
+    for term in terms:
+        clauses.append("(name LIKE ? OR category_major LIKE ? OR category_middle LIKE ?)")
+        p = f"%{term}%"
+        params.extend([p, p, p])
+        
+    query = "SELECT * FROM products WHERE " + " AND ".join(clauses)
     
     cursor.execute(query, params)
     rows = cursor.fetchall()
@@ -125,15 +133,14 @@ def search_products(keyword: str) -> List[Dict]:
 
 def get_products_by_category(category: str) -> List[Dict]:
     """
-    Search products by category
-    Since we don't have a direct category column, we search by the category keyword
-    or map specific categories to keywords if needed.
+    Search products by category columns
     """
-    # For now, simplistic approach: search for the category name itself
-    # e.g. "주방" -> search "주방"
-    # "위생" -> search "위생"
-    # Logic can be enhanced later with KEYWORD mapping
-    return search_products(category)
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products WHERE category_major LIKE ? OR category_middle LIKE ?", (f"%{category}%", f"%{category}%"))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
 
 def get_product_by_id(product_id: int) -> Optional[Dict]:
     """Get product by ID"""

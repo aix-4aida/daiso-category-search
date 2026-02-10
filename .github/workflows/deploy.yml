@@ -1,0 +1,67 @@
+name: Deploy to AWS Lightsail
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Frontend
+      uses: docker/build-push-action@v4
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/daiso-frontend:latest
+
+    - name: Build and push Backend
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/daiso-backend:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to Lightsail
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          # Navigate to project director
+          cd ~/daiso-category-search || git clone https://github.com/${{ github.repository }} ~/daiso-category-search
+          cd ~/daiso-category-search
+          
+          # Pull latest code (for docker-compose.yml updates)
+          git pull origin main
+          
+          # Sets env var for docker-compose (using the secret username)
+          export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+          
+          # Pull new images
+          docker-compose pull
+          
+          # Restart containers
+          docker-compose up -d --remove-orphans
+          
+          # Cleanup unused images
+          docker image prune -f

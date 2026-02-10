@@ -1,2 +1,2 @@
 id	raw_text	intent_text	expected_doc_ids	expected_category	needs_clarification	notes
-STT-00001	얼굴 팩 있나요?	마스크팩			false	Src:voice_4b3944cb_KakaoTalk_Audio_20260210_0150_02_586.m4a|Exp:마스크팩,피부,팩,미용,피부관리
+STT-00001	혹시 얼굴 팩 있나요?	마스크팩			false	Src:voice_be285c52_이선영_일반03.wav|Exp:마스크팩,피부,팩,미용,피부관리

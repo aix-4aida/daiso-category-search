@@ -3,6 +3,10 @@
 FastAPI Server for STT Pipeline
 PoC Phase 1: Batch audio processing with Whisper + Google comparison
 """
+# 파일 상단 임포트 부분에 추가
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 
 import yaml
 from pathlib import Path
@@ -208,38 +212,58 @@ async def voice_search_api(file: UploadFile = File(...)):
                 first_result = final_json[0]
                 
                 # Try multiple keys for robustness
-                retrieved_items = first_result.get("retrieved_ids", first_result.get("retrieved_results", []))
+                # Note: retrieved_ids is a list of strings "ID (Name)" or just "ID"
+                retrieved_strs = first_result.get("retrieved_ids", [])
+                if not retrieved_strs:
+                    retrieved_strs = first_result.get("retrieved_results", [])
                 
-                # Also consider intended selection if available
+                # Copy to avoid mutating original if needed
+                item_strs = list(retrieved_strs)
+
+                # Prioritize selected_id
                 selected_val = first_result.get("selected_id")
-                if selected_val and selected_val not in retrieved_items:
-                    retrieved_items.insert(0, selected_val)
+                if selected_val:
+                    # If selected item is in the list, move it to front
+                    if selected_val in item_strs:
+                        item_strs.remove(selected_val)
+                    item_strs.insert(0, selected_val)
                 
-                print(f"📦 Pipeline retrieved {len(retrieved_items)} items")
+                print(f"📦 Pipeline items (top 5): {item_strs[:5]}")
                 
-                for item_str in retrieved_items:
+                for item_str in item_strs:
                     # Extract ID (parse "123 (Name)" or just "123")
                     try:
                         if "(" in item_str:
-                            doc_id = item_str.split("(")[0].strip()
+                            doc_id_str = item_str.split("(")[0].strip()
                         else:
-                            doc_id = item_str.strip()
+                            doc_id_str = item_str.strip()
+                            
+                        if not doc_id_str.isdigit():
+                            continue
+                            
+                        doc_id = int(doc_id_str)
                             
                         # Fetch full product details from DB
-                        product = get_product_by_id(int(doc_id))
+                        product = get_product_by_id(doc_id)
                         if product:
-                            # Avoid duplicates
+                            # Avoid duplicates in final list
                             if product['id'] not in [p['id'] for p in product_list]:
                                 product_list.append(product)
                     except Exception as e:
                         print(f"⚠️ Error fetching product {item_str}: {e}")
             
-            print(f"✅ Voice Search complete. Found {len(product_list)} products.")
+            # Extract keyword robustly
+            final_keyword = pipeline_result.get("keyword")
+            if not final_keyword and final_json and len(final_json) > 0:
+                 # Fallback: get from final_results 'query' field
+                 final_keyword = final_json[0].get("query")
+            
+            print(f"✅ Voice Search complete. Found {len(product_list)} products. Keyword: {final_keyword}")
             
             return {
                 "text": text, 
                 "results": product_list,
-                "keyword": pipeline_result.get("keyword"),
+                "keyword": final_keyword,
                 "pipeline_status": "completed",
                 "stt_time_seconds": round(stt_elapsed, 2),
                 "total_time_seconds": pipeline_result.get("total_time_seconds", 0)

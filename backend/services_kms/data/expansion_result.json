@@ -1,19 +1,19 @@
 [
   {
     "id": 1,
-    "filename": "voice_4b3944cb_KakaoTalk_Audio_20260210_0150_02_586.m4a",
-    "utterance": "얼굴 팩 있나요?",
+    "filename": "voice_be285c52_이선영_일반03.wav",
+    "utterance": "혹시 얼굴 팩 있나요?",
     "intent_validation": {
       "is_valid": "Y",
-      "latency_ms": 861
+      "latency_ms": 1021
     },
     "extraction": {
       "keyword": "마스크팩",
-      "latency": 1.1371259689331055,
+      "latency": 0.9187624454498291,
       "tokens": {
-        "prompt": 564,
-        "completion": 63,
-        "total": 627
+        "prompt": 565,
+        "completion": 42,
+        "total": 607
       }
     },
     "expansion": {
@@ -22,15 +22,17 @@
         "피부",
         "팩",
         "미용",
-        "피부관리"
+        "피부관리",
+        "보습",
+        "진정"
       ],
       "meta": {
-        "total_time_seconds": 1.1141138076782227,
-        "api_latency_seconds": 1.1141138076782227,
+        "total_time_seconds": 1.2671241760253906,
+        "api_latency_seconds": 1.2671241760253906,
         "processing_overhead_seconds": 0.0,
-        "total_tokens": 392,
+        "total_tokens": 404,
         "prompt_tokens": 358,
-        "completion_tokens": 34
+        "completion_tokens": 46
       }
     }
   }

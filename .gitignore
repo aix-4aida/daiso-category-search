@@ -21,3 +21,10 @@ frontend/.env.local
 
 # Custom
 poc/bjy/old/
+
+# Large Files
+*.exe
+*.wav
+*.mp3
+backend/services_kms/ffmpeg.exe
+outputs/

@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import Layout from '../components/Layout'
 
 const VoiceSearch = () => {
+    console.log("VoiceSearch Component Loaded - Timestamp: " + new Date().toISOString());
     const router = useRouter()
     const [isProcessing, setIsProcessing] = useState(false)
     const [transcribedText, setTranscribedText] = useState('')
@@ -57,6 +58,9 @@ const VoiceSearch = () => {
             setIsProcessing(false)
 
             if (data.text) {
+                // DEBUG: Show what data we actually received
+                alert("API RESPONSE DEBUG:\n" + JSON.stringify(data, null, 2));
+
                 setTranscribedText(`"${data.text}"`)
 
                 // Store keyword for handleConfirm fallback
@@ -72,13 +76,14 @@ const VoiceSearch = () => {
 
                 // Navigate after a short delay so user sees the transcription
                 setTimeout(() => {
-                    let queryText = data.text;
-                    if (data.keyword) {
-                        queryText = data.keyword;
-                        console.log("Using extracted keyword for search:", queryText);
-                    }
+                    // Priority: Keyword (e.g. "마스크팩") > Text ("얼굴 팩 있나요?")
+                    // This ensures SearchResults gets a clean product term
+                    let queryText = data.keyword || data.text;
+                    console.log("Navigation Query Text:", queryText);
 
                     const queryParams = { q: queryText };
+
+                    // If we have results from voice search, mark source as voice
                     if (data.results && data.results.length > 0) {
                         queryParams.source = 'voice';
                     }
