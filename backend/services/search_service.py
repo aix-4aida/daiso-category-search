@@ -11,6 +11,8 @@ import numpy as np
 from pathlib import Path
 import sqlite3
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
 # ============================================================
 # Import Search Infrastructure (Refactored to backend/search)
 # ============================================================

@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Protocol
 
 import requests
 
-from ivhl.core.types import Document, ScoredDoc
+from backend.search.core.types import Document, ScoredDoc
 
 
 class VectorRetriever(Protocol):

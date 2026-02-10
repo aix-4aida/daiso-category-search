@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>어디다있소 - AR 네비게이션</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background: #000;
+        }
+
+        .ar-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: rgba(0, 0, 0, 0.6);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+        }
+
+        .ar-header .logo-text {
+            font-size: 20px;
+            color: white;
+        }
+
+        .ar-header .logo-text .red {
+            color: #E50000;
+        }
+
+        .ar-header-icons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .ar-header-icons svg {
+            fill: white;
+        }
+
+        .ar-camera-view {
+            flex: 1;
+            background: linear-gradient(180deg, #3a3a4a 0%, #2a2a3a 40%, #4a4a5a 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Simulated store aisle */
+        .ar-camera-view::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            right: 20%;
+            height: 60%;
+            background: linear-gradient(180deg, transparent 0%, rgba(200, 200, 200, 0.1) 100%);
+        }
+
+        /* Floor line */
+        .ar-floor-line {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 45%;
+            background: repeating-linear-gradient(to top,
+                    #E50000 0px,
+                    #E50000 8px,
+                    transparent 8px,
+                    transparent 16px);
+            opacity: 0.8;
+        }
+
+        /* 3D Arrow */
+        .ar-3d-arrow {
+            position: relative;
+            z-index: 5;
+            margin-top: 40px;
+        }
+
+        .ar-3d-arrow svg {
+            width: 100px;
+            height: 100px;
+            filter: drop-shadow(0 8px 24px rgba(229, 0, 0, 0.6));
+            animation: arrow-float 2s ease-in-out infinite;
+        }
+
+        @keyframes arrow-float {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-12px) scale(1.05);
+            }
+        }
+
+        .ar-pin-badge {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+        }
+
+        .ar-distance-label {
+            background: rgba(229, 0, 0, 0.9);
+            color: white;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 18px;
+            margin-top: 20px;
+            z-index: 5;
+            box-shadow: 0 4px 16px rgba(229, 0, 0, 0.4);
+        }
+
+        .ar-bottom-card {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .ar-bottom-card .ar-prod-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .ar-bottom-card .ar-prod-info {
+            flex: 1;
+        }
+
+        .ar-bottom-card .ar-prod-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .ar-bottom-card .ar-prod-info .ar-meta {
+            font-size: 13px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .ar-bottom-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ar-bottom-btns button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .ar-btn-map {
+            background: white;
+            color: #E50000;
+            border: 1.5px solid #E50000;
+        }
+
+        .ar-btn-ar {
+            background: #E50000;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="ar-container">
+        <!-- Header -->
+        <div class="ar-header">
+            <div class="logo-text">
+                <span>어디</span><span class="red">다</span><span class="mix-iss">있</span><span class="red">소</span>
+            </div>
+            <div class="ar-header-icons">
+                <svg width="22" height="22" viewBox="0 0 24 24">
+                    <path
+                        d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z" />
+                </svg>
+                <svg width="22" height="22" viewBox="0 0 24 24">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Camera View (simulated) -->
+        <div class="ar-camera-view">
+            <!-- Pin Badge -->
+            <div class="ar-pin-badge" id="ar-pin">
+                <span style="color:#E50000;font-weight:700;">●</span> <span id="ar-shelf">B1-B01</span>
+            </div>
+
+            <!-- 3D Arrow -->
+            <div class="ar-3d-arrow">
+                <svg viewBox="0 0 100 100">
+                    <defs>
+                        <linearGradient id="arrowGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#FF3333" />
+                            <stop offset="100%" stop-color="#CC0000" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Arrow shape -->
+                    <polygon points="50,10 85,55 65,55 65,90 35,90 35,55 15,55" fill="url(#arrowGrad)" stroke="#AA0000"
+                        stroke-width="2" />
+                    <!-- Highlight -->
+                    <polygon points="50,18 75,52 60,52 60,85 50,85 50,18" fill="rgba(255,255,255,0.15)" />
+                </svg>
+            </div>
+
+            <!-- Distance Label -->
+            <div class="ar-distance-label" id="ar-distance">12m 앞으로</div>
+
+            <!-- Floor line -->
+            <div class="ar-floor-line"></div>
+        </div>
+
+        <!-- Bottom Card -->
+        <div class="ar-bottom-card">
+            <div class="ar-prod-img" id="ar-emoji" style="background:#FFEBEB;color:#E50000;font-weight:700;">욕</div>
+            <div class="ar-prod-info">
+                <h3 id="ar-name">규조토 욕실 매트</h3>
+                <div class="ar-meta"><span id="ar-dist-text">12m</span> · 약 <span id="ar-time">30</span>초</div>
+            </div>
+            <div class="ar-bottom-btns">
+                <button class="ar-btn-map"
+                    onclick="window.location.href='mobile-map.html'+window.location.search">지도</button>
+                <button class="ar-btn-ar">AR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL params
+        const params = new URLSearchParams(window.location.search);
+        const productName = params.get('name') || '규조토 욕실 매트';
+        const shelf = params.get('shelf') || 'B1-B01';
+
+        document.getElementById('ar-name').textContent = productName;
+        document.getElementById('ar-shelf').textContent = shelf;
+
+        // Simulate distance counting down
+        let dist = 12;
+        setInterval(() => {
+            if (dist > 1) {
+                dist = Math.max(1, dist - 0.5);
+                document.getElementById('ar-distance').textContent = `${dist.toFixed(0)}m 앞으로`;
+                document.getElementById('ar-dist-text').textContent = `${dist.toFixed(0)}m`;
+            }
+        }, 2000);
+    </script>
+</body>
+
+</html>

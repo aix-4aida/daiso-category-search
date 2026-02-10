@@ -52,11 +52,11 @@ class WhisperAdapter(BaseAdapter):
         language: str = "ko"
     ):
         if not WHISPER_AVAILABLE:
-            raise ImportError(
-                "faster-whisper is not installed. "
-                "Install it with: pip install faster-whisper"
-            )
-        
+            print("⚠️ faster-whisper is not installed. WhisperAdapter will be disabled.")
+            self.model = None
+            self.model_size = "disabled"
+            return
+
         self.model_size = model_size
         self.device = device
         self.compute_type = compute_type

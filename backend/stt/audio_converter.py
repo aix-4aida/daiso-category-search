@@ -17,7 +17,11 @@ ffmpeg_path = r"C:\Users\301\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg
 if os.path.exists(ffmpeg_path):
     os.environ["PATH"] += os.pathsep + ffmpeg_path
 
-from pydub import AudioSegment
+try:
+    from pydub import AudioSegment
+except ImportError:
+    AudioSegment = None
+    print("⚠️ pydub/pyaudioop not available. Audio features disabled.")
 
 
 class AudioConverter:

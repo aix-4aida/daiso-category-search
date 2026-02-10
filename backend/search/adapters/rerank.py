@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Protocol
 
-from ivhl.core.tokenize import tokenize
-from ivhl.core.types import Document, ScoredDoc
+from backend.search.core.tokenize import tokenize
+from backend.search.core.types import Document, ScoredDoc
 
 
 class Reranker(Protocol):
