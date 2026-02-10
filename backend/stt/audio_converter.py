@@ -12,10 +12,10 @@ import time
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-# Add FFmpeg to PATH (Temporary fix for Windows)
-ffmpeg_path = r"C:\Users\301\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin"
-if os.path.exists(ffmpeg_path):
-    os.environ["PATH"] += os.pathsep + ffmpeg_path
+# FFmpeg should be installed in the system PATH (standard for Docker/Linux)
+# If special path needed for dev, use environment variable
+if "FFMPEG_PATH" in os.environ:
+    os.environ["PATH"] += os.pathsep + os.environ["FFMPEG_PATH"]
 
 try:
     from pydub import AudioSegment

@@ -1,108 +1,123 @@
 /**
  * 어디다있소 - Map Rendering (map.js)
- * Renders B1/B2 floor maps with category highlighting and route display
+ * Renders Image-based B1/B2 floor maps with coordinate pins
  */
 
-// ── Floor Layout Data ──
-const FLOOR_B1 = [
-    { id: 'B01', name: '시즌', en: 'Season', row: 1, col: 1 },
-    { id: 'C01', name: '화장품', en: 'Beauty', row: 1, col: 2 },
-    { id: 'D01', name: '건강기능식품', en: 'Health', row: 1, col: 3 },
-    { id: 'E01', name: '캐릭터', en: 'Character', row: 2, col: 2 },
-    { id: 'F01', name: '패션', en: 'Fashion', row: 2, col: 3 },
-    { id: 'G01', name: '파티·유아동', en: 'Party/Kids', row: 2, col: 4 },
-    { id: 'H01', name: '인테리어소품', en: 'Interior', row: 3, col: 2 },
-    { id: 'I01', name: '포장', en: 'Packaging', row: 3, col: 1 },
-    { id: 'J01', name: '디지털', en: 'Digital', row: 4, col: 1 },
-    { id: 'K01', name: '식품', en: 'Snacks', row: 4, col: 2 },
-    { id: 'ENTRANCE', name: '출입구', en: 'Entrance', row: 4, col: 3, special: true },
-    { id: 'CHECKOUT', name: '계산대', en: 'Self-Checkout', row: 1, col: 4, special: true }
-];
+// ── Floor & Shelf Coordinate Data ──
+const MAP_DATA = {
+    floors: {
+        "B1": { map: "images/map_b1.png", label: "B1 Floor (Main)" },
+        "B2": { map: "images/map_b2.png", label: "B2 Floor (Sub)" }
+    },
+    shelves: {
+        // B1 Shelves
+        "A01": { floor: "B1", x: 20, y: 72, name: "문구" },
+        "A02": { floor: "B1", x: 20, y: 80, name: "문구" },
+        "B01": { floor: "B1", x: 60, y: 35, name: "시즌" },
+        "D01": { floor: "B1", x: 60, y: 50, name: "건강" },
+        "E01": { floor: "B1", x: 60, y: 60, name: "캐릭터" },
+        "G01": { floor: "B1", x: 60, y: 75, name: "파티/유아동" },
+        "C01": { floor: "B1", x: 80, y: 30, name: "화장품" },
+        "F01": { floor: "B1", x: 80, y: 60, name: "패션" },
+        "H01": { floor: "B1", x: 80, y: 75, name: "인테리어" },
+        "K01": { floor: "B1", x: 85, y: 85, name: "식품" },
+        "I01": { floor: "B1", x: 15, y: 85, name: "포장" },
+        "J01": { floor: "B1", x: 50, y: 85, name: "디지털" },
+        // B2 Shelves
+        "BA01": { floor: "B2", x: 55, y: 20, name: "욕실" },
+        "JA01": { floor: "B2", x: 55, y: 35, name: "일본수입" },
+        "HF01": { floor: "B2", x: 55, y: 45, name: "홈패브릭" },
+        "TO01": { floor: "B2", x: 55, y: 55, name: "공구" },
+        "CL01": { floor: "B2", x: 70, y: 20, name: "청소" },
+        "LA01": { floor: "B2", x: 90, y: 15, name: "세탁" },
+        "GP01": { floor: "B2", x: 92, y: 25, name: "득템" },
+        "ST01": { floor: "B2", x: 85, y: 40, name: "수납" },
+        "NC01": { floor: "B2", x: 85, y: 55, name: "내추럴" },
+        "SP01": { floor: "B2", x: 15, y: 72, name: "스포츠" },
+        "KI01": { floor: "B2", x: 80, y: 60, name: "주방" },
+        "PE01": { floor: "B2", x: 30, y: 70, name: "반려동물" },
+        "HC01": { floor: "B2", x: 45, y: 70, name: "수예" },
+        "CA01": { floor: "B2", x: 60, y: 70, name: "캠핑" },
+        "TR01": { floor: "B2", x: 40, y: 85, name: "여행" },
+        "GA01": { floor: "B2", x: 65, y: 85, name: "원예" }
+    },
+    entrances: {
+        "B1": { x: 50, y: 15 },
+        "B2": { x: 25, y: 90 }
+    }
+};
 
-const FLOOR_B2 = [
-    { id: 'BA01', name: '욕실', en: 'Bath', row: 1, col: 1 },
-    { id: 'CL01', name: '청소', en: 'Cleaning', row: 1, col: 2 },
-    { id: 'LA01', name: '세탁', en: 'Laundry', row: 1, col: 3 },
-    { id: 'GP01', name: '득템', en: 'Good Place', row: 1, col: 4 },
-    { id: 'JA01', name: '일본수입', en: 'Japanese', row: 2, col: 1 },
-    { id: 'HF01', name: '홈패브릭', en: 'Home Fabric', row: 2, col: 2 },
-    { id: 'ST01', name: '수납정리', en: 'Storage', row: 2, col: 3 },
-    { id: 'NC01', name: '내추럴코너', en: 'Natural', row: 2, col: 4 },
-    { id: 'TO01', name: '공구', en: 'Tools', row: 3, col: 1 },
-    { id: 'SP01', name: '스포츠', en: 'Sports', row: 3, col: 2 },
-    { id: 'HC01', name: '수예', en: 'Handcraft', row: 3, col: 3 },
-    { id: 'CA01', name: '캠핑', en: 'Camping', row: 3, col: 4 },
-    { id: 'K01', name: '주방', en: 'Kitchen', row: 4, col: 4 },
-    { id: 'TR01', name: '여행', en: 'Travel', row: 4, col: 1 },
-    { id: 'GA01', name: '원예', en: 'Gardening', row: 4, col: 2 },
-    { id: 'A02', name: '문구', en: 'Stationery', row: 4, col: 3 }
-];
-
-// ── Category Definitions ──
 const CATEGORIES = [
     { name: '전체', icon: '전', filter: null },
     { name: '뷰티', icon: '뷰', filter: ['C01'] },
-    { name: '주방', icon: '주', filter: ['K01'] },
+    { name: '주방', icon: '주', filter: ['KI01'] },
     { name: '욕실', icon: '욕', filter: ['BA01'] },
-    { name: '문구', icon: '문', filter: ['A02'] },
+    { name: '문구', icon: '문', filter: ['A01', 'A02'] },
     { name: '수납정리', icon: '수', filter: ['ST01'] },
     { name: '식품', icon: '식', filter: ['K01'] },
     { name: '인테리어', icon: '인', filter: ['H01', 'HF01'] },
-    { name: '애견', icon: '펫', filter: ['SP01'] }
+    { name: '애견', icon: '펫', filter: ['PE01'] }
 ];
 
 let activeCategory = '전체';
 
-// ── Render Category Map ──
+// ── Main Render Entry ──
 function renderCategoryMap() {
-    renderFloorGrid('map-b1', FLOOR_B1);
-    renderFloorGrid('map-b2', FLOOR_B2);
+    renderFloorImage('map-b1', 'B1');
+    renderFloorImage('map-b2', 'B2');
     renderCategorySidebar();
 }
 
-function renderFloorGrid(containerId, floorData) {
+/**
+ * Renders floor image and overlays markers
+ */
+function renderFloorImage(containerId, floorKey) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    const floor = MAP_DATA.floors[floorKey];
+    const entrance = MAP_DATA.entrances[floorKey];
+
+    // Clear previous
     container.innerHTML = '';
+    container.className = 'map-image-container'; // Specialized CSS class
 
-    // Create 4x4 grid
-    for (let row = 1; row <= 4; row++) {
-        for (let col = 1; col <= 4; col++) {
-            const cell = floorData.find(c => c.row === row && c.col === col);
+    // Create Map Image
+    const mapImg = document.createElement('img');
+    mapImg.src = floor.map;
+    mapImg.className = 'map-base-img';
+    container.appendChild(mapImg);
 
-            const div = document.createElement('div');
-            div.className = 'map-cell';
+    // Filtered Shelves
+    const categoryFilter = CATEGORIES.find(c => c.name === activeCategory)?.filter;
 
-            if (cell) {
-                const isHighlighted = activeCategory === '전체' ||
-                    (CATEGORIES.find(c => c.name === activeCategory)?.filter || []).includes(cell.id);
+    Object.entries(MAP_DATA.shelves).forEach(([id, shelf]) => {
+        if (shelf.floor !== floorKey) return;
 
-                if (isHighlighted && activeCategory !== '전체') {
-                    div.classList.add('highlight');
-                }
+        const isHighlighted = activeCategory === '전체' || (categoryFilter && categoryFilter.includes(id));
 
-                if (cell.special) {
-                    div.style.background = '#f0f0f0';
-                    div.style.fontWeight = '700';
-                }
+        const pin = document.createElement('div');
+        pin.className = `map-pin ${isHighlighted ? 'active' : 'dimmed'}`;
+        pin.style.left = `${shelf.x}%`;
+        pin.style.top = `${shelf.y}%`;
+        pin.innerHTML = `<span class="pin-label">${shelf.name}</span>`;
+        container.appendChild(pin);
+    });
 
-                div.innerHTML = `
-          <span class="cell-id">${cell.id}</span>
-          <span class="cell-name">${cell.name}</span>
-          <span style="font-size:9px;color:#999;">${cell.en}</span>
-        `;
-            }
-
-            container.appendChild(div);
-        }
+    // Entrance
+    if (entrance) {
+        const entPin = document.createElement('div');
+        entPin.className = 'map-pin entrance';
+        entPin.style.left = `${entrance.x}%`;
+        entPin.style.top = `${entrance.y}%`;
+        entPin.innerHTML = `<span class="pin-label">입구</span>`;
+        container.appendChild(entPin);
     }
 }
 
 function renderCategorySidebar() {
     const sidebar = document.getElementById('category-sidebar');
     if (!sidebar) return;
-
     sidebar.innerHTML = '';
 
     CATEGORIES.forEach(cat => {
@@ -117,70 +132,69 @@ function renderCategorySidebar() {
     });
 }
 
-// ── Render Result Map (with route) ──
+/**
+ * Renders the result map (found product)
+ */
 function renderResultMap(result) {
     const panel = document.getElementById('map-panel');
     if (!panel) return;
 
-    // Determine which floor
     const floor = result.floor || 'B1';
-    const floorData = floor === 'B2' ? FLOOR_B2 : FLOOR_B1;
-    const targetId = result.location?.split('-')[1] || result.location;
+    const targetId = result.id?.split('-')[1] || result.id; // Support 'B1-A01' format
+    const shelf = MAP_DATA.shelves[targetId] || MAP_DATA.shelves[result.id] || null;
 
     panel.innerHTML = `
-    <div style="width:100%;max-width:600px;padding:20px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h2 style="font-size:48px;font-weight:800;color:#E50000;opacity:0.3;">${floor}</h2>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="display:inline-flex;align-items:center;gap:4px;">
-            <span style="width:12px;height:12px;background:#2962FF;border-radius:50%;display:inline-block;"></span>
-            <span style="font-size:12px;color:#888;">현재위치</span>
-          </span>
-          <span style="display:inline-flex;align-items:center;gap:4px;">
-            <span style="width:12px;height:12px;background:#E50000;border-radius:50%;display:inline-block;"></span>
-            <span style="font-size:12px;color:#888;">상품위치</span>
-          </span>
+    <div class="result-map-wrapper">
+      <div class="result-map-header">
+        <h2 class="floor-title-large">${floor}</h2>
+        <div class="map-legend">
+          <span class="legend-item"><span class="dot blue"></span> 현재위치</span>
+          <span class="legend-item"><span class="dot red"></span> 상품위치</span>
         </div>
       </div>
-      <div class="map-grid" id="result-map-grid"></div>
+      <div class="map-image-container highlight-view" id="result-map-container"></div>
     </div>
   `;
 
-    const grid = document.getElementById('result-map-grid');
+    const container = document.getElementById('result-map-container');
+    const floorInfo = MAP_DATA.floors[floor];
 
-    for (let row = 1; row <= 4; row++) {
-        for (let col = 1; col <= 4; col++) {
-            const cell = floorData.find(c => c.row === row && c.col === col);
+    // Base Image
+    const img = document.createElement('img');
+    img.src = floorInfo.map;
+    img.className = 'map-base-img';
+    container.appendChild(img);
 
-            const div = document.createElement('div');
-            div.className = 'map-cell';
+    // All Shelves (Dimmed)
+    Object.entries(MAP_DATA.shelves).forEach(([id, s]) => {
+        if (s.floor !== floor) return;
+        const pin = document.createElement('div');
+        pin.className = 'map-pin dimmed';
+        pin.style.left = `${s.x}%`;
+        pin.style.top = `${s.y}%`;
+        container.appendChild(pin);
+    });
 
-            if (cell) {
-                const isTarget = cell.id === targetId;
-                const isEntrance = cell.id === 'ENTRANCE';
+    // Target Pin (Highlighted)
+    if (shelf) {
+        const pin = document.createElement('div');
+        pin.className = 'map-pin target-pin active pulse';
+        pin.style.left = `${shelf.x}%`;
+        pin.style.top = `${shelf.y}%`;
+        pin.innerHTML = `
+            <div class="target-marker"></div>
+            <div class="pin-popup">${result.product || shelf.name}</div>
+        `;
+        container.appendChild(pin);
+    }
 
-                if (isTarget) {
-                    div.classList.add('highlight');
-                    div.innerHTML = `
-            <div class="pin"></div>
-            <span class="cell-id">${cell.id}</span>
-            <span class="cell-name" style="color:#E50000;font-weight:700;">${cell.name}</span>
-          `;
-                } else if (isEntrance) {
-                    div.style.background = '#e3f2fd';
-                    div.innerHTML = `
-            <span style="width:12px;height:12px;background:#2962FF;border-radius:50%;display:inline-block;margin-bottom:4px;"></span>
-            <span class="cell-name">${cell.name}</span>
-          `;
-                } else {
-                    div.innerHTML = `
-            <span class="cell-id">${cell.id}</span>
-            <span class="cell-name">${cell.name}</span>
-          `;
-                }
-            }
-
-            grid.appendChild(div);
-        }
+    // Entrance (Current Position Marker)
+    const entrance = MAP_DATA.entrances[floor];
+    if (entrance) {
+        const curPin = document.createElement('div');
+        curPin.className = 'map-pin current-position';
+        curPin.style.left = `${entrance.x}%`;
+        curPin.style.top = `${entrance.y}%`;
+        container.appendChild(curPin);
     }
 }

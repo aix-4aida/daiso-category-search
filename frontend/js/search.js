@@ -12,39 +12,35 @@ const API_BASE_URL = window.location.hostname === 'localhost'
  * Helper: Generate UI metadata from backend result if missing
  */
 function enrichResult(item) {
-    // Map backend meta to frontend expected fields
     const meta = item.meta || {};
 
     // 1. Initial (Category Icon)
-    // Use major category first char, or first char of name
     let initial = '상';
-    if (meta.major) initial = meta.major.charAt(0);
-    else if (item.name) initial = item.name.charAt(0);
-
-    // Map specific categories to known initials
     const catMap = {
         '주방': '주', '욕실': '욕', '문구': '문', '뷰티': '뷰',
-        '식품': '식', '청소': '청', '수납': '수', '캠핑': '캠'
+        '식품': '식', '청소': '청', '수납': '수', '캠핑': '캠', '스포츠': '스'
     };
     if (meta.major && catMap[meta.major]) initial = catMap[meta.major];
+    else if (item.name) initial = item.name.charAt(0);
 
-    // 2. Location & Floor
-    // Backend returns meta: { major, middle } usually
-    // We need 'B1-A01' format. 
-    // Mock mapping for demo if real location missing
-    let location = 'B1-A01';
+    // 2. Location & Floor Mapping
+    let location = 'B1-C01'; // Default
     let floor = 'B1';
 
-    if (meta.major === '주방' || meta.major === '식품') { location = 'B2-K01'; floor = 'B2'; }
-    else if (meta.major === '청소' || meta.major === '욕실') { location = 'B2-CL01'; floor = 'B2'; }
-    else if (meta.major === '문구') { location = 'B2-A02'; floor = 'B2'; }
+    // Image-based Map IDs (Matching map.js)
+    if (meta.major === '주방') { location = 'B2-KI01'; floor = 'B2'; }
+    else if (meta.major === '식품') { location = 'B1-K01'; floor = 'B1'; }
+    else if (meta.major === '청소' || meta.major === '욕실') { location = 'B2-BA01'; floor = 'B2'; }
+    else if (meta.major === '문구') { location = 'B1-A01'; floor = 'B1'; }
+    else if (meta.major === '수납정리') { location = 'B2-ST01'; floor = 'B2'; }
+    else if (meta.major === '스포츠' || meta.major === '애견') { location = 'B2-SP01'; floor = 'B2'; }
     else if (meta.major === '화장품' || meta.major === '뷰티') { location = 'B1-C01'; floor = 'B1'; }
 
-    // 3. Price (Mock for now)
-    const price = item.price || '3,000원'; // Default mock price
+    const price = item.price || '3,000원';
 
     return {
         name: item.name,
+        id: location.includes('-') ? location.split('-')[1] : location,
         location: location,
         floor: floor,
         section: meta.major || '기타',

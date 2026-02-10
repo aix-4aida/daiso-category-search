@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ && \
+    gcc g++ ffmpeg libsndfile1 && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy requirements (lightweight version for Lightsail)
@@ -14,6 +14,11 @@ RUN pip install --no-cache-dir --user -r requirements.txt
 
 # ── Stage 2: Runtime ──
 FROM python:3.10-slim
+
+# Install runtime dependencies (ffmpeg for audio conversion)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg libsndfile1 && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -27,8 +32,8 @@ COPY app/ ./app/
 COPY data/ ./data/
 COPY .env .env
 
-# Copy frontend-v3 for static serving
-COPY frontend-v3/ ./frontend-v3/
+# Copy frontend for static serving
+COPY frontend/ ./frontend/
 
 # Expose port
 EXPOSE 8000

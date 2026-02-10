@@ -64,34 +64,77 @@ function updateCarousel() {
     });
 }
 
-// ── Voice Recording ──
-function toggleVoice() {
+// ── Voice Recording (Real Implementation) ──
+let mediaRecorder = null;
+let audioChunks = [];
+
+async function toggleVoice() {
     const btn = document.getElementById('mic-btn');
+    const label = document.querySelector('.voice-label');
 
     if (!isRecording) {
-        isRecording = true;
-        btn.classList.add('recording');
-        document.querySelector('.voice-label').textContent = '듣고 있습니다...';
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
 
-        // Simulate recording for 3 seconds
-        setTimeout(() => {
-            stopVoice();
-            // Simulate a search with a demo query
-            const demoQueries = ['규조토 욕실 매트', '샴푸', '볼펜', '냄비'];
-            const query = demoQueries[Math.floor(Math.random() * demoQueries.length)];
-            document.getElementById('search-input').value = query;
-            doSearch();
-        }, 3000);
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                label.textContent = '인식 중...';
+
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.wav');
+
+                try {
+                    const response = await fetch(`${API_BASE}/stt/process`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    if (data.normalized_text) {
+                        document.getElementById('search-input').value = data.normalized_text;
+                        doSearch();
+                    } else {
+                        label.textContent = '잘 못 들었어요. 다시 말씀해주세요.';
+                    }
+                } catch (err) {
+                    console.error('STT Error:', err);
+                    label.textContent = '인식 요류가 발생했습니다.';
+                }
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            btn.classList.add('recording');
+            label.textContent = '듣고 있습니다...';
+
+            // Auto stop after 5 seconds
+            setTimeout(() => {
+                if (isRecording) stopVoice();
+            }, 5000);
+
+        } catch (err) {
+            console.error('Mic access error:', err);
+            alert('마이크 접근 권한이 필요합니다.');
+        }
     } else {
         stopVoice();
     }
 }
 
 function stopVoice() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
     isRecording = false;
     const btn = document.getElementById('mic-btn');
     btn.classList.remove('recording');
-    document.querySelector('.voice-label').textContent = '상품 이름을 말씀해주세요';
 }
 
 // ── Search ──

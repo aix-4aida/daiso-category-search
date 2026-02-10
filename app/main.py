@@ -41,6 +41,10 @@ app.include_router(api_router)
 FRONTEND_DIR = BASE_DIR / "frontend"
 app.mount("/frontend", StaticFiles(directory=str(FRONTEND_DIR)), name="frontend")
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
 @app.get("/")
 def root():
     return {

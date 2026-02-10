@@ -21,3 +21,8 @@ elasticsearch>=8.11.0
 # Data
 pandas==2.2.0
 numpy<2.0.0
+
+# STT & Audio
+pydub==0.25.1
+faster-whisper==1.0.3
+google-cloud-speech>=2.20.0

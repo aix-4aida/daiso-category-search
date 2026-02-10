@@ -159,11 +159,18 @@ if BACKEND_DB_PATH.exists():
 
             # 2. Qdrant Vector (Primary)
             try:
-                vector_retriever = QdrantVectorRetriever(
-                    url=QDRANT_URL,
-                    collection="products"
-                )
-                print(f"✅ QdrantVectorRetriever initialized ({QDRANT_URL})")
+                import requests
+                # Quick health check for Qdrant
+                q_res = requests.get(f"{QDRANT_URL}/health", timeout=1)
+                if q_res.status_code == 200:
+                    vector_retriever = QdrantVectorRetriever(
+                        url=QDRANT_URL,
+                        collection="products"
+                    )
+                    print(f"✅ QdrantVectorRetriever initialized ({QDRANT_URL})")
+                else:
+                    print(f"⚠️ Qdrant unhealthy (status {q_res.status_code})")
+                    vector_retriever = None
             except Exception as e:
                 print(f"⚠️ QdrantVectorRetriever init failed: {e}. Checking local embeddings...")
                 # Fallback to local BruteForce if Qdrant fails
@@ -246,12 +253,20 @@ def search_products(query: str, top_k: int = 30, use_hybrid: bool = True, fusion
         return []
     
     # 1. BM25 Search (Sparse)
+    sparse_results = []
     try:
         top_k_bm25 = top_k * 2 if use_hybrid else top_k
         sparse_results = bm25_engine.query(query, top_k=top_k_bm25)
     except Exception as e:
         print(f"⚠️ BM25 search failed: {e}")
-        sparse_results = []
+        # If ElasticBM25 failed, try falling back to LocalBM25 if available
+        if not isinstance(bm25_engine, LocalBM25) and IVHL_AVAILABLE:
+            try:
+                print("🔄 Falling back to LocalBM25 search...")
+                local_bm25 = LocalBM25(docs=docs)
+                sparse_results = local_bm25.query(query, top_k=top_k_bm25)
+            except:
+                pass
     
     # 2. Vector Search (Dense) if hybrid enabled
     fused_results = sparse_results
@@ -274,15 +289,12 @@ def search_products(query: str, top_k: int = 30, use_hybrid: bool = True, fusion
                     print(f"⚠️ Vector search failed: {e}")
             elif embeddings:
                  # === Fallback: Custom implementation (if ivhl loaded but no retriever?) ===
-                 # Usually BruteForceVectorRetriever handles this if intialized
-                 # But if even that failed, use custom fallback
-                 print("⚠️ Using fallback hybrid search (ivhl loaded but vector retriever missing)")
+                 print("⚠️ Using custom fallback hybrid search")
                  query_emb_np = np.array(query_emb)
                  vector_results = _fallback_vector_search(query_emb_np, embeddings, top_k_dense)
                  bm25_doc_ids = [sd.doc_id for sd in sparse_results]
                  fused_doc_ids = _rrf_fusion_fallback(bm25_doc_ids, vector_results, k=60)
-                 # Map back to mock ScoredDoc for consistency? 
-                 # Or just rebuild list of dicts directly from doc_ids
+                 
                  results = []
                  for doc_id in fused_doc_ids[:top_k]:
                     doc = docs_map.get(doc_id)
