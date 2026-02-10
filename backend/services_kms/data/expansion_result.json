@@ -1,19 +1,19 @@
 [
   {
     "id": 1,
-    "filename": "voice_be285c52_이선영_일반03.wav",
+    "filename": "voice_ce548365_이선영_일반03.wav",
     "utterance": "혹시 얼굴 팩 있나요?",
     "intent_validation": {
       "is_valid": "Y",
-      "latency_ms": 1021
+      "latency_ms": 997
     },
     "extraction": {
       "keyword": "마스크팩",
-      "latency": 0.9187624454498291,
+      "latency": 1.3415825366973877,
       "tokens": {
         "prompt": 565,
-        "completion": 42,
-        "total": 607
+        "completion": 71,
+        "total": 636
       }
     },
     "expansion": {
@@ -23,16 +23,16 @@
         "팩",
         "미용",
         "피부관리",
-        "보습",
+        "수분공급",
         "진정"
       ],
       "meta": {
-        "total_time_seconds": 1.2671241760253906,
-        "api_latency_seconds": 1.2671241760253906,
-        "processing_overhead_seconds": 0.0,
-        "total_tokens": 404,
+        "total_time_seconds": 1.1460378170013428,
+        "api_latency_seconds": 1.1449289321899414,
+        "processing_overhead_seconds": 0.0011088848114013672,
+        "total_tokens": 389,
         "prompt_tokens": 358,
-        "completion_tokens": 46
+        "completion_tokens": 31
       }
     }
   }

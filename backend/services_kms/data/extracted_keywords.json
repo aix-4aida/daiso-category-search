@@ -1,19 +1,19 @@
 [
   {
     "id": 1,
-    "filename": "voice_be285c52_이선영_일반03.wav",
+    "filename": "voice_ce548365_이선영_일반03.wav",
     "utterance": "혹시 얼굴 팩 있나요?",
     "intent_validation": {
       "is_valid": "Y",
-      "latency_ms": 1021
+      "latency_ms": 997
     },
     "extraction": {
       "keyword": "마스크팩",
-      "latency": 0.9187624454498291,
+      "latency": 1.3415825366973877,
       "tokens": {
         "prompt": 565,
-        "completion": 42,
-        "total": 607
+        "completion": 71,
+        "total": 636
       }
     }
   }
