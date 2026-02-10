@@ -133,8 +133,8 @@ const SimpleMap = ({ targetLocation, productName }: { targetLocation?: string, p
 function SearchResultsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const query = searchParams.get('q')
-    const category = searchParams.get('category')
+    const query = searchParams?.get('q')
+    const category = searchParams?.get('category')
 
     const [results, setResults] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
