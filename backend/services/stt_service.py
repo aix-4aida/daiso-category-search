@@ -30,23 +30,25 @@ print("✅ All adapters initialized")
 
 def run_single_provider(audio_path: str, provider: str, attempt: int = 1) -> ProviderResult:
     """Run STT pipeline for a single provider"""
-    adapter = whisper_adapter if provider == "whisper" else google_adapter
-    model = config["stt"]["whisper"]["model_size"] if provider == "whisper" else "default"
+    adapter = google_adapter if provider == "google" else whisper_adapter
+    model = "default" if provider == "google" else config["stt"]["whisper"]["model_size"]
     
     # Convert audio
     try:
         conversion_result = audio_converter.normalize(audio_path)
         normalized_path = conversion_result["normalized_path"]
-        print(f"🔄 Audio normalized: {audio_path} → {normalized_path}")
+        print(f"🔄 [{provider.upper()}] Audio normalized: {audio_path} → {normalized_path}")
     except Exception as e:
-        print(f"⚠️ Audio conversion failed, using original: {e}")
+        print(f"⚠️ [{provider.upper()}] Audio conversion failed, using original: {e}")
         normalized_path = audio_path
     
     # STT
+    print(f"🎙️ [{provider.upper()}] Transcribing...")
     stt_result = adapter.transcribe(normalized_path)
     
     # Quality Gate
     quality_result = quality_gate.evaluate(stt_result, attempt)
+    print(f"⚖️ [{provider.upper()}] Quality: {quality_result.status} (Reason: {quality_result.reason})")
     
     # Policy Gate
     policy_intent = None
@@ -60,6 +62,23 @@ def run_single_provider(audio_path: str, provider: str, attempt: int = 1) -> Pro
         quality_gate=quality_result,
         policy_intent=policy_intent
     )
+
+def run_stt_pipeline_with_fallback(audio_path: str, attempt: int = 1) -> ProviderResult:
+    """
+    STT Pipeline with Google -> Whisper fallback strategy.
+    """
+    # 1. Try Google STT (Primary)
+    google_res = run_single_provider(audio_path, "google", attempt)
+    
+    if google_res.quality_gate.status == "OK":
+        print(f"✅ Google STT Success: '{google_res.stt.text_raw}'")
+        return google_res
+    
+    # 2. Try Whisper STT (Fallback) if Google fails or quality is low
+    print(f"🔄 Google STT failed ({google_res.quality_gate.reason}), falling back to Whisper...")
+    whisper_res = run_single_provider(audio_path, "whisper", attempt)
+    
+    return whisper_res
 
 def generate_final_response(provider_result: ProviderResult) -> str:
     """Generate final response based on provider result"""

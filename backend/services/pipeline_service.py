@@ -13,27 +13,40 @@ from backend.services.rerank_service import rerank_products
 def run_full_pipeline(audio_file_path: str):
     """
     Run the full Daiso Search Pipeline:
-    STT -> Intent -> Keyword -> Search -> Rerank
+    STT (Fallback) -> Intent -> Keyword -> Search -> Rerank
     """
+    from backend.services.stt_service import run_stt_pipeline_with_fallback
+    
     start_time = time.time()
     steps = {}
     
-    # 1. STT
-    t0 = time.time()
-    print(f"🎤 [Pipeline] STT Processing: {audio_file_path}")
-    stt_result_obj = run_single_provider(audio_file_path, "whisper")
+    # 1. STT (Google -> Whisper Fallback)
+    print(f"\n--- [Step 1: STT] Start (Audio: {audio_file_path}) ---")
+    stt_t0 = time.time()
+    stt_result_obj = run_stt_pipeline_with_fallback(audio_file_path, attempt=1)
     stt_text = stt_result_obj.stt.text_raw
-    stt_duration = time.time() - t0
-    print(f"📝 [Pipeline] STT Result: '{stt_text}' ({stt_duration:.2f}s)")
-    steps["stt"] = {"text": stt_text, "latency": stt_duration} 
+    stt_duration = time.time() - stt_t0
+    print(f"--- [Step 1: STT] Result: '{stt_text}' (Provider: {stt_result_obj.provider}, Latency: {stt_duration:.2f}s) ---")
     
+    steps["stt"] = {
+        "text": stt_text,
+        "provider": stt_result_obj.provider,
+        "latency": stt_duration,
+        "quality": stt_result_obj.quality_gate.status
+    }
+
     if not stt_text:
         print("❌ [Pipeline] STT Failed: Empty text")
-        return {"status": "error", "message": "음성이 인식되지 않았습니다.", "steps": steps}
+        return {
+            "status": "error",
+            "message": "음성이 인식되지 않았습니다. 다시 말씀해 주세요.",
+            "steps": steps
+        }
 
     # 2. Intent Check
+    print(f"\n--- [Step 2: Intent] Classifying: '{stt_text}' ---")
     intent_res = check_intent(stt_text)
-    print(f"🧠 [Pipeline] Intent: {intent_res}")
+    print(f"--- [Step 2: Intent] Result: {intent_res['is_valid']} (Reason: {intent_res.get('reason')}) ---")
     steps["intent"] = intent_res
     
     if intent_res["is_valid"] == "N":
@@ -45,21 +58,24 @@ def run_full_pipeline(audio_file_path: str):
         }
 
     # 3. Keyword Extraction
+    print(f"\n--- [Step 3: Keyword] Extracting from: '{stt_text}' ---")
     keyword_res = extract_keyword(stt_text)
     search_query = keyword_res["keyword"] or stt_text 
-    print(f"🔑 [Pipeline] Keyword: '{search_query}' (Original: {keyword_res['keyword']})")
+    print(f"--- [Step 3: Keyword] Result: '{search_query}' (Original: {keyword_res['keyword']}) ---")
     steps["keyword"] = keyword_res
 
     # 4. Search (Retrieval)
-    t1 = time.time()
+    print(f"\n--- [Step 4: Search] Searching for: '{search_query}' ---")
+    search_t1 = time.time()
     candidates = search_products(search_query, top_k=30)
-    search_duration = time.time() - t1
-    print(f"🔍 [Pipeline] Search Candidates: {len(candidates)} items ({search_duration:.2f}s)")
-    if candidates:
-        top_names = [c['name'] for c in candidates[:5]]
-        print(f"   ➤ Top 5: {top_names}")
+    search_duration = time.time() - search_t1
+    print(f"--- [Step 4: Search] Found {len(candidates)} candidates ({search_duration:.2f}s) ---")
     
-    steps["search"] = {"count": len(candidates), "top_1": candidates[0]["name"] if candidates else None, "latency": search_duration}
+    steps["search"] = {
+        "count": len(candidates),
+        "top_1": candidates[0]["name"] if candidates else None,
+        "latency": search_duration
+    }
     
     if not candidates:
         print("❌ [Pipeline] Search Failed: No candidates")
@@ -70,43 +86,27 @@ def run_full_pipeline(audio_file_path: str):
         }
 
     # 5. Rerank (LLM)
-    t2 = time.time()
-    print("⚖️ [Pipeline] Reranking...")
-    rerank_res = rerank_products(stt_text, candidates) 
-    rerank_duration = time.time() - t2
-    print(f"🏆 [Pipeline] Rerank Result: {rerank_res} ({rerank_duration:.2f}s)")
+    print(f"\n--- [Step 5: Rerank] Reranking {len(candidates[:10])} candidates... ---")
+    rerank_t2 = time.time()
+    rerank_res = rerank_products(stt_text, candidates[:10]) 
+    rerank_duration = time.time() - rerank_t2
+    print(f"--- [Step 5: Rerank] Result: ID {rerank_res.get('selected_id')} ({rerank_duration:.2f}s) ---")
     steps["rerank"] = rerank_res
     
     selected_id = rerank_res.get("selected_id")
-    
     if not selected_id:
-         return {
-            "status": "empty",
-            "message": "적절한 상품을 선택하지 못했습니다.",
-            "steps": steps
-        }
+        # Fallback to Top-1 from search if rerank fails to select
+        selected_id = candidates[0]["id"]
+        print("⚠️ [Pipeline] Rerank failed to select ID, falling back to Search Top-1")
         
     # Find selected product details
-    final_product = next((c for c in candidates if c["id"] == selected_id), None)
+    final_product = next((c for c in candidates if c["id"] == selected_id), None) or candidates[0]
     
-    if not final_product:
-         return {"status": "error", "message": "선택된 상품 ID를 찾을 수 없습니다.", "steps": steps}
-
-    # Construct Final Response (Mocking Location for now if not in meta)
-    # Meta example: {'section': 'A1', 'floor': 'B1'} (Depends on catalog data)
+    # 6. Final Response
     location = final_product.get("meta", {})
-    
-    # Fallback location logic (Remove hardcoded fake data)
-    # If section is missing, try to use category info or return Unknown
-    if not location.get("section"):
-         # Try to map category to section if possible, otherwise Unknown
-         # location["section"] = location.get("major", "위치 정보 없음")
-         pass
-    
     processing_time = time.time() - start_time
-    print(f"⏱️ [Pipeline] Total Duration: {processing_time:.2f}s (STT: {stt_duration:.2f}s, Search: {search_duration:.2f}s, Rerank: {rerank_duration:.2f}s)")
+    print(f"\n⏱️ [Pipeline] Total Duration: {processing_time:.2f}s")
     
-    # 2. 최종적으로 Front에게 주는 JSON 응답    
     return {
         "status": "success",
         "result": {
@@ -116,9 +116,11 @@ def run_full_pipeline(audio_file_path: str):
                 "section": location.get("section", "Unknown"),
                 "floor": location.get("floor", "B1"),
                 "id": location.get("id", "Unknown")
-            }
+            },
+            "price": final_product.get("price", "3,000원"),
+            "initial": final_product.get("initial", final_product["name"][0])
         },
-        "candidates": candidates, # Hybrid/BM25 Search Results
+        "candidates": candidates[:5],
         "query": stt_text,
         "processing_time": processing_time,
         "steps": steps

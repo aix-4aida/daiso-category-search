@@ -105,3 +105,59 @@ async function searchProducts(query) {
         return [];
     }
 }
+/**
+ * Search products via Backend API (Audio)
+ */
+async function searchProductsAudio(audioBlob) {
+    if (!audioBlob) return { status: 'error', message: 'No audio provided' };
+
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.wav');
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/search/audio`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            const bestMatch = data.result;
+            const candidates = data.candidates || [];
+            const uniqueCandidates = candidates.filter(c => c.id !== bestMatch.id);
+
+            const formattedBest = {
+                name: bestMatch.product,
+                location: `${bestMatch.location.floor}-${bestMatch.location.id}`,
+                floor: bestMatch.location.floor,
+                section: bestMatch.location.section,
+                price: bestMatch.price || '3,000원',
+                initial: bestMatch.initial || bestMatch.product.charAt(0)
+            };
+
+            if (formattedBest.location.includes('Unknown')) {
+                const enriched = enrichResult({ name: bestMatch.product, meta: bestMatch.meta });
+                formattedBest.location = enriched.location;
+                formattedBest.floor = enriched.floor;
+                formattedBest.initial = enriched.initial;
+            }
+
+            const formattedCandidates = uniqueCandidates.map(enrichResult);
+            return {
+                status: 'success',
+                query: data.query,
+                results: [formattedBest, ...formattedCandidates].slice(0, 5)
+            };
+        }
+
+        return {
+            status: data.status || 'error',
+            message: data.message || '인식 실패',
+            query: data.query || ''
+        };
+    } catch (e) {
+        console.error('Audio Search API error:', e);
+        return { status: 'error', message: '서버 연결 오류가 발생했습니다.' };
+    }
+}

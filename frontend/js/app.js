@@ -86,25 +86,28 @@ async function toggleVoice() {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                 label.textContent = '인식 중...';
 
-                const formData = new FormData();
-                formData.append('audio', audioBlob, 'recording.wav');
+                // Show loading immediately
+                showLoading('음성 분석 중...');
 
                 try {
-                    const response = await fetch(`${API_BASE}/stt/process`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
+                    const resultData = await searchProductsAudio(audioBlob);
 
-                    if (data.normalized_text) {
-                        document.getElementById('search-input').value = data.normalized_text;
-                        doSearch();
+                    if (resultData.status === 'success') {
+                        document.getElementById('search-input').value = resultData.query;
+                        showResults(resultData.query, resultData.results);
+                        label.textContent = '인식 완료';
+                    } else if (resultData.status === 'filtered') {
+                        label.textContent = resultData.message;
+                        switchViewRaw('home');
+                        alert(resultData.message);
                     } else {
-                        label.textContent = '잘 못 들었어요. 다시 말씀해주세요.';
+                        label.textContent = resultData.message || '다시 말씀해주세요.';
+                        switchViewRaw('home');
                     }
                 } catch (err) {
-                    console.error('STT Error:', err);
-                    label.textContent = '인식 요류가 발생했습니다.';
+                    console.error('Voice Search Error:', err);
+                    label.textContent = '오류가 발생했습니다.';
+                    switchViewRaw('home');
                 }
             };
 
