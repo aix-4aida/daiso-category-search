@@ -27,6 +27,8 @@ jobs:
         file: ./frontend/Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/daiso-frontend:latest
+        build-args: |
+          NEXT_PUBLIC_API_URL=http://54.180.246.142:8000
 
     - name: Build and push Backend
       uses: docker/build-push-action@v4

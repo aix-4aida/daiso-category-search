@@ -11,7 +11,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000 # On EC2, this might need to be the public IP or domain
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000} # Default to localhost, override in prod env
     depends_on:
       - backend
     restart: always
