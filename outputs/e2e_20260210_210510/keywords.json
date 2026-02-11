@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1,
+    "filename": "text_input",
+    "utterance": "볼펜 어디있어요",
+    "stt_meta": {
+      "confidence": 1.0,
+      "latency_ms": 0,
+      "error": null
+    },
+    "intent_validation": {
+      "is_valid": "Y",
+      "latency_ms": 925
+    },
+    "extraction": {
+      "keyword": "필기용품",
+      "latency": 1.3015124797821045,
+      "tokens": {
+        "prompt": 1318,
+        "completion": 54,
+        "total": 1372
+      }
+    }
+  }
+]

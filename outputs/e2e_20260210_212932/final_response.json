@@ -1,0 +1,60 @@
+{
+  "run_id": "e2e_20260210_212932",
+  "status": "completed",
+  "total_items": 1,
+  "items": [
+    {
+      "request_id": "e2e_20260210_212932_1",
+      "utterance": "볼펜 어디있어요",
+      "intent": "PRODUCT_LOCATION",
+      "item": "노크식 컬러 볼펜 10개입 (0.7mm/흑)",
+      "expanded_keywords": [
+        "노크식 컬러 볼펜 10개입 (0.7mm/흑)",
+        "필기용품",
+        "사무실",
+        "문구",
+        "사무용품",
+        "필기도구"
+      ],
+      "message": "검색 완료(sqlite_like, 후보 3개) → 리랭킹 Top1 id=443 (Top3=[306, 443, 580])"
+    }
+  ],
+  "search": {
+    "status": "ok",
+    "query": "볼펜 어디있어요",
+    "retrieval": {
+      "method": "sqlite_like",
+      "top_k": 50,
+      "candidate_count": 3
+    },
+    "candidates": [
+      {
+        "id": 306,
+        "name": "제트스트림 볼펜 블랙 0.5mm",
+        "desc": "문구/팬시 필기구"
+      },
+      {
+        "id": 443,
+        "name": "노크식 컬러 볼펜 10개입 (0.7mm/흑)",
+        "desc": "문구/팬시 필기구"
+      },
+      {
+        "id": 580,
+        "name": "3색 초저점도 볼펜 0.7mm 2P",
+        "desc": "문구/팬시 필기구"
+      }
+    ],
+    "rerank": {
+      "provider": "gemini",
+      "selected_id": "443",
+      "top_ids": [
+        306,
+        443,
+        580
+      ],
+      "reason": "사용자가 볼펜을 찾고 있으며, 10개입 컬러 볼펜 세트가 가장 일반적인 볼펜 제품으로 보입니다."
+    },
+    "latency_ms": 2809
+  },
+  "pipeline_latency_ms": 19298
+}

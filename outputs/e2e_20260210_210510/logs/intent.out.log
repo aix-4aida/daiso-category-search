@@ -1,0 +1,6 @@
+Reading C:\Users\301\daiso-category-search\poc\data\stt_output.json...
+Total items: 1
+Model: gemini-2.0-flash
+[1/1] Checking Intent: ���� ����־��...  -> Result: Y (925ms)
+
+Intent Check Complete. Saved to C:\Users\301\daiso-category-search\poc\data\intent_output.json

@@ -1,0 +1,45 @@
+[
+  {
+    "id": 1,
+    "filename": "text_input",
+    "utterance": "물티슈 어디있어요",
+    "stt_meta": {
+      "confidence": 1.0,
+      "latency_ms": 0,
+      "error": null
+    },
+    "intent_validation": {
+      "is_valid": "Y",
+      "latency_ms": 948
+    },
+    "extraction": {
+      "keyword": "화장지/물티슈",
+      "latency": 1.3214163780212402,
+      "tokens": {
+        "prompt": 1319,
+        "completion": 62,
+        "total": 1381
+      }
+    },
+    "expansion": {
+      "expanded_keywords": [
+        "화장지/물티슈",
+        "화장지",
+        "물티슈",
+        "휴지",
+        "티슈",
+        "생활용품",
+        "위생용품",
+        "청소용품"
+      ],
+      "meta": {
+        "total_time_seconds": 2.7527666091918945,
+        "api_latency_seconds": 1.2232427597045898,
+        "processing_overhead_seconds": 1.5295238494873047,
+        "total_tokens": 417,
+        "prompt_tokens": 362,
+        "completion_tokens": 55
+      }
+    }
+  }
+]

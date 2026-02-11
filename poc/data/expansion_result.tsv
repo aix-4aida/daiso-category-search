@@ -1,0 +1,2 @@
+id	raw_text	intent_text	expected_doc_ids	expected_category	needs_clarification	notes
+STT-00001	볼펜 어디있어요	필기용품			false	Src:text_input|Exp:필기용품,사무실,학용품,문구,필기

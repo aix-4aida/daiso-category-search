@@ -130,3 +130,36 @@ async def infer_product_keywords(text: str) -> list[str]:
         return []
     except:
         return []
+
+
+async def expand_search_keywords(
+    product_name: str,
+    return_usage: bool = False,
+):
+    """
+    Shim/Wrapper for PoC keyword expansion.
+
+    Delegates to: poc/kms/nlu.py: expand_search_keywords (async)
+    poc/kms/expand_keywords_comparison_gemini.py가 backend.logic.nlu에서
+    expand_search_keywords를 import하므로, 호환 레이어로 추가한다.
+    """
+    import sys
+    from pathlib import Path
+
+    project_root = Path(__file__).resolve().parents[2]
+
+    added = False
+    pr = str(project_root)
+    if pr not in sys.path:
+        sys.path.insert(0, pr)
+        added = True
+
+    try:
+        from poc.kms.nlu import expand_search_keywords as _impl
+        return await _impl(product_name, return_usage=return_usage)
+    finally:
+        if added:
+            try:
+                sys.path.remove(pr)
+            except ValueError:
+                pass

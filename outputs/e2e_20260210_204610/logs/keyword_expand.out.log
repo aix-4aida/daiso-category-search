@@ -1,0 +1,13 @@
+Reading extracted keywords from C:\Users\301\daiso-category-search\poc\data\extracted_keywords.json...
+Found 1 items.
+[Gemini] 1/1: 'ȭ����/��Ƽ��' -> 8 items
+
+[Gemini Expansion Analysis (N=1)]
+1. API Call Latency (Network + Model):
+   - AVG: 1.223s (Min: 1.223s, Max: 1.223s)
+2. Processing/Overhead Time (Script Logic):
+   - AVG: 1.530s (Min: 1.530s, Max: 1.530s)
+
+Total Script Execution Time: 2.75 seconds
+Results saved to C:\Users\301\daiso-category-search\poc\data\expansion_result.json
+TSV for benchmark saved to C:\Users\301\daiso-category-search\poc\data\expansion_result.tsv

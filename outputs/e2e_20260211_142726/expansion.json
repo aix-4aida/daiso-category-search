@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "filename": "text_input",
+    "utterance": "볼펜 어디있어요",
+    "stt_meta": {
+      "confidence": 1.0,
+      "latency_ms": 0,
+      "error": null
+    },
+    "intent_validation": {
+      "is_valid": "Y",
+      "latency_ms": 976
+    },
+    "extraction": {
+      "keyword": "필기용품",
+      "latency": 1.127589464187622,
+      "tokens": {
+        "prompt": 1318,
+        "completion": 46,
+        "total": 1364
+      }
+    },
+    "expansion": {
+      "expanded_keywords": [
+        "필기용품",
+        "문구",
+        "학용품",
+        "사무용품"
+      ],
+      "meta": {
+        "total_time_seconds": 1.12144136428833,
+        "api_latency_seconds": 1.1169524192810059,
+        "processing_overhead_seconds": 0.004488945007324219,
+        "total_tokens": 391,
+        "prompt_tokens": 359,
+        "completion_tokens": 32
+      }
+    }
+  }
+]

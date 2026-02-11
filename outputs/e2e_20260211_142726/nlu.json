@@ -1,0 +1,15 @@
+[
+  {
+    "request_id": "e2e_20260211_142726_1",
+    "intent": "PRODUCT_LOCATION",
+    "slots": {
+      "item": null,
+      "attrs": [],
+      "category_hint": null,
+      "query_rewrite": null
+    },
+    "expanded_keywords": [],
+    "needs_clarification": false,
+    "latency_ms": 976
+  }
+]

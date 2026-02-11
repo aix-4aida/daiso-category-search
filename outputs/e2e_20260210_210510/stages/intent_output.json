@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "filename": "text_input",
+    "utterance": "볼펜 어디있어요",
+    "stt_meta": {
+      "confidence": 1.0,
+      "latency_ms": 0,
+      "error": null
+    },
+    "intent_validation": {
+      "is_valid": "Y",
+      "latency_ms": 925
+    }
+  }
+]
