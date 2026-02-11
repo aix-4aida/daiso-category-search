@@ -47,6 +47,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         timeout: 30m
+        command_timeout: 30m
         script: |
           # Navigate to project director
           cd ~/daiso-category-search || git clone https://github.com/${{ github.repository }} ~/daiso-category-search
