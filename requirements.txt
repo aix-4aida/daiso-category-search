@@ -84,3 +84,4 @@ rich>=13.7
 sentencepiece
 websockets
 noisereduce
+pydub
