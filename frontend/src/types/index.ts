@@ -27,6 +27,7 @@ export interface SearchResponse {
   results: Product[];
   map_info: MapInfo | null;
   query_info: QueryInfo | null;
+  message?: string | null;
 }
 
 export interface Category {

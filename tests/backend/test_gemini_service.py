@@ -20,47 +20,74 @@ def gemini_service():
             return service
 
 
-async def test_analyze_intent_basic(gemini_service):
-    """Should extract keywords from a simple query"""
+async def test_classify_intent_product_search(gemini_service):
+    """Should classify product search queries as product_search"""
     mock_response = MagicMock()
-    mock_response.text = '{"intent": "search", "keywords": ["물티슈"]}'
+    mock_response.text = '{"intent": "product_search"}'
     gemini_service.model.generate_content_async = AsyncMock(return_value=mock_response)
 
-    result = await gemini_service.analyze_intent("물티슈 어디있어요?")
-    assert result["intent"] == "search"
-    assert "물티슈" in result["keywords"]
+    result = await gemini_service.classify_intent("물티슈 어디있어요?")
+    assert result == "product_search"
 
 
-async def test_analyze_intent_abstract_query(gemini_service):
-    """Should convert abstract expressions to concrete keywords"""
+async def test_classify_intent_not_search(gemini_service):
+    """Should classify non-search queries as not_search"""
     mock_response = MagicMock()
-    mock_response.text = '{"intent": "search", "keywords": ["매트", "방석", "카펫"]}'
+    mock_response.text = '{"intent": "not_search"}'
     gemini_service.model.generate_content_async = AsyncMock(return_value=mock_response)
 
-    result = await gemini_service.analyze_intent("따뜻한 거 깔고 싶어")
-    assert result["intent"] == "search"
-    assert len(result["keywords"]) >= 1
+    result = await gemini_service.classify_intent("안녕하세요")
+    assert result == "not_search"
 
 
-async def test_analyze_intent_with_code_fences(gemini_service):
+async def test_classify_intent_with_code_fences(gemini_service):
     """Should handle response wrapped in markdown code fences"""
     mock_response = MagicMock()
-    mock_response.text = '```json\n{"intent": "search", "keywords": ["볼펜"]}\n```'
+    mock_response.text = '```json\n{"intent": "product_search"}\n```'
     gemini_service.model.generate_content_async = AsyncMock(return_value=mock_response)
 
-    result = await gemini_service.analyze_intent("볼펜 찾아주세요")
-    assert result["keywords"] == ["볼펜"]
+    result = await gemini_service.classify_intent("볼펜 찾아주세요")
+    assert result == "product_search"
 
 
-async def test_analyze_intent_fallback_on_error(gemini_service):
+async def test_classify_intent_fallback_on_error(gemini_service):
+    """Should fallback to product_search on API error"""
+    gemini_service.model.generate_content_async = AsyncMock(
+        side_effect=Exception("API error")
+    )
+
+    result = await gemini_service.classify_intent("테스트 쿼리")
+    assert result == "product_search"
+
+
+async def test_extract_keywords_basic(gemini_service):
+    """Should extract keywords from a simple query"""
+    mock_response = MagicMock()
+    mock_response.text = '{"keywords": ["물티슈"]}'
+    gemini_service.model.generate_content_async = AsyncMock(return_value=mock_response)
+
+    result = await gemini_service.extract_keywords("물티슈 어디있어요?")
+    assert "물티슈" in result
+
+
+async def test_extract_keywords_abstract_query(gemini_service):
+    """Should convert abstract expressions to concrete keywords"""
+    mock_response = MagicMock()
+    mock_response.text = '{"keywords": ["매트", "방석", "카펫"]}'
+    gemini_service.model.generate_content_async = AsyncMock(return_value=mock_response)
+
+    result = await gemini_service.extract_keywords("따뜻한 거 깔고 싶어")
+    assert len(result) >= 1
+
+
+async def test_extract_keywords_fallback_on_error(gemini_service):
     """Should fallback to original query on API error"""
     gemini_service.model.generate_content_async = AsyncMock(
         side_effect=Exception("API error")
     )
 
-    result = await gemini_service.analyze_intent("테스트 쿼리")
-    assert result["intent"] == "search"
-    assert result["keywords"] == ["테스트 쿼리"]
+    result = await gemini_service.extract_keywords("테스트 쿼리")
+    assert result == ["테스트 쿼리"]
 
 
 async def test_rerank_basic(gemini_service):

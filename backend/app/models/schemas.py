@@ -33,6 +33,7 @@ class SearchResponse(BaseModel):
     results: list[ProductResult]
     map_info: MapInfo | None = None
     query_info: QueryInfo | None = None
+    message: str | None = None
 
 
 class ProductResponse(BaseModel):

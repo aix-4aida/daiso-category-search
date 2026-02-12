@@ -14,6 +14,8 @@ from app.services.product_service import ProductService
 
 logger = logging.getLogger(__name__)
 
+NOT_SEARCH_MESSAGE = "상품 위치 검색만 도와드릴 수 있어요. 찾으시는 상품명을 말씀해 주세요!"
+
 
 class SearchService:
     """Hybrid search orchestration: Gemini intent → ES + Qdrant → Gemini rerank"""
@@ -26,9 +28,26 @@ class SearchService:
 
     async def search(self, query: str) -> SearchResponse:
         """Full search pipeline"""
-        # Step 1: Gemini intent analysis
-        intent_result = await self.gemini.analyze_intent(query)
-        keywords = intent_result.get("keywords", [query])
+        logger.info(f"[SEARCH] Received query: {query}")
+
+        # Step 1-1: Classify intent
+        intent = await self.gemini.classify_intent(query)
+        logger.info(f"[SEARCH] Intent classification: {intent}")
+
+        if intent == "not_search":
+            logger.info(f"[SEARCH] Early return: not a product search query")
+            return SearchResponse(
+                results=[],
+                map_info=None,
+                query_info=QueryInfo(
+                    original=query, intent="not_search", keywords=[]
+                ),
+                message=NOT_SEARCH_MESSAGE,
+            )
+
+        # Step 1-2: Extract keywords
+        keywords = await self.gemini.extract_keywords(query)
+        logger.info(f"[SEARCH] Extracted keywords: {keywords}")
 
         # Step 2: Parallel search - ES BM25 + Qdrant vector
         es_results, qdrant_results = await asyncio.gather(
@@ -44,12 +63,17 @@ class SearchService:
             logger.error(f"Qdrant search error: {qdrant_results}")
             qdrant_results = []
 
+        logger.info(f"[SEARCH] ES results: {len(es_results)}, Qdrant results: {len(qdrant_results)}")
+
         # Step 3: Merge results (RRF fusion)
         candidates = self._fuse_results(es_results, qdrant_results)
 
         if not candidates:
             # Fallback to SQLite LIKE search
             candidates = self._fallback_search(keywords)
+            logger.info(f"[SEARCH] Fallback SQLite results: {len(candidates)}")
+
+        logger.info(f"[SEARCH] Total candidates after fusion: {len(candidates)}")
 
         # Step 4: Gemini reranking → Top 3
         if len(candidates) > 3:
@@ -57,6 +81,8 @@ class SearchService:
             top_results = self._order_by_ids(candidates, selected_ids)
         else:
             top_results = candidates[:3]
+
+        logger.info(f"[SEARCH] Final results: {len(top_results)}")
 
         # Build response
         product_results = []
@@ -87,7 +113,7 @@ class SearchService:
             map_info=map_info,
             query_info=QueryInfo(
                 original=query,
-                intent=intent_result.get("intent", "search"),
+                intent=intent,
                 keywords=keywords,
             ),
         )

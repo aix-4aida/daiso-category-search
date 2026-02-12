@@ -19,10 +19,9 @@ def search_service():
         from app.services.search_service import SearchService
         service = SearchService()
 
-        # Setup default mocks
-        service.gemini.analyze_intent = AsyncMock(
-            return_value={"intent": "search", "keywords": ["물티슈"]}
-        )
+        # Setup default mocks for 2-step intent pipeline
+        service.gemini.classify_intent = AsyncMock(return_value="product_search")
+        service.gemini.extract_keywords = AsyncMock(return_value=["물티슈"])
         service.gemini.rerank = AsyncMock(return_value=[1, 2, 3])
 
         service.es.search = AsyncMock(return_value=[
@@ -58,7 +57,22 @@ async def test_search_full_pipeline(search_service):
     assert result.query_info.original == "물티슈 어디있어요?"
     assert result.query_info.keywords == ["물티슈"]
     assert len(result.results) <= 3
-    search_service.gemini.analyze_intent.assert_called_once_with("물티슈 어디있어요?")
+    search_service.gemini.classify_intent.assert_called_once_with("물티슈 어디있어요?")
+    search_service.gemini.extract_keywords.assert_called_once_with("물티슈 어디있어요?")
+
+
+async def test_search_not_search_intent(search_service):
+    """Should return early with message for non-search queries"""
+    search_service.gemini.classify_intent = AsyncMock(return_value="not_search")
+
+    result = await search_service.search("안녕하세요")
+
+    assert result.results == []
+    assert result.query_info.intent == "not_search"
+    assert result.message is not None
+    assert "상품" in result.message
+    # Should NOT call extract_keywords or search
+    search_service.gemini.extract_keywords.assert_not_called()
 
 
 async def test_search_returns_map_info(search_service):
@@ -105,9 +119,8 @@ async def test_order_by_ids(search_service):
 
 async def test_fallback_search_when_no_results(search_service):
     """Should fallback to SQLite search when ES/Qdrant return nothing"""
-    search_service.gemini.analyze_intent = AsyncMock(
-        return_value={"intent": "search", "keywords": ["볼펜"]}
-    )
+    search_service.gemini.classify_intent = AsyncMock(return_value="product_search")
+    search_service.gemini.extract_keywords = AsyncMock(return_value=["볼펜"])
     search_service._search_es = AsyncMock(return_value=[])
     search_service._search_qdrant = AsyncMock(return_value=[])
     search_service.product_service.search_products = MagicMock(return_value=[

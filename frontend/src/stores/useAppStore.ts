@@ -34,12 +34,14 @@ export const useAppStore = create<AppState>((set) => ({
     set({ query, screen: 'loading', error: null });
     try {
       const response = await fetchSearch(query);
+      const message = response.message
+        ?? (response.results.length === 0 ? '검색 결과가 없습니다.' : null);
       set({
         results: response.results,
         mapInfo: response.map_info,
         queryInfo: response.query_info,
         screen: response.results.length > 0 ? 'results' : 'home',
-        error: response.results.length === 0 ? '검색 결과가 없습니다.' : null,
+        error: message,
       });
     } catch {
       set({ screen: 'home', error: '검색 중 오류가 발생했습니다.' });

@@ -70,6 +70,20 @@ describe('useAppStore', () => {
     expect(state.error).toBe('검색 결과가 없습니다.');
   });
 
+  it('should show server message for non-search intent', async () => {
+    mockedFetchSearch.mockResolvedValue({
+      results: [],
+      map_info: null,
+      query_info: { original: '안녕하세요', intent: 'not_search', keywords: [] },
+      message: '상품 위치 검색만 도와드릴 수 있어요. 찾으시는 상품명을 말씀해 주세요!',
+    });
+
+    await useAppStore.getState().search('안녕하세요');
+    const state = useAppStore.getState();
+    expect(state.screen).toBe('home');
+    expect(state.error).toBe('상품 위치 검색만 도와드릴 수 있어요. 찾으시는 상품명을 말씀해 주세요!');
+  });
+
   it('should handle search error', async () => {
     mockedFetchSearch.mockRejectedValue(new Error('Network error'));
 
