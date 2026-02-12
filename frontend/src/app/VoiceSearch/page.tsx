@@ -40,7 +40,8 @@ const VoiceSearch = () => {
         formData.append('file', file)
 
         try {
-            const response = await fetch('http://localhost:8000/api/search/voice', {
+            const hostname = window.location.hostname;
+            const response = await fetch(`http://${hostname}:8000/api/search/voice`, {
                 method: 'POST',
                 body: formData,
             })

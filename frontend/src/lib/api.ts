@@ -1,4 +1,13 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+const getBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        // If it's localhost, use localhost:8000, otherwise use the current host's 8000 port
+        return `http://${hostname}:8000/api`;
+    }
+    return 'http://localhost:8000/api';
+};
+
+const API_BASE_URL = getBaseUrl();
 
 interface Product {
     id: string | number;
