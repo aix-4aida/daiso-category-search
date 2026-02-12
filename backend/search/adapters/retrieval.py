@@ -51,71 +51,77 @@ class BruteForceVectorRetriever:
 @dataclass
 class QdrantVectorRetriever:
     """
-    Qdrant dense retriever.
-
-    IMPORTANT:
-    - Our Qdrant point.id is UUID/uint (NOT the original doc_id string).
-    - The original doc_id is stored in payload["doc_id"].
-    - Therefore we must return payload["doc_id"] for fair evaluation + fusion.
+    Qdrant vector retriever using REST API.
     """
-    url: str
-    collection: str
-    api_key: str = ""
-    timeout_s: int = 30
-    max_retry: int = 5
-    retry_sleep_base: float = 1.5
-
-    def _headers(self) -> Dict[str, str]:
-        h = {"Content-Type": "application/json"}
-        if self.api_key:
-            # Qdrant supports 'api-key' header
-            h["api-key"] = self.api_key
-        return h
+    url: str                      # ex) http://localhost:6333
+    collection_name: str
+    timeout_s: int = 10
 
     def query(self, qvec: List[float], *, top_k: int) -> List[ScoredDoc]:
-        if not qvec:
-            return []
-
-        endpoint = f"{self.url.rstrip('/')}/collections/{self.collection}/points/search"
-        body: Dict[str, Any] = {
+        endpoint = f"{self.url.rstrip('/')}/collections/{self.collection_name}/points/search"
+        body = {
             "vector": qvec,
             "limit": int(top_k),
-            "with_payload": True,   # ✅ payload.doc_id로 복원
-            "with_vector": False,
+            "with_payload": True
         }
-
-        last_exc: Optional[Exception] = None
-        for attempt in range(1, self.max_retry + 1):
-            try:
-                r = requests.post(endpoint, headers=self._headers(), json=body, timeout=self.timeout_s)
-                if r.status_code in (429, 500, 502, 503, 504):
-                    time.sleep(self.retry_sleep_base * attempt)
-                    continue
-                if r.status_code != 200:
-                    raise RuntimeError(f"Qdrant search failed: {r.status_code} {r.text}")
-
-                data = r.json()
-                result = data.get("result") or []
-
-                out: List[ScoredDoc] = []
-                for item in result:
-                    payload = item.get("payload") or {}
-                    doc_id = (payload.get("doc_id") or "").strip()  # ✅ 원본 doc_id
-                    score = float(item.get("score") or 0.0)
-
-                    # fallback: payload에 없으면 qdrant id라도 반환
-                    if not doc_id:
-                        pid = item.get("id")
-                        if pid is None:
-                            continue
-                        doc_id = str(pid)
-
+        
+        try:
+            r = requests.post(endpoint, json=body, timeout=self.timeout_s)
+            if r.status_code != 200:
+                print(f"⚠️ Qdrant search failed: {r.status_code} {r.text}")
+                return []
+            
+            data = r.json()
+            hits = data.get("result", [])
+            
+            out: List[ScoredDoc] = []
+            for rank, h in enumerate(hits, start=1):
+                doc_id = str(h.get("id") or "")
+                score = float(h.get("score") or 0.0)
+                if doc_id:
                     out.append(ScoredDoc(doc_id=doc_id, score=score, source="dense"))
+            return out
+        except Exception as e:
+            print(f"❌ Qdrant query error: {e}")
+            return []
 
-                return out
+@dataclass
+class ChromaVectorRetriever:
+    """
+    ChromaDB vector retriever.
+    """
+    collection_name: str
+    persist_directory: Optional[str] = None
+    _client: Any = None
+    _collection: Any = None
 
-            except Exception as e:
-                last_exc = e
-                time.sleep(self.retry_sleep_base * attempt)
+    def __post_init__(self):
+        import chromadb
+        if self.persist_directory:
+            self._client = chromadb.PersistentClient(path=self.persist_directory)
+        else:
+            self._client = chromadb.Client()
+        self._collection = self._client.get_or_create_collection(name=self.collection_name)
 
-        raise RuntimeError(f"Qdrant search failed after retries: {last_exc}")
+    def query(self, qvec: List[float], *, top_k: int) -> List[ScoredDoc]:
+        results = self._collection.query(
+            query_embeddings=[qvec],
+            n_results=int(top_k),
+            include=["metadatas", "distances"]
+        )
+        
+        out: List[ScoredDoc] = []
+        # Chroma returns results in nested lists
+        if results['ids']:
+            ids = results['ids'][0]
+            metadatas = results['metadatas'][0] if results['metadatas'] else [{} for _ in ids]
+            distances = results['distances'][0] if results['distances'] else [0.0 for _ in ids]
+            
+            for doc_id, meta, dist in zip(ids, metadatas, distances):
+                # Chroma distance is often L2 or cosine distance. 
+                # ScoredDoc usually expects similarity (higher is better). 
+                # For simplicity, we just pass distance if not clarified, but usually similarity = 1 - distance
+                score = 1.0 - dist if dist <= 1.0 else 0.0
+                out.append(ScoredDoc(doc_id=doc_id, score=score, source="dense"))
+        
+        return out

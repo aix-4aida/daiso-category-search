@@ -1,30 +1,31 @@
-
-from backend.stt import get_adapter, QualityGate, PolicyGate, AudioConverter
+from backend.stt import get_adapter, QualityGate, PolicyGate, get_converter as get_stt_converter
 from backend.stt.types import ProviderResult
 from backend.core.config import config
 import os
+from dotenv import load_dotenv
 
-# Initialize components (Module-level singleton pattern for simplicity in this refactor)
-# In a larger app, use Dependency Injection
+# Load environment variables from .env
+load_dotenv()
+
+# Initialize components
 print("🔄 Initializing STT adapters...")
 
-whisper_adapter = get_adapter(
-    "whisper",
-    **config["stt"]["whisper"]
-)
+# 1. Whisper Adapter
+whisper_config = config["stt"]["whisper"]
+whisper_adapter = get_adapter("whisper", **whisper_config)
 
+# 2. Google Adapter
 google_config = config["stt"].get("google", {})
-google_config["credentials_path"] = "backend/daisoproject-sst.json"
+# Path normalized from config
 google_adapter = get_adapter("google", **google_config)
 
+# 3. Gates & Converter
 quality_gate = QualityGate(**config["quality_gate"])
-
 policy_gate = PolicyGate(
     fixed_locations=config["policy_gate"]["fixed_locations"],
     unsupported_patterns=config["policy_gate"]["unsupported_patterns"]
 )
-
-audio_converter = AudioConverter(output_dir="outputs/normalized")
+audio_converter = get_stt_converter(output_dir="outputs/normalized")
 
 print("✅ All adapters initialized")
 

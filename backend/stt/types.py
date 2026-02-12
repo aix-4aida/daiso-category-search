@@ -1,4 +1,4 @@
-# backend/stt/types.py
+﻿# backend/stt/types.py
 """
 STT Pipeline Type Definitions
 Defines data structures for STT results, quality gate, and policy gate outputs.

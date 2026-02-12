@@ -52,19 +52,19 @@ from pathlib import Path
 from backend.services.pipeline_service import run_full_pipeline, run_text_pipeline
 
 @router.post("/audio")
-async def search_audio(file: UploadFile = File(...)):
+async def search_audio(audio: UploadFile = File(...)):
     """
     Full Pipeline: Audio -> STT -> Intent -> Keyword -> Search -> Rerank -> Result
     """
     request_id = str(uuid.uuid4())[:8]
-    temp_path = f"outputs/temp_{request_id}_{file.filename}"
+    temp_path = f"outputs/temp_{request_id}_{audio.filename}"
     Path("outputs").mkdir(exist_ok=True)
     
     try:
         with open(temp_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            shutil.copyfileobj(audio.file, buffer)
             
-        result = run_full_pipeline(temp_path)
+        result = await run_full_pipeline(temp_path)
         return result
         
     except Exception as e:
@@ -83,7 +83,7 @@ async def search_text(request: TextSearchRequest):
     Text Pipeline: Intent -> Keyword -> Search -> Rerank -> Result
     """
     try:
-        result = run_text_pipeline(request.query)
+        result = await run_text_pipeline(request.query)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

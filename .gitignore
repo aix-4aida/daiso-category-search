@@ -26,3 +26,4 @@ poc/bjy/old/
 es_data/
 qdrant_data/
 outputs/
+nlu_debug.log

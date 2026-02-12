@@ -5,7 +5,7 @@ STT Module - Speech-to-Text Pipeline Components
 from .adapters import BaseAdapter, WhisperAdapter, GoogleAdapter, get_adapter
 from .quality_gate import QualityGate
 from .policy_gate import PolicyGate
-from .audio_converter import AudioConverter, normalize_audio
+from .audio_converter import AudioConverter, normalize_audio, get_converter
 
 __all__ = [
     "BaseAdapter",
@@ -16,4 +16,5 @@ __all__ = [
     "PolicyGate",
     "AudioConverter",
     "normalize_audio",
+    "get_converter",
 ]

@@ -17,7 +17,7 @@ def get_connection():
     return conn
 
 def init_database():
-    """Initialize database tables"""
+    """Initialize database tables and ChromaDB"""
     conn = get_connection()
     cursor = conn.cursor()
     
@@ -59,6 +59,16 @@ def init_database():
     conn.commit()
     conn.close()
     print(f"✅ Database initialized: {DB_PATH}")
+
+    # NEW: Initialize ChromaDB if needed
+    try:
+        from backend.services.search_service import CHROMA_DB_PATH
+        import chromadb
+        client = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
+        client.get_or_create_collection(name="products")
+        print(f"✅ ChromaDB initialized: {CHROMA_DB_PATH}")
+    except Exception as e:
+        print(f"⚠️ ChromaDB init failed: {e}")
 
 def insert_product(rank: int, name: str, price: int, image_url: str, 
                    image_name: str = None, image_path: str = None) -> bool:
@@ -140,7 +150,46 @@ def get_related_products_for_context(keyword: str, limit: int = 5) -> str:
     return "\n".join(context_list)
 
 
+def sync_to_chroma():
+    """Sync products from SQLite to ChromaDB"""
+    from backend.services.search_service import CHROMA_DB_PATH, get_query_embedding
+    import chromadb
+    
+    client = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
+    collection = client.get_or_create_collection(name="products")
+    
+    products = get_all_products()
+    print(f"🔄 Syncing {len(products)} products to ChromaDB...")
+    
+    ids = []
+    embeddings = []
+    metadatas = []
+    documents = []
+    
+    for p in products:
+        p_id = str(p['id'])
+        # Simplified: always upsert for now
+        emb = get_query_embedding(p['name'])
+        if emb:
+            ids.append(p_id)
+            embeddings.append(emb)
+            metadatas.append({
+                "price": p.get('price', 0),
+                "category_major": p.get('category_major', ""),
+                "category_middle": p.get('category_middle', "")
+            })
+            documents.append(p['name'])
+            
+    if ids:
+        collection.upsert(
+            ids=ids,
+            embeddings=embeddings,
+            metadatas=metadatas,
+            documents=documents
+        )
+        print(f"✅ Successfully synced {len(ids)} products")
+
 if __name__ == "__main__":
     init_database()
+    sync_to_chroma()
     print(f"Products: {get_product_count()}")
-    print(f"Utterances: {get_utterance_count()}")

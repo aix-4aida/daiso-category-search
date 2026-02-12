@@ -1,8 +1,7 @@
 """
-Hybrid Search Service
-=====================
-Uses 영근님's ivhl adapters for BM25, Vector Search, and RRF Fusion.
-Supports both External (Qdrant/Elastic) and Local (In-memory) modes.
+Hybrid Search Service (MVP Refactored)
+=====================================
+Uses ChromaDB for Vector Search and LocalBM25 for Sparse Search.
 """
 import sys
 import os
@@ -14,119 +13,70 @@ import sqlite3
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # ============================================================
-# Import Search Infrastructure (Refactored to backend/search)
+# Import Search Infrastructure
 # ============================================================
-# Previously imported from poc/lyg/src/ivhl
 from backend.search.adapters.bm25 import LocalBM25, ElasticBM25Retriever
 from backend.search.adapters.fusion import rrf_fusion, weighted_fusion
-from backend.search.adapters.retrieval import BruteForceVectorRetriever, QdrantVectorRetriever
+from backend.search.adapters.retrieval import BruteForceVectorRetriever, QdrantVectorRetriever, ChromaVectorRetriever
 
 from backend.search.core.types import Document, ScoredDoc
 
 IVHL_AVAILABLE = True
-print("✅ Search adapters imported successfully (Refactored)")
+print("✅ Search adapters imported successfully (ChromaDB Integrated)")
 
 # ============================================================
 # Configuration
 # ============================================================
 BACKEND_DB_PATH = PROJECT_ROOT / "backend" / "database" / "products.db"
-POC_DB_PATH = PROJECT_ROOT / "poc" / "lyg" / "data" / "products.db"
+CHROMA_DB_PATH = PROJECT_ROOT / "backend" / "database" / "chroma_db"
 
 # External Server Config
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 ELASTIC_URL = os.environ.get("ELASTIC_URL", "http://localhost:9200")
 
-print(f"🔄 Initializing Hybrid Search Engine (Qdrant: {QDRANT_URL}, Elastic: {ELASTIC_URL})...")
-
 # ============================================================
-# Load Products from Backend DB as Document objects
+# Load Products
 # ============================================================
 def load_products_as_documents(db_path: Path) -> list:
-    """Load products from SQLite DB into ivhl Document objects."""
     docs = []
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        
-        query = """SELECT id, name, category_major, category_middle FROM products"""
+        query = "SELECT id, name, category_major, category_middle FROM products"
         cursor.execute(query)
         rows = cursor.fetchall()
-        
         for row in rows:
             p_id, name, major, middle = row
-            if IVHL_AVAILABLE:
-                doc = Document(
-                    doc_id=str(p_id),
-                    title=name or "",
-                    text=name or "",  # Use name as searchable text
-                    meta={"major": major, "middle": middle}
-                )
-            else:
-                # Fallback simple object
-                class SimpleDoc:
-                    def __init__(self, doc_id, title, text, meta):
-                        self.doc_id = str(doc_id)
-                        self.title = title
-                        self.text = text or ""
-                        self.meta = meta
-                doc = SimpleDoc(p_id, name, name, {"major": major, "middle": middle})
-            docs.append(doc)
-        
+            docs.append(Document(
+                doc_id=str(p_id),
+                title=name or "",
+                text=name or "",
+                meta={"major": major, "middle": middle}
+            ))
         conn.close()
-        print(f"✅ Loaded {len(docs)} products from backend DB")
+        print(f"✅ Loaded {len(docs)} products")
     except Exception as e:
         print(f"❌ Error loading products: {e}")
     return docs
 
 # ============================================================
-# Load Embeddings from POC DB (Fallback only)
-# ============================================================
-def load_embeddings(db_path: Path) -> dict:
-    """Returns dict: {doc_id: embedding_as_list}"""
-    embeddings = {}
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-        
-        cursor.execute("SELECT product_id, text_embedding FROM product_embeddings WHERE text_embedding IS NOT NULL")
-        rows = cursor.fetchall()
-        
-        for row in rows:
-            product_id, emb_blob = row
-            try:
-                emb = pickle.loads(emb_blob)
-                if isinstance(emb, np.ndarray):
-                    # Convert to list for ivhl compatibility
-                    embeddings[str(product_id)] = emb.flatten().tolist()
-            except:
-                pass
-        
-        conn.close()
-        print(f"✅ Loaded {len(embeddings)} embeddings from POC DB")
-    except Exception as e:
-        print(f"❌ Error loading embeddings: {e}")
-    return embeddings
-
-# ============================================================
-# Query Embedding (using SentenceTransformer)
+# Query Embedding
 # ============================================================
 query_encoder = None
 
 def get_query_embedding(query: str) -> list:
-    """Generate embedding for query using SentenceTransformer."""
     global query_encoder
     if query_encoder is None:
         try:
             from sentence_transformers import SentenceTransformer
-            # Use 512-dim multilingual model (matches DB embeddings)
             query_encoder = SentenceTransformer('distiluse-base-multilingual-cased-v2')
-            print("✅ Loaded SentenceTransformer model for query embedding (512-dim)")
+            print("✅ Loaded SentenceTransformer (512-dim)")
         except Exception as e:
             print(f"⚠️ Failed to load SentenceTransformer: {e}")
             return None
     
     embedding = query_encoder.encode(query, convert_to_numpy=True)
-    return embedding.flatten().tolist()  # Return as list for ivhl
+    return embedding.flatten().tolist()
 
 # ============================================================
 # Initialize Search Components
@@ -134,180 +84,62 @@ def get_query_embedding(query: str) -> list:
 docs = []
 bm25_engine = None
 docs_map = {}
-embeddings = {}
 vector_retriever = None
 
-# Load products
 if BACKEND_DB_PATH.exists():
     docs = load_products_as_documents(BACKEND_DB_PATH)
     if docs:
         docs_map = {d.doc_id: d for d in docs}
         
-        # Initialize Retrievers
-        if IVHL_AVAILABLE:
-            # 1. Elastic BM25 (Primary)
-            try:
-                bm25_engine = ElasticBM25Retriever(
-                    docs=docs,
-                    base_url=ELASTIC_URL,
-                    index="products"
-                )
-                print(f"✅ ElasticBM25Retriever initialized ({ELASTIC_URL})")
-            except Exception as e:
-                print(f"⚠️ ElasticBM25Retriever init failed: {e}. Falling back to LocalBM25.")
-                bm25_engine = LocalBM25(docs=docs)
-
-            # 2. Qdrant Vector (Primary)
-            try:
-                import requests
-                # Quick health check for Qdrant
-                q_res = requests.get(f"{QDRANT_URL}/health", timeout=1)
-                if q_res.status_code == 200:
-                    vector_retriever = QdrantVectorRetriever(
-                        url=QDRANT_URL,
-                        collection="products"
-                    )
-                    print(f"✅ QdrantVectorRetriever initialized ({QDRANT_URL})")
-                else:
-                    print(f"⚠️ Qdrant unhealthy (status {q_res.status_code})")
-                    vector_retriever = None
-            except Exception as e:
-                print(f"⚠️ QdrantVectorRetriever init failed: {e}. Checking local embeddings...")
-                # Fallback to local BruteForce if Qdrant fails
-                if POC_DB_PATH.exists():
-                    embeddings = load_embeddings(POC_DB_PATH)
-                    if embeddings:
-                        vector_retriever = BruteForceVectorRetriever(docs=docs, doc_vecs=embeddings)
-                        print("✅ BruteForceVectorRetriever initialized (ivhl fallback)")
-                    else:
-                        print("⚠️ No local embeddings found.")
-                        vector_retriever = None
-        else:
-            print("⚠️ ivhl adapter not available. Using LocalBM25.")
+        # 1. BM25 (Primary: Elastic if available, Fallback: Local)
+        try:
+            bm25_engine = ElasticBM25Retriever(docs=docs, base_url=ELASTIC_URL, index="products_idx")
+            print(f"✅ ElasticBM25Retriever initialized ({ELASTIC_URL})")
+        except Exception as e:
+            print(f"⚠️ ElasticBM25 init failed: {e}. Falling back to LocalBM25.")
             bm25_engine = LocalBM25(docs=docs)
-else:
-    print(f"⚠️ Backend DB not found at {BACKEND_DB_PATH}")
-
-
-print(f"✅ Hybrid Search Engine ready: {len(docs)} products")
-
-# ============================================================
-# Fallback: Custom Vector Search (when ivhl not available)
-# ============================================================
-def _cosine_similarity_fallback(a, b) -> float:
-    """Fallback cosine similarity."""
-    norm_a = np.linalg.norm(a)
-    norm_b = np.linalg.norm(b)
-    if norm_a == 0 or norm_b == 0:
-        return 0.0
-    return float(np.dot(a, b) / (norm_a * norm_b))
-
-def _rrf_fusion_fallback(bm25_doc_ids: list, vector_results: list, k: int = 60) -> list:
-    """Fallback RRF fusion."""
-    scores = {}
-    
-    # BM25 contribution
-    for rank, doc_id in enumerate(bm25_doc_ids):
-        if doc_id not in scores:
-            scores[doc_id] = 0.0
-        scores[doc_id] += 1.0 / (k + rank + 1)
-    
-    # Vector contribution
-    for rank, (doc_id, _) in enumerate(vector_results):
-        if doc_id not in scores:
-            scores[doc_id] = 0.0
-        scores[doc_id] += 1.0 / (k + rank + 1)
-    
-    sorted_items = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    return [doc_id for doc_id, _ in sorted_items]
-
-def _fallback_vector_search(query_emb, embeddings_dict: dict, top_k: int) -> list:
-    """Fallback vector search without ivhl."""
-    scores = []
-    for doc_id, doc_emb in embeddings_dict.items():
-        score = _cosine_similarity_fallback(query_emb, np.array(doc_emb))
-        scores.append((doc_id, score))
-    scores.sort(key=lambda x: x[1], reverse=True)
-    return scores[:top_k]
+        
+        # 2. Vector (Primary: Qdrant if available, Secondary: Chroma)
+        try:
+            vector_retriever = QdrantVectorRetriever(url=QDRANT_URL, collection_name="products")
+            print(f"✅ QdrantVectorRetriever initialized ({QDRANT_URL})")
+        except Exception as e:
+            print(f"⚠️ Qdrant init failed: {e}. Attempting ChromaDB.")
+            try:
+                vector_retriever = ChromaVectorRetriever(
+                    collection_name="products",
+                    persist_directory=str(CHROMA_DB_PATH)
+                )
+                print(f"✅ ChromaVectorRetriever initialized at {CHROMA_DB_PATH}")
+            except Exception as e2:
+                print(f"⚠️ ChromaDB init failed: {e2}")
 
 # ============================================================
 # Main Search Function
 # ============================================================
 def search_products(query: str, top_k: int = 30, use_hybrid: bool = True, fusion_method: str = "rrf") -> list[dict]:
-    """
-    Search products using Hybrid Search (BM25 + Vector) with ivhl adapters.
-    - Primary: uses ivhl external retrievers (Elastic/Qdrant)
-    - Secondary: uses ivhl local retrievers (LocalBM25/BruteForce)
-    - Fallback: uses custom implementation when ivhl not available
-    
-    Args:
-        query: Search query string
-        top_k: Number of results to return
-        use_hybrid: If True, use hybrid search. If False, use BM25 only.
-        fusion_method: "rrf" or "weighted"
-    
-    Returns:
-        List of dicts: {'id', 'name', 'desc', 'meta'}
-    """
     if not bm25_engine:
         return []
     
-    # 1. BM25 Search (Sparse)
-    sparse_results = []
-    try:
-        top_k_bm25 = top_k * 2 if use_hybrid else top_k
-        sparse_results = bm25_engine.query(query, top_k=top_k_bm25)
-    except Exception as e:
-        print(f"⚠️ BM25 search failed: {e}")
-        # If ElasticBM25 failed, try falling back to LocalBM25 if available
-        if not isinstance(bm25_engine, LocalBM25) and IVHL_AVAILABLE:
-            try:
-                print("🔄 Falling back to LocalBM25 search...")
-                local_bm25 = LocalBM25(docs=docs)
-                sparse_results = local_bm25.query(query, top_k=top_k_bm25)
-            except:
-                pass
+    # 1. BM25
+    top_k_sparse = top_k * 2 if use_hybrid else top_k
+    sparse_results = bm25_engine.query(query, top_k=top_k_sparse)
     
-    # 2. Vector Search (Dense) if hybrid enabled
+    # 2. Hybrid
     fused_results = sparse_results
-    
-    if use_hybrid and IVHL_AVAILABLE:
+    if use_hybrid and vector_retriever:
         query_emb = get_query_embedding(query)
-        if query_emb is not None:
-            top_k_dense = top_k * 2
-            
-            if vector_retriever:
-                # === Primary/Secondary: Use ivhl adapters ===
-                try:
-                    dense_results = vector_retriever.query(query_emb, top_k=top_k_dense)
-                    
-                    if fusion_method == "rrf":
-                        fused_results = rrf_fusion(dense_results, sparse_results, rrf_k=60, top_k=top_k)
-                    else:
-                        fused_results = weighted_fusion(dense_results, sparse_results, alpha=0.5, top_k=top_k)
-                except Exception as e:
-                    print(f"⚠️ Vector search failed: {e}")
-            elif embeddings:
-                 # === Fallback: Custom implementation (if ivhl loaded but no retriever?) ===
-                 print("⚠️ Using custom fallback hybrid search")
-                 query_emb_np = np.array(query_emb)
-                 vector_results = _fallback_vector_search(query_emb_np, embeddings, top_k_dense)
-                 bm25_doc_ids = [sd.doc_id for sd in sparse_results]
-                 fused_doc_ids = _rrf_fusion_fallback(bm25_doc_ids, vector_results, k=60)
-                 
-                 results = []
-                 for doc_id in fused_doc_ids[:top_k]:
-                    doc = docs_map.get(doc_id)
-                    if doc:
-                        results.append({
-                            "id": doc.doc_id,
-                            "name": doc.title,
-                            "desc": doc.text,
-                            "meta": doc.meta
-                        })
-                 return results
+        if query_emb:
+            try:
+                dense_results = vector_retriever.query(query_emb, top_k=top_k * 2)
+                if fusion_method == "rrf":
+                    fused_results = rrf_fusion(dense_results, sparse_results, rrf_k=60, top_k=top_k)
+                else:
+                    fused_results = weighted_fusion(dense_results, sparse_results, alpha=0.5, top_k=top_k)
+            except Exception as e:
+                print(f"⚠️ Vector search failed: {e}")
     
-    # 3. Build output for ivhl results
+    # 3. Output
     results = []
     for sd in fused_results[:top_k]:
         doc = docs_map.get(sd.doc_id)
@@ -316,7 +148,7 @@ def search_products(query: str, top_k: int = 30, use_hybrid: bool = True, fusion
                 "id": doc.doc_id,
                 "name": doc.title,
                 "desc": doc.text,
-                "meta": doc.meta
+                "meta": doc.meta,
+                "score": sd.score
             })
-    
     return results

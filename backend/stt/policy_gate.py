@@ -1,4 +1,4 @@
-# backend/stt/policy_gate.py
+﻿# backend/stt/policy_gate.py
 """
 Policy Gate Implementation
 Classifies query intent per 03_AI_QUERY_POLICY.md (PoC Phase 1 keyword-based)
@@ -27,7 +27,7 @@ class PolicyGate:
         """
         self.fixed_locations = fixed_locations or []
         self.unsupported_patterns = unsupported_patterns or [
-            "배달", "교환", "환불", "영업시간", "반품"
+            "諛곕떖", "援먰솚", "?섎텋", "?곸뾽?쒓컙", "諛섑뭹"
         ]
     
     def classify(self, text: str) -> PolicyIntent:
@@ -36,7 +36,7 @@ class PolicyGate:
         
         Priority:
         1. FIXED_LOCATION (exact match)
-        2. UNSUPPORTED (운영정책 키워드)
+        2. UNSUPPORTED (?댁쁺?뺤콉 ?ㅼ썙??
         3. PRODUCT_SEARCH (default)
         
         Args:
