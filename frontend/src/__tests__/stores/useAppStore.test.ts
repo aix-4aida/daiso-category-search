@@ -1,0 +1,104 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useAppStore } from '../../stores/useAppStore';
+
+vi.mock('../../services/api', () => ({
+  fetchSearch: vi.fn(),
+}));
+
+import { fetchSearch } from '../../services/api';
+
+const mockedFetchSearch = vi.mocked(fetchSearch);
+
+beforeEach(() => {
+  useAppStore.getState().reset();
+  vi.clearAllMocks();
+});
+
+describe('useAppStore', () => {
+  it('should start with home screen', () => {
+    const state = useAppStore.getState();
+    expect(state.screen).toBe('home');
+    expect(state.query).toBe('');
+    expect(state.results).toEqual([]);
+  });
+
+  it('should set screen', () => {
+    useAppStore.getState().setScreen('loading');
+    expect(useAppStore.getState().screen).toBe('loading');
+  });
+
+  it('should set query', () => {
+    useAppStore.getState().setQuery('물티슈');
+    expect(useAppStore.getState().query).toBe('물티슈');
+  });
+
+  it('should set listening state', () => {
+    useAppStore.getState().setListening(true);
+    expect(useAppStore.getState().isListening).toBe(true);
+  });
+
+  it('should search and update results', async () => {
+    mockedFetchSearch.mockResolvedValue({
+      results: [
+        {
+          id: 1, rank: 1, name: '물티슈', price: 1000,
+          image_url: '/img.jpg', category_major: '뷰티/위생',
+          category_middle: '화장지/물티슈', score: 0.9,
+        },
+      ],
+      map_info: { floor: '1F', section: '뷰티/위생', map_image: '/map.png' },
+      query_info: { original: '물티슈', intent: 'search', keywords: ['물티슈'] },
+    });
+
+    await useAppStore.getState().search('물티슈');
+    const state = useAppStore.getState();
+    expect(state.screen).toBe('results');
+    expect(state.results).toHaveLength(1);
+    expect(state.mapInfo?.section).toBe('뷰티/위생');
+  });
+
+  it('should go back to home on empty results', async () => {
+    mockedFetchSearch.mockResolvedValue({
+      results: [],
+      map_info: null,
+      query_info: { original: 'xyz', intent: 'search', keywords: ['xyz'] },
+    });
+
+    await useAppStore.getState().search('xyz');
+    const state = useAppStore.getState();
+    expect(state.screen).toBe('home');
+    expect(state.error).toBe('검색 결과가 없습니다.');
+  });
+
+  it('should handle search error', async () => {
+    mockedFetchSearch.mockRejectedValue(new Error('Network error'));
+
+    await useAppStore.getState().search('test');
+    const state = useAppStore.getState();
+    expect(state.screen).toBe('home');
+    expect(state.error).toBe('검색 중 오류가 발생했습니다.');
+  });
+
+  it('should select product and go to map', () => {
+    const product = {
+      id: 1, rank: 1, name: '물티슈', price: 1000,
+      image_url: '/img.jpg', category_major: '뷰티/위생',
+      category_middle: '화장지/물티슈', score: 0.9,
+    };
+
+    useAppStore.getState().selectProduct(product);
+    const state = useAppStore.getState();
+    expect(state.screen).toBe('map');
+    expect(state.selectedProduct?.name).toBe('물티슈');
+  });
+
+  it('should reset all state', () => {
+    useAppStore.getState().setScreen('results');
+    useAppStore.getState().setQuery('물티슈');
+    useAppStore.getState().reset();
+    const state = useAppStore.getState();
+    expect(state.screen).toBe('home');
+    expect(state.query).toBe('');
+    expect(state.results).toEqual([]);
+  });
+});
