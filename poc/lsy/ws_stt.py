@@ -40,25 +40,41 @@ from google.oauth2 import service_account
 
 # Whisper Fallback imports
 try:
-    from stt.adapters import WhisperAdapter
+    from poc.lsy.stt.adapters import WhisperAdapter
     WHISPER_ADAPTER_AVAILABLE = True
+    print("✅ WhisperAdapter imported from poc.lsy.stt.adapters")
 except ImportError:
     try:
-        from backend.stt.adapters import WhisperAdapter
+        from stt.adapters import WhisperAdapter
         WHISPER_ADAPTER_AVAILABLE = True
+        print("✅ WhisperAdapter imported from stt.adapters")
     except ImportError:
-        WHISPER_ADAPTER_AVAILABLE = False
+        try:
+            from backend.stt.adapters import WhisperAdapter
+            WHISPER_ADAPTER_AVAILABLE = True
+            print("✅ WhisperAdapter imported from backend.stt.adapters")
+        except ImportError:
+            WHISPER_ADAPTER_AVAILABLE = False
+            print("⚠️ WhisperAdapter import failed from all paths")
 
 # Postprocessor
 try:
     from stt.text_postprocessor import TextPostprocessor
     POSTPROCESSOR_AVAILABLE = True
+    print("✅ TextPostprocessor imported from stt.text_postprocessor")
 except ImportError:
     try:
         from backend.stt.text_postprocessor import TextPostprocessor
         POSTPROCESSOR_AVAILABLE = True
+        print("✅ TextPostprocessor imported from backend.stt.text_postprocessor")
     except ImportError:
-        POSTPROCESSOR_AVAILABLE = False
+        try:
+            from poc.lsy.stt.text_postprocessor import TextPostprocessor
+            POSTPROCESSOR_AVAILABLE = True
+            print("✅ TextPostprocessor imported from poc.lsy.stt.text_postprocessor")
+        except ImportError:
+            POSTPROCESSOR_AVAILABLE = False
+            print("⚠️ TextPostprocessor import failed from all paths")
 
 
 # Audio preprocessor (volume normalization, denoise)
@@ -109,18 +125,25 @@ csv_lock = threading.Lock()
 def load_postprocessing_config() -> Dict:
     """Load postprocessing config from config.yaml"""
     candidate_paths = [
-        Path(__file__).parent / "config.yaml",
+        Path(__file__).resolve().parent / "config.yaml",
         Path("backend") / "config.yaml",
-        Path("config.yaml"),
+       Path("config.yaml"),
     ]
     for config_path in candidate_paths:
+        print(f"🔍 Trying config path: {config_path.resolve()}")
         if config_path.exists():
             try:
                 with open(config_path, "r", encoding="utf-8") as f:
                     config = yaml.safe_load(f)
-                return config.get("postprocessing", {})
-            except Exception:
-                pass
+                pp_config = config.get("postprocessing", {})
+                print(f"✅ Postprocessing config loaded from: {config_path.resolve()}")
+                print(f"   enabled={pp_config.get('enabled')}, apply_to_google={pp_config.get('apply_to_google')}")
+                return pp_config
+            except Exception as e:
+                print(f"⚠️ Failed to load config from {config_path}: {e}")
+        else:
+            print(f"   ❌ Not found")
+    print("⚠️ No config.yaml found for postprocessing")
     return {}
 
 
@@ -131,19 +154,25 @@ _postprocessor_config: Optional[Dict] = None
 def get_postprocessor() -> Optional['TextPostprocessor']:
     """싱글톤 TextPostprocessor 반환"""
     global _postprocessor_instance, _postprocessor_config
+    print(f"🔍 get_postprocessor called, POSTPROCESSOR_AVAILABLE={POSTPROCESSOR_AVAILABLE}")
     if _postprocessor_instance is not None:
+        print(f"✅ Returning existing postprocessor instance")
         return _postprocessor_instance
     if not POSTPROCESSOR_AVAILABLE:
+        print(f"⚠️ POSTPROCESSOR_AVAILABLE is False, cannot initialize")
         return None
     try:
         _postprocessor_config = load_postprocessing_config()
+        print(f"🔍 Loaded postprocessing config: enabled={_postprocessor_config.get('enabled')}")
         if not _postprocessor_config.get("enabled", True):
+            print(f"⚠️ Postprocessing disabled in config")
             return None
         _postprocessor_instance = TextPostprocessor(config=_postprocessor_config)
         print(f"✅ TextPostprocessor initialized (singleton)")
         return _postprocessor_instance
     except Exception as e:
         print(f"⚠️ TextPostprocessor init failed: {e}")
+        traceback.print_exc()
         return None
 
 
@@ -151,7 +180,7 @@ def load_fallback_config() -> Dict:
     """Load fallback config from config.yaml"""
     # 여러 경로 시도 (실행 위치에 따라 다를 수 있음)
     candidate_paths = [
-        Path(__file__).parent / "config.yaml",          # backend/config.yaml (from ws_stt.py)
+        Path(__file__).resolve().parent / "config.yaml",          # backend/config.yaml (from ws_stt.py)
         Path("backend") / "config.yaml",                 # backend/config.yaml (from project root)
         Path("config.yaml"),                              # config.yaml (from backend/)
     ]

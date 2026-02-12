@@ -32,7 +32,7 @@ except ImportError:
     sys.exit(1)
 
 # 설정
-WS_URL = "ws://localhost:8000/ws/stt"
+WS_URL = "ws://localhost:8010/ws/stt"
 SAMPLE_RATE = 16000
 CHUNK_MS = 100  # 100ms per chunk
 BYTES_PER_MS = SAMPLE_RATE * 2 // 1000  # 32 bytes/ms
@@ -93,7 +93,7 @@ async def run_scenario(
                     "test_id": f"test_{name}_{int(time.time())}",
                     "utterance_type": "general",
                     "spoken_text": name,
-                    "save_audio": True,
+                    "save_audio": False,  # 오디오 저장 비활성화
                     "force_fallback": force_fallback
                 }
             }
@@ -231,8 +231,9 @@ async def main():
     print(f"Chunk: {CHUNK_MS}ms, Sample Rate: {SAMPLE_RATE}Hz")
     
     # 테스트 오디오 파일
-    audio_files = sorted(TEST_AUDIO_DIR.glob("*.m4a"))[:3]
+    #audio_files = sorted(TEST_AUDIO_DIR.glob("*.m4a"))[:3]
     #audio_files = [Path(r"data/test_audio/06_phase3_extra/이선영_긴음성01.m4a")]
+    audio_files = [TEST_AUDIO_DIR / "이선영_일반01.m4a"]
     
     if not audio_files or not audio_files[0].exists():
         print(f"\n❌ 테스트 오디오 파일이 없습니다: {audio_files[0]}")

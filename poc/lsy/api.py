@@ -147,9 +147,15 @@ app.add_middleware(
 
 from fastapi import WebSocket
 try:
-    from ws_stt import handle_streaming_stt
+    from poc.lsy.ws_stt import handle_streaming_stt
+    print("✅ Imported handle_streaming_stt from poc.lsy.ws_stt")
 except ImportError:
-    from backend.ws_stt import handle_streaming_stt
+    try:
+        from ws_stt import handle_streaming_stt
+        print("✅ Imported handle_streaming_stt from ws_stt")
+    except ImportError:
+        from backend.ws_stt import handle_streaming_stt
+        print("✅ Imported handle_streaming_stt from backend.ws_stt")
 
 @app.websocket("/ws/stt")
 async def websocket_stt_endpoint(websocket: WebSocket):
