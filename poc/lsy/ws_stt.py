@@ -621,7 +621,7 @@ class StreamingSTTSession:
             streaming_config = StreamingRecognitionConfig(
                 config=recognition_config,
                 interim_results=True,
-                single_utterance=False
+                single_utterance=True,
             )
             
             responses = self.client.streaming_recognize(

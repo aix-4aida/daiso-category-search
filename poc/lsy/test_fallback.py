@@ -152,8 +152,8 @@ async def run_scenario(
                     
                     if resp.get("type") == "interim":
                         interim_count += 1
-                        if interim_count <= 3:
-                            print(f"  💬 interim [{interim_count}]: {resp.get('text', '')[:40]}")
+                        # 전체 텍스트 표시 (마지막 결과만 계속 업데이트)
+                        print(f"\r  💬 {resp.get('text', '')}", end="", flush=True)
                     
                     elif resp.get("type") == "final":
                         final_result = resp
