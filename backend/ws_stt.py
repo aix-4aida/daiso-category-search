@@ -31,7 +31,7 @@ from google.oauth2 import service_account
 
 # Session configuration
 MAX_SESSION_DURATION_SEC = 30
-SILENCE_TIMEOUT_SEC = 3.0
+SILENCE_TIMEOUT_SEC = 1.5
 SAMPLE_RATE = 16000
 LANGUAGE_CODE = "ko-KR"
 

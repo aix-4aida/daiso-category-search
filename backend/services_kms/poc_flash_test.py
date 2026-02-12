@@ -11,10 +11,12 @@ load_dotenv()
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 
 if not API_KEY:
-    print("Error: GOOGLE_API_KEY environment variable is not set.")
-    exit(1)
+    print("Warning: GOOGLE_API_KEY environment variable is not set. Intent classification feature will be disabled.")
+    # Do not exit, just set a flag or let it fail later when used
+    model = None
 
-genai.configure(api_key=API_KEY)
+
+
 
 MODEL_NAME = "gemini-2.0-flash"
 
@@ -60,14 +62,19 @@ User: "사랑해" -> Model: N
 """
 
 try:
-    model = genai.GenerativeModel(
-        model_name=MODEL_NAME,
-        generation_config=generation_config,
-        system_instruction=system_prompt
-    )
+    if API_KEY:
+        genai.configure(api_key=API_KEY)
+        model = genai.GenerativeModel(
+            model_name=MODEL_NAME,
+            generation_config=generation_config,
+            system_instruction=system_prompt
+        )
+    else:
+        model = None
 except Exception as e:
     print(f"Error initializing model '{MODEL_NAME}': {e}")
-    exit(1)
+    model = None
+
 
 
 
@@ -113,16 +120,18 @@ def process_data(input_path=None, output_path=None):
         prediction = "ERROR"
 
         try:
-            response = model.generate_content(utterance, safety_settings=safety_settings)
-            raw_text = response.text.strip().upper()
+            if model:
+                response = model.generate_content(utterance, safety_settings=safety_settings)
+                raw_text = response.text.strip().upper()
 
-            if 'Y' in raw_text:
-                prediction = 'Y'
-            elif 'N' in raw_text:
-                prediction = 'N'
+                if 'Y' in raw_text:
+                    prediction = 'Y'
+                elif 'N' in raw_text:
+                    prediction = 'N'
+                else:
+                    prediction = raw_text
             else:
-                prediction = raw_text
-
+                prediction = "SKIPPED" # Model not initialized
         except Exception as e:
             print(f"\n  Error: {e}")
             prediction = "ERROR"

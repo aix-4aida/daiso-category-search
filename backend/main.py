@@ -372,6 +372,90 @@ async def product_by_id_api(product_id: int):
     return result
 
 
+
+# ============== Full Pipeline Endpoint from Text ==============
+
+class TextSearchRequest(pydantic.BaseModel):
+    text: str
+
+@app.post("/api/search/process_text")
+async def process_text_api(request: TextSearchRequest):
+    """
+    Run full pipeline from text input (e.g. from real-time STT)
+    STT → Intent → Keyword → Expansion → Benchmark → Rerank
+    """
+    text = request.text
+    if not text or not text.strip():
+        return {"error": "Empty text"}
+
+    print(f"🚀 Processing text pipeline: '{text}'")
+    
+    # Dummy audio path (pipeline expects it for logging)
+    dummy_audio_path = f"outputs/text_input_{uuid.uuid4()}.wav"
+    
+    try:
+        from backend.services_kms.run_all_pipeline import run_pipeline_for_voice
+        
+        # Run pipeline (stt_elapsed=0 since we already have text)
+        pipeline_result = await run_pipeline_for_voice(dummy_audio_path, text, 0.0)
+        
+        # Parse final results (Similar logic to voice_search_api)
+        final_json = pipeline_result.get('final_results', [])
+        product_list = []
+        
+        if final_json and len(final_json) > 0:
+            first_result = final_json[0]
+            
+            # Get retrieved items
+            retrieved_strs = first_result.get("retrieved_ids", [])
+            if not retrieved_strs:
+                retrieved_strs = first_result.get("retrieved_results", [])
+            
+            item_strs = list(retrieved_strs)
+
+            # Prioritize selected_id
+            selected_val = first_result.get("selected_id")
+            if selected_val:
+                if selected_val in item_strs:
+                    item_strs.remove(selected_val)
+                item_strs.insert(0, selected_val) # Selected ID is first (Top 1)
+            
+            print(f"📦 Pipeline items (top 3): {item_strs[:3]}")
+            
+            for item_str in item_strs[:3]: # Limit to Top 3
+                try:
+                    if "(" in item_str:
+                        doc_id_str = item_str.split("(")[0].strip()
+                    else:
+                        doc_id_str = item_str.strip()
+                        
+                    if not doc_id_str.isdigit():
+                        continue
+                        
+                    doc_id = int(doc_id_str)
+                    product = get_product_by_id(doc_id)
+                    if product:
+                        if product['id'] not in [p['id'] for p in product_list]:
+                            product_list.append(product)
+                except Exception as e:
+                    print(f"⚠️ Error fetching product {item_str}: {e}")
+        
+        final_keyword = pipeline_result.get("keyword") or (final_json[0].get("query") if final_json else text)
+
+        return {
+            "text": text,
+            "results": product_list,
+            "keyword": final_keyword,
+            "pipeline_status": "completed",
+            "reason": final_json[0].get("reason", "") if final_json else ""
+        }
+        
+    except Exception as e:
+        print(f"❌ Text pipeline error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e)}
+
 # ============== Full Pipeline Endpoint ==============
 
 @app.post("/api/pipeline/run")
