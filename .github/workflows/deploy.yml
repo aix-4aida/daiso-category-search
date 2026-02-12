@@ -88,6 +88,10 @@ jobs:
           export PATH=$HOME/.local/bin:$PATH
           echo "Using docker-compose version: $(docker-compose --version)"
 
+          # Create .env file from GitHub Secrets
+          echo "${{ secrets.ENV_FILE }}" > .env
+          echo "✅ .env file created from GitHub Secrets"
+
           # Pull latest code (for docker-compose.yml updates)
           git fetch origin
           git checkout ${{ github.ref_name }}
