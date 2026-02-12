@@ -184,19 +184,48 @@ async def voice_search_api(file: UploadFile = File(...)):
             
         print(f"🎤 Voice search request: {temp_audio_path}")
         
-        # Run Whisper STT using existing adapter (with timing)
+        # ---------------------------------------------------------
+        # STT Strategy: Google First -> Whisper Fallback
+        # ---------------------------------------------------------
         stt_start = time.time()
-        result = run_single_provider(temp_audio_path, "whisper", 1)
+        text = ""
+        stt_provider = "none"
+        
+        # 1. Try Google STT
+        if google_adapter:
+            print("🔄 [STT] Trying Google STT...")
+            try:
+                # normalize audio for Google (16kHz, mono)
+                # run_single_provider handles normalization internally
+                result = run_single_provider(temp_audio_path, "google", 1)
+                text = result.stt.text_raw
+                if text and text.strip():
+                    stt_provider = "google"
+                    print(f"✅ [STT] Google Success: '{text}'")
+                else:
+                    print("⚠️ [STT] Google returned empty result")
+            except Exception as e:
+                print(f"⚠️ [STT] Google failed: {e}")
+        
+        # 2. Fallback to Whisper
+        if not text or not text.strip():
+            if whisper_adapter:
+                print("🔄 [STT] Falling back to Whisper STT...")
+                try:
+                    result = run_single_provider(temp_audio_path, "whisper", 1)
+                    text = result.stt.text_raw
+                    if text and text.strip():
+                        stt_provider = "whisper"
+                        print(f"✅ [STT] Whisper Success: '{text}'")
+                except Exception as e:
+                    print(f"❌ [STT] Whisper failed: {e}")
+            else:
+                 print("⚠️ [STT] Whisper adapter not available for fallback")
+
         stt_elapsed = time.time() - stt_start
         
-        text = result.stt.text_raw
-        print(f"🗣️ Transcribed: '{text}' (STT: {stt_elapsed:.2f}s)")
-        
         if not text:
-            return {"text": "", "error": "No speech detected", "stt_time_seconds": round(stt_elapsed, 2)}
-        
-        if not text:
-            return {"text": "", "error": "No speech detected", "stt_time_seconds": round(stt_elapsed, 2)}
+            return {"text": "", "error": "No speech detected (All providers failed)", "stt_time_seconds": round(stt_elapsed, 2)}
         
         # Run full pipeline synchronously to get results
         try:

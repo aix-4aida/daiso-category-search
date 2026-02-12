@@ -18,8 +18,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Literal
 
-from backend.stt import QualityGate, PolicyGate, WhisperAdapter, GoogleAdapter
-from backend.stt.types import STTResult, QualityGateResult, PolicyIntent
+try:
+    from stt import QualityGate, PolicyGate, WhisperAdapter
+    from stt.types import STTResult, QualityGateResult, PolicyIntent
+except ImportError:
+    from backend.stt import QualityGate, PolicyGate, WhisperAdapter
+    from backend.stt.types import STTResult, QualityGateResult, PolicyIntent
 
 
 # ============== Response Models ==============
@@ -58,7 +62,6 @@ class STTProcessResponse(BaseModel):
 
 config: dict = {}
 whisper_adapter: Optional[WhisperAdapter] = None
-google_adapter: Optional[GoogleAdapter] = None
 quality_gate: Optional[QualityGate] = None
 policy_gate: Optional[PolicyGate] = None
 
@@ -93,21 +96,10 @@ async def lifespan(app: FastAPI):
             fallback_model=stt_config.get("fallback_model", "small"),
             language=stt_config.get("language", "ko")
         )
-        print(f"✅ Whisper adapter initialized")
     except Exception as e:
         print(f"⚠️ Whisper adapter failed to load: {e}")
         print("⚠️ STT endpoint will return simulation results")
         whisper_adapter = None
-    
-    # Initialize Google adapter
-    try:
-        # Default credentials path
-        cred_path = config.get("stt", {}).get("google", {}).get("credentials_path", "backend/daisoproject-sst.json")
-        google_adapter = GoogleAdapter(credentials_path=cred_path)
-        print(f"✅ Google adapter initialized")
-    except Exception as e:
-        print(f"⚠️ Google adapter failed to initialize: {e}")
-        google_adapter = None
     
     # Initialize gates
     qg_config = config.get("quality_gate", {})
@@ -154,7 +146,10 @@ app.add_middleware(
 # ============== WebSocket ==============
 
 from fastapi import WebSocket
-from backend.ws_stt import handle_streaming_stt
+try:
+    from ws_stt import handle_streaming_stt
+except ImportError:
+    from backend.ws_stt import handle_streaming_stt
 
 @app.websocket("/ws/stt")
 async def websocket_stt_endpoint(websocket: WebSocket):
@@ -209,64 +204,18 @@ async def process_stt(
             tmp.write(content)
             temp_path = tmp.name
         
-        # STT Processing (Google -> Whisper Fallback)
-        stt_result = None
-        used_provider = "none"
-        
-        # 1. Try Google STT first
-        if google_adapter:
-            print("🔄 Trying Google STT...")
-            try:
-                stt_result = google_adapter.transcribe(temp_path)
-                if stt_result.text_raw and stt_result.text_raw.strip():
-                    used_provider = "google"
-                    print(f"✅ Google STT Success: '{stt_result.text_raw}'")
-                else:
-                    print(f"⚠️ Google STT returned empty result")
-                    # Force fallback by keeping stt_result but knowing it's empty
-            except Exception as e:
-                print(f"⚠️ Google STT failed: {e}")
-                # Fallback will happen below
-        
-        # 2. Fallback to Whisper if needed (empty result or no Google adapter)
-        fallback_needed = (
-            stt_result is None or 
-            stt_result.error is not None or 
-            not stt_result.text_raw or 
-            not stt_result.text_raw.strip()
-        )
-        
-        if fallback_needed:
-            if whisper_adapter:
-                print("🔄 Falling back to Whisper STT...")
-                try:
-                    params = {}
-                    # WhisperAdapter.transcribe takes audio_path
-                    stt_result = whisper_adapter.transcribe(temp_path)
-                    used_provider = "whisper"
-                    print(f"✅ Whisper STT Success: '{stt_result.text_raw}'")
-                except Exception as e:
-                    print(f"❌ Whisper STT failed: {e}")
-                    # If both failed, use the last error or create a generic one
-                    if not stt_result:
-                        stt_result = STTResult(
-                            text_raw=None, 
-                            confidence=0.0, 
-                            lang="ko", 
-                            latency_ms=0, 
-                            error=f"Both providers failed. Whisper error: {str(e)}"
-                        )
-            else:
-                print("⚠️ Whisper adapter not available for fallback")
-                if not stt_result:
-                   stt_result = STTResult(
-                        text_raw="(시뮬레이션 모드 - 어댑터 없음)",
-                        confidence=0.8,
-                        lang="ko",
-                        latency_ms=100,
-                        error="No STT adapters loaded"
-                    )
-
+        # STT Processing
+        if whisper_adapter:
+            stt_result = whisper_adapter.transcribe(temp_path)
+        else:
+            # Simulation mode (when whisper not available)
+            stt_result = STTResult(
+                text_raw="(시뮬레이션 모드 - Whisper 미로드)",
+                confidence=0.8,
+                lang="ko",
+                latency_ms=100,
+                error="Whisper adapter not loaded"
+            )
         
         # Quality Gate
         quality_result = quality_gate.evaluate(stt_result, attempt=attempt)

@@ -32,7 +32,7 @@ if os.path.exists(local_ffmpeg):
     AudioSegment.converter = local_ffmpeg
     print(f"[Config] Using local ffmpeg: {local_ffmpeg}")
 
-def convert_stt_to_json(input_dir: str, output_json: str):
+def convert_stt_to_json(input_dir: str, output_json: str, provider: str = "whisper"):
     """
     Reads audio files, transcribes them, and saves to JSON.
     """
@@ -46,16 +46,31 @@ def convert_stt_to_json(input_dir: str, output_json: str):
     # Ensure output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print("Initializing STT Adapter (CPU Mode)...")
+    print(f"Initializing STT Adapters (Provider: {provider.upper()})...")
+    google_adapter = None
+    whisper_adapter = None
+    
+    # 1. Initialize Whisper (Always, for fallback or primary)
     try:
-        adapter = get_adapter("whisper", model_size="medium", device="cpu", compute_type="int8")
+        # Using default settings as in original code
+        whisper_adapter = get_adapter("whisper", model_size="medium", device="cpu", compute_type="int8")
+        print(" [OK] Whisper Adapter initialized")
     except Exception as e:
-        print(f"Error initializing STT adapter: {e}")
-        sys.exit(1) # Fail explicitly
+        print(f" [WARN] Whisper Adapter failed to load: {e}")
+
+    # 2. Initialize Google (If requested)
+    if provider == "google":
+        try:
+            google_adapter = get_adapter("google", credentials_path="backend/daisoproject-sst.json")
+            print(" [OK] Google Adapter initialized")
+        except Exception as e:
+            print(f" [ERROR] Google Adapter failed to load: {e}")
+            print("  -> Continuing with Whisper only if available.")
 
     results = []
     audio_extensions = {".wav", ".mp3", ".m4a", ".flac"}
     
+    # ... (input validation logging kept same)
     print(f"[DEBUG] Validating Input Path: {input_path}")
     print(f"[DEBUG] Absolute Path: {input_path.resolve()}")
     print(f"[DEBUG] Exists: {input_path.exists()}")
@@ -75,29 +90,37 @@ def convert_stt_to_json(input_dir: str, output_json: str):
 
     print(f"Found {len(files)} audio files. Starting transcription...")
 
+    print(f"Found {len(files)} audio files. Starting transcription...")
+
+    # Use stt_service.run_stt (Centralized Logic with Config)
+    from backend.services_kms.stt_service import run_stt
+
     for i, file_path in enumerate(files, 1):
         print(f"Processing [{i}/{len(files)}]: {file_path.name}")
         
         try:
-            # 1. Normalize
-            norm_result = normalize_audio(str(file_path))
-            target_audio = norm_result["normalized_path"]
+            # Call run_stt (Handles Preprocessing -> Adapter (Google/Whisper) -> Fallback -> Postprocessing)
+            # provider arg is passed from convert_stt_to_json
+            result_dict = run_stt(str(file_path), provider=provider)
             
-            # 2. Transcribe
-            stt_result = adapter.transcribe(target_audio)
+            # Map result to output format
+            final_utterance = result_dict.get("text", "")
             
             item = {
                 "id": i,
                 "filename": file_path.name,
-                "utterance": stt_result.text_raw if not stt_result.error else "",
+                "utterance": final_utterance,
                 "stt_meta": {
-                    "confidence": stt_result.confidence,
-                    "latency_ms": stt_result.latency_ms,
-                    "error": stt_result.error
+                    "confidence": result_dict.get("confidence", 0.0),
+                    "latency_ms": result_dict.get("latency_ms", 0),
+                    "error": result_dict.get("error"),
+                    "provider": result_dict.get("provider", "unknown")
                 }
             }
             results.append(item)
             print(f"  - Utterance: {item['utterance']}")
+            if result_dict.get("error"):
+                 print(f"  Ref: Error: {result_dict.get('error')}")
 
         except Exception as e:
             print(f"  - Failed to process {file_path.name}: {e}")
@@ -120,7 +143,7 @@ if __name__ == "__main__":
     # Use project root for paths (2 levels up from backend/services_kms)
     project_root = Path(__file__).resolve().parent.parent.parent
     
-    INPUT_AUDIO_DIR = str(project_root / "data/test_audio/01_general/김민서_일반01.m4a")
+    INPUT_AUDIO_DIR = str(project_root / "data/test_audio/02_short/김민서_단답01.m4a")
     OUTPUT_JSON_FILE = str(project_root / "backend/services_kms/data/stt_output.json")
     
     if not os.path.exists(INPUT_AUDIO_DIR):

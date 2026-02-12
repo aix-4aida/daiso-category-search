@@ -227,8 +227,9 @@ async def main_async():
     print("Starting Daiso Category Search Pipeline (Async Direct Call)...")
     
     # STT 실행
+    # 기본은 whisper이지만 필요시 google로 변경 가능
     elapsed, success, _ = await run_step(
-        "1. STT", convert_stt_to_json, AUDIO_INPUT, STT_OUTPUT
+        "1. STT", convert_stt_to_json, AUDIO_INPUT, STT_OUTPUT, provider="google" 
     )
     
     # 이후 단계는 run_pipeline_for_voice를 재사용하면 좋겠지만, 

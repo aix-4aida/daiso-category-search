@@ -7,9 +7,26 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    # Map outputs from the 'filter' step to job outputs
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    # Check for changes in specific paths
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          frontend:
+            - 'frontend/**'
+          backend:
+            - 'backend/**'
+            - 'Dockerfile'
+            - 'requirements.txt'
+            - '.github/workflows/deploy.yml'
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -21,6 +38,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and push Frontend
+      if: steps.filter.outputs.frontend == 'true'
       uses: docker/build-push-action@v4
       with:
         context: ./frontend
@@ -29,14 +47,19 @@ jobs:
         tags: ${{ secrets.DOCKER_USERNAME }}/daiso-frontend:latest
         build-args: |
           NEXT_PUBLIC_API_URL=http://54.180.246.142:8000
+        cache-from: type=gha,scope=frontend
+        cache-to: type=gha,mode=max,scope=frontend
 
     - name: Build and push Backend
+      if: steps.filter.outputs.backend == 'true'
       uses: docker/build-push-action@v4
       with:
         context: .
         file: Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/daiso-backend:latest
+        cache-from: type=gha,scope=backend
+        cache-to: type=gha,mode=max,scope=backend
 
   deploy:
     needs: build-and-push
