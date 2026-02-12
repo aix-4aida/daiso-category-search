@@ -103,8 +103,8 @@ jobs:
           # Pull new images (Only downloads changed layers: Faster!)
           docker-compose pull
           
-          # Restart containers
-          docker-compose up -d --remove-orphans
+          # Restart containers (Force recreate to use new image, NO BUILD on server)
+          docker-compose up -d --no-build --remove-orphans
           
           # Cleanup ONLY dangling images (Old versions)
           # We do NOT use 'system prune -a' anymore to keep cache for next deploy
