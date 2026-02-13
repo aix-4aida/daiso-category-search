@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Star, Package, Home } from 'lucide-react'
 import Layout from '../../components/Layout'
@@ -13,7 +13,7 @@ const getBaseUrl = () => {
     return 'http://localhost:8000/api';
 };
 
-const VoiceResults = () => {
+const VoiceResultsContent = () => {
     const router = useRouter()
     const searchParams = useSearchParams()
     const queryParam = searchParams?.get('q') || ''
@@ -250,6 +250,21 @@ const VoiceResults = () => {
                 </div>
             </div>
         </Layout>
+    )
+}
+
+const VoiceResults = () => {
+    return (
+        <Suspense fallback={
+            <Layout className="items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-daiso-red mx-auto mb-4"></div>
+                    <div className="text-xl text-gray-600 font-medium">AI가 최적의 상품을 찾고 있습니다...</div>
+                </div>
+            </Layout>
+        }>
+            <VoiceResultsContent />
+        </Suspense>
     )
 }
 
