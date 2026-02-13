@@ -18,18 +18,17 @@ describe('ProductCard', () => {
   it('should render product info', () => {
     render(<ProductCard product={mockProduct} onSelect={() => {}} />);
     expect(screen.getByText('대용량 물티슈')).toBeInTheDocument();
-    expect(screen.getByText('1,000원')).toBeInTheDocument();
     expect(screen.getByText(/뷰티\/위생/)).toBeInTheDocument();
   });
 
-  it('should show BEST badge when isTop', () => {
+  it('should show BEST! badge when isTop', () => {
     render(<ProductCard product={mockProduct} isTop onSelect={() => {}} />);
-    expect(screen.getByText('BEST')).toBeInTheDocument();
+    expect(screen.getByText('BEST!')).toBeInTheDocument();
   });
 
-  it('should not show BEST badge by default', () => {
+  it('should not show BEST! badge by default', () => {
     render(<ProductCard product={mockProduct} onSelect={() => {}} />);
-    expect(screen.queryByText('BEST')).not.toBeInTheDocument();
+    expect(screen.queryByText('BEST!')).not.toBeInTheDocument();
   });
 
   it('should call onSelect when clicked', () => {

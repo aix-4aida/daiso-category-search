@@ -10,20 +10,21 @@ export default function ProductCard({ product, isTop = false, onSelect }: Produc
   return (
     <button
       onClick={() => onSelect(product)}
-      className={`flex flex-col items-center p-4 rounded-2xl transition-all
-                  hover:shadow-lg active:scale-[0.98] cursor-pointer
+      className={`flex flex-col items-center p-6 rounded-3xl transition-all
+                  hover:shadow-lg active:scale-[0.98] cursor-pointer bg-white
                   ${isTop
-                    ? 'bg-white ring-2 ring-daiso-red shadow-md scale-105'
-                    : 'bg-white shadow'
+                    ? 'border-3 border-dashed border-daiso-red w-80'
+                    : 'border border-gray-200 w-64'
                   }`}
       aria-label={`${product.name} 위치 보기`}
     >
       {isTop && (
-        <span className="self-start bg-daiso-red text-white text-xs font-bold px-2 py-1 rounded-full mb-2">
-          BEST
+        <span className="text-daiso-red text-sm font-extrabold tracking-wider mb-3">
+          BEST!
         </span>
       )}
-      <div className="w-32 h-32 mb-3 overflow-hidden rounded-xl bg-daiso-gray-50">
+      <div className={`mb-4 overflow-hidden rounded-xl bg-gray-50
+                       ${isTop ? 'w-48 h-48' : 'w-36 h-36'}`}>
         <img
           src={product.image_url}
           alt={product.name}
@@ -31,14 +32,12 @@ export default function ProductCard({ product, isTop = false, onSelect }: Produc
           loading="lazy"
         />
       </div>
-      <h3 className="text-base font-bold text-daiso-gray-900 text-center leading-tight mb-1">
+      <h3 className={`font-bold text-daiso-gray-900 text-center leading-tight mb-2
+                       ${isTop ? 'text-lg' : 'text-base'}`}>
         {product.name}
       </h3>
-      <p className="text-xs text-daiso-gray-500 mb-2">
+      <p className="text-xs text-gray-400">
         {product.category_major} &gt; {product.category_middle}
-      </p>
-      <p className="text-lg font-extrabold text-daiso-red">
-        {product.price.toLocaleString()}원
       </p>
     </button>
   );

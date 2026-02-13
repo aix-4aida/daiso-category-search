@@ -28,9 +28,9 @@ class Waypoint(BaseModel):
 
 
 class MapInfo(BaseModel):
-    floor: str = "1F"
+    floor: str = "B1"
     section: str = ""
-    map_image: str = "/static/maps/store.png"
+    map_image: str = "/maps/map_b1.jpg"
     counter_number: int | None = None
     section_description: str = ""
     destination: Waypoint | None = None

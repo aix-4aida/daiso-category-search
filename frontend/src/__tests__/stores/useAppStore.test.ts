@@ -112,7 +112,7 @@ describe('useAppStore', () => {
     // First set up mapInfo from a search
     useAppStore.setState({
       mapInfo: {
-        floor: 'B1', section: '뷰티/위생', map_image: '/static/maps/map_b1.jpg',
+        floor: 'B1', section: '뷰티/위생', map_image: '/maps/map_b1.jpg',
         counter_number: 1, section_description: '화장품 코너',
         destination: { x: 0.82, y: 0.18 }, start: { x: 0.45, y: 0.05 },
         waypoints: [{ x: 0.45, y: 0.05 }, { x: 0.82, y: 0.05 }, { x: 0.82, y: 0.18 }],

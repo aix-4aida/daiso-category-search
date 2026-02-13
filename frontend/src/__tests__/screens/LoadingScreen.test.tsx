@@ -8,9 +8,9 @@ beforeEach(() => {
 });
 
 describe('LoadingScreen', () => {
-  it('should render loading message', () => {
+  it('should render loading title', () => {
     render(<LoadingScreen />);
-    expect(screen.getByText('매장 내 상품 위치를 찾고 있습니다...')).toBeInTheDocument();
+    expect(screen.getByText('찾는 중입니다...')).toBeInTheDocument();
   });
 
   it('should show query text', () => {

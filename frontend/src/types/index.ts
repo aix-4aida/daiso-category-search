@@ -9,12 +9,27 @@ export interface Product {
   category_major: string | null;
   category_middle: string | null;
   score: number;
+  counter_number?: number | null;
+  destination_x?: number | null;
+  destination_y?: number | null;
+  location_floor?: string | null;
+  location_description?: string | null;
+}
+
+export interface Waypoint {
+  x: number;
+  y: number;
 }
 
 export interface MapInfo {
   floor: string;
   section: string;
   map_image: string;
+  counter_number?: number | null;
+  section_description?: string;
+  destination?: Waypoint | null;
+  start?: Waypoint | null;
+  waypoints?: Waypoint[];
 }
 
 export interface QueryInfo {

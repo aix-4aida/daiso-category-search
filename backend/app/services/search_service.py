@@ -116,7 +116,7 @@ class SearchService:
                 map_info = MapInfo(
                     floor=location.floor,
                     section=first.category_major or "",
-                    map_image=f"/static/maps/map_{location.floor.lower()}.jpg",
+                    map_image=f"/maps/map_{location.floor.lower()}.jpg",
                     counter_number=location.counter_number,
                     section_description=location.section_description,
                     destination=Waypoint(x=location.x, y=location.y),

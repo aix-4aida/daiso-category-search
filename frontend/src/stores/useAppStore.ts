@@ -62,7 +62,7 @@ export const useAppStore = create<AppState>((set) => ({
       mapInfo = {
         ...mapInfo,
         floor: product.location_floor ?? mapInfo.floor,
-        map_image: `/static/maps/map_${(product.location_floor ?? mapInfo.floor).toLowerCase()}.jpg`,
+        map_image: `/maps/map_${(product.location_floor ?? mapInfo.floor).toLowerCase()}.jpg`,
         counter_number: product.counter_number,
         section_description: product.location_description ?? '',
         destination: { x: product.destination_x, y: product.destination_y },

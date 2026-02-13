@@ -27,7 +27,7 @@ export default function MicButton() {
   return (
     <button
       onClick={handleClick}
-      className={`relative w-20 h-20 rounded-full flex items-center justify-center
+      className={`relative w-12 h-12 rounded-full flex items-center justify-center shrink-0
                   transition-all ${
                     isListening
                       ? 'bg-daiso-red scale-110'
@@ -45,7 +45,7 @@ export default function MicButton() {
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         fill="white"
-        className="w-10 h-10 relative z-10"
+        className="w-6 h-6 relative z-10"
       >
         <path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z" />
         <path d="M17 11a1 1 0 10-2 0 3 3 0 11-6 0 1 1 0 10-2 0 5 5 0 004 4.9V18H9a1 1 0 100 2h6a1 1 0 100-2h-2v-2.1A5 5 0 0017 11z" />

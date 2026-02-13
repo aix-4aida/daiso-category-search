@@ -6,7 +6,7 @@ describe('SearchBar', () => {
   it('should render input and button', () => {
     render(<SearchBar onSearch={() => {}} />);
     expect(screen.getByLabelText('상품 검색')).toBeInTheDocument();
-    expect(screen.getByText('검색')).toBeInTheDocument();
+    expect(screen.getByLabelText('검색')).toBeInTheDocument();
   });
 
   it('should call onSearch with trimmed value on submit', () => {
@@ -24,13 +24,13 @@ describe('SearchBar', () => {
     const onSearch = vi.fn();
     render(<SearchBar onSearch={onSearch} />);
 
-    fireEvent.submit(screen.getByText('검색').closest('form')!);
+    fireEvent.submit(screen.getByLabelText('검색').closest('form')!);
     expect(onSearch).not.toHaveBeenCalled();
   });
 
   it('should display placeholder text', () => {
     render(<SearchBar onSearch={() => {}} />);
-    expect(screen.getByPlaceholderText('상품 이름을 말해주세요')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/찾으시는 상품을 말씀해주세요/)).toBeInTheDocument();
   });
 
   it('should accept initial value', () => {

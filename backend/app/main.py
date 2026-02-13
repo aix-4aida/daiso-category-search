@@ -34,7 +34,7 @@ if os.path.isdir(settings.IMAGES_DIR):
 # Static files: store maps
 maps_dir = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "public", "maps")
 if os.path.isdir(maps_dir):
-    app.mount("/static/maps", StaticFiles(directory=maps_dir), name="maps")
+    app.mount("/maps", StaticFiles(directory=maps_dir), name="maps")
 
 # Production: serve React SPA from frontend/dist
 frontend_dist = os.path.normpath(settings.FRONTEND_DIST)

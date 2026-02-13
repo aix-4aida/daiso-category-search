@@ -33,19 +33,19 @@ describe('ResultsScreen', () => {
     expect(screen.getByText(/물티슈.*검색 결과/)).toBeInTheDocument();
   });
 
-  it('should render reset button', () => {
+  it('should render bottom nav with home', () => {
     render(<ResultsScreen />);
-    expect(screen.getByText('다시 검색하기')).toBeInTheDocument();
+    expect(screen.getByText('홈')).toBeInTheDocument();
   });
 
-  it('should reset on button click', () => {
+  it('should reset on home click', () => {
     render(<ResultsScreen />);
-    fireEvent.click(screen.getByText('다시 검색하기'));
+    fireEvent.click(screen.getByText('홈'));
     expect(useAppStore.getState().screen).toBe('home');
   });
 
-  it('should mark first card as top', () => {
+  it('should mark first card as BEST', () => {
     render(<ResultsScreen />);
-    expect(screen.getByText('BEST')).toBeInTheDocument();
+    expect(screen.getByText('BEST!')).toBeInTheDocument();
   });
 });

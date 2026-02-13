@@ -14,9 +14,9 @@ beforeEach(() => {
 });
 
 describe('HomeScreen', () => {
-  it('should render title', () => {
+  it('should render logo', () => {
     render(<HomeScreen />);
-    expect(screen.getByText('어디다있소')).toBeInTheDocument();
+    expect(screen.getByAltText('어디다이소')).toBeInTheDocument();
   });
 
   it('should render search bar', () => {
@@ -29,15 +29,22 @@ describe('HomeScreen', () => {
     expect(screen.getByLabelText('음성으로 검색')).toBeInTheDocument();
   });
 
-  it('should render category chips', () => {
+  it('should render banner image', () => {
     render(<HomeScreen />);
-    expect(screen.getByText('물티슈')).toBeInTheDocument();
-    expect(screen.getByText('수납함')).toBeInTheDocument();
+    const banner = screen.getByAltText('설연휴 쇼핑도 다이소에서');
+    expect(banner).toHaveAttribute('src', '/banner01.png');
   });
 
-  it('should show error message when error exists', () => {
+  it('should show error view when error exists', () => {
     useAppStore.setState({ error: '검색 결과가 없습니다.' });
     render(<HomeScreen />);
-    expect(screen.getByRole('alert')).toHaveTextContent('검색 결과가 없습니다.');
+    expect(screen.getByText('죄송합니다')).toBeInTheDocument();
+    expect(screen.getByText('다시 검색하기')).toBeInTheDocument();
+  });
+
+  it('should show suggestion examples on error', () => {
+    useAppStore.setState({ error: '검색 결과가 없습니다.' });
+    render(<HomeScreen />);
+    expect(screen.getByText(/이렇게 검색해 보세요/)).toBeInTheDocument();
   });
 });
