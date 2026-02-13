@@ -12,7 +12,19 @@ from backend.search.core.types import Document, ScoredDoc
 
 
 def _simple_tokenize(text: str) -> List[str]:
-    return [t for t in (text or "").strip().split() if t]
+    if not text:
+        return []
+    # Original space-based tokens
+    tokens = [t for t in text.strip().split() if t]
+    
+    # Character-level bigrams for better Korean matching (e.g., '물티슈' -> '물티', '티슈')
+    bigrams = []
+    clean_text = "".join(tokens)
+    if len(clean_text) > 1:
+        for i in range(len(clean_text) - 1):
+            bigrams.append(clean_text[i:i+2])
+    
+    return list(set(tokens + bigrams))
 
 
 @dataclass
@@ -85,9 +97,9 @@ class ElasticBM25Retriever:
     index: str                    # ex) products
     api_key: str = ""             # optional
     auth_header: str = ""         # optional: "ApiKey xxx" or "Bearer xxx" or "Basic xxx"
-    timeout_s: int = 30
-    max_retry: int = 5
-    retry_sleep_base: float = 1.5
+    timeout_s: int = 5
+    max_retry: int = 3
+    retry_sleep_base: float = 1.0
 
     def _headers(self) -> Dict[str, str]:
         h = {"Content-Type": "application/json"}
@@ -103,6 +115,15 @@ class ElasticBM25Retriever:
             else:
                 h["Authorization"] = f"ApiKey {key}"
         return h
+
+    def check_connection(self) -> bool:
+        """Check if ElasticSearch is reachable."""
+        try:
+            url = self.base_url.rstrip("/")
+            r = requests.get(url, timeout=self.timeout_s)
+            return r.status_code == 200
+        except Exception:
+            return False
 
     def query(self, query_text: str, *, top_k: int = 50) -> List[ScoredDoc]:
         qt = (query_text or "").strip()

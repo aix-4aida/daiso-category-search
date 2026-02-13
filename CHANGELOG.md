@@ -14,6 +14,27 @@ All notable changes to this project will be documented in this file.
 - **Nginx 502 Error**: Resolved proxy communication issues in AWS Lightsail by updating internal service routing.
 - **STT Environment**: Fixed audio conversion failures by installing FFmpeg in the Docker container and optimizing the Whisper model for low-resource environments.
 
+## [0.2.0] - 2026-02-13
+
+### Added
+- **Lightsail Deployment Prep**:
+  - Created `DEPLOYMENT.md` guide for AWS Lightsail Container Service.
+  - Added `docker-compose.prod.yml` for local production simulation (Nginx + Backend).
+  - Configured `nginx.conf` and `Dockerfile.frontend` for proper API proxying (`/api/` -> `backend:8000`).
+- **Map System v14**:
+  - **BFS Pathfinding**: Implemented Breadth-First Search to draw realistic walking paths instead of straight lines.
+  - **Smart Mapping**: Added category-based fallback logic (Middle -> Major -> Default) for products without specific location codes.
+  - **Enhanced UI**: Added "Current Location" label and truncated product name tooltips on map markers.
+
+### Changed
+- **Resource Optimization**: Added `DISABLE_WHISPER` environment variable to optionally skip loading the heavy Whisper model on low-memory instances.
+- **Frontend API**: Updated `app.js` to support relative paths (`/api/...`) for Nginx routing (rolled back to absolute for local dev with instructions).
+- **Dependency Management**: Created `requirements-lightsail.txt` (MVP) and `.dockerignore` for lighter builds.
+
+### Fixed
+- **Local Dev 404**: Resolved API 404 errors in local environments by clarifying absolute vs relative path usage in docs and code.
+- **Whisper Safety**: Added error handling in `stt_service.py` to prevent crashes if `faster-whisper` is missing or fails to load.
+
 ## [0.0.1] - 2026-02-06
 
 ### Initial Release

@@ -1,6 +1,4 @@
-# Lightsail 경량 의존성 (torch/ML 모델 제외)
-# GPU 없는 Lightsail 환경에서 사용
-
+# Lightsail 의존성 (MVP)
 fastapi==0.128.0
 uvicorn==0.40.0
 python-dotenv==1.0.1
@@ -10,19 +8,24 @@ PyYAML==6.0.3
 requests==2.32.5
 aiohttp>=3.9.0
 
-# Google Gemini API (LLM 호출용)
+# Google Gemini API (LLM: NLU + Rerank)
 google-generativeai==0.8.6
 google-genai>=1.0.0
 
 # Search
+chromadb>=0.4.0
 qdrant-client>=1.7.0
 elasticsearch>=8.11.0
+sentence-transformers>=2.2.0
+
+# STT (서버 폴백용)
+google-cloud-speech>=2.20.0
+pydub==0.25.1
 
 # Data
 pandas==2.2.0
 numpy<2.0.0
 
-# STT & Audio
-pydub==0.25.1
-faster-whisper==1.0.3
-google-cloud-speech>=2.20.0
+
+# 2026-02-13 : faster-whisper 제거, chromadb와 sentence-transformers 추가. sentence-transformers는 search_service.py의 get_query_embedding()에서 쓰고 있으니 반드시 필요
+# faster-whisper는 내부적으로 ctranslate2를 의존성으로 끌고 오는데, 이것만으로 수백 MB임. 모델 로딩까지 하면 1GB RAM에서 터짐. Web Speech API로 STT를 우회했으므로 뺌.

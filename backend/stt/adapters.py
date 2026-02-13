@@ -239,15 +239,15 @@ class GoogleAdapter(BaseAdapter):
             
             from google.cloud import speech
             
-            # Read audio file
+            # Read audio file and STRIP WAV HEADER (44 bytes)
+            # Google STT (LINEAR16) expects raw PCM bytes, but pydub exports with WAV header.
             with open(audio_path, "rb") as f:
-                audio_content = f.read()
+                header = f.read(44) # Read header
+                audio_content = f.read() # Read remaining raw PCM data
             
             audio = speech.RecognitionAudio(content=audio_content)
             
-            # Encoding fixed to LINEAR16
-            # Reason: audio_converter.py guarantees WAV/PCM/16kHz/mono output
-            # All input formats (m4a, mp3, etc.) are normalized before reaching here
+            # Explicitly use LINEAR16 with raw PCM data
             config = speech.RecognitionConfig(
                 encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
                 sample_rate_hertz=self.sample_rate_hertz,

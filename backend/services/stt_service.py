@@ -11,8 +11,17 @@ load_dotenv()
 print("🔄 Initializing STT adapters...")
 
 # 1. Whisper Adapter
-whisper_config = config["stt"]["whisper"]
-whisper_adapter = get_adapter("whisper", **whisper_config)
+# 1. Whisper Adapter
+whisper_adapter = None
+if os.environ.get("DISABLE_WHISPER") == "true":
+    print("⚠️ Whisper STT disabled via DISABLE_WHISPER env var")
+else:
+    try:
+        whisper_config = config["stt"]["whisper"]
+        whisper_adapter = get_adapter("whisper", **whisper_config)
+    except Exception as e:
+        print(f"⚠️ Whisper STT initialization failed (dependency missing or config error): {e}")
+        whisper_adapter = None
 
 # 2. Google Adapter
 google_config = config["stt"].get("google", {})
@@ -34,13 +43,21 @@ def run_single_provider(audio_path: str, provider: str, attempt: int = 1) -> Pro
     adapter = google_adapter if provider == "google" else whisper_adapter
     model = "default" if provider == "google" else config["stt"]["whisper"]["model_size"]
     
-    # Convert audio
+    # Convert and Analyze audio
     try:
+        # 1. Normalize first to get valid path
         conversion_result = audio_converter.normalize(audio_path)
         normalized_path = conversion_result["normalized_path"]
         print(f"🔄 [{provider.upper()}] Audio normalized: {audio_path} → {normalized_path}")
+
+        # 2. Check metadata
+        from pydub import AudioSegment
+        audio = AudioSegment.from_file(normalized_path)
+        duration_ms = len(audio)
+        dbfs = audio.dBFS
+        print(f"🎵 [{provider.upper()}] Audio Props: {duration_ms}ms, Volume: {dbfs:.2f}dBFS")
     except Exception as e:
-        print(f"⚠️ [{provider.upper()}] Audio conversion failed, using original: {e}")
+        print(f"⚠️ [{provider.upper()}] Audio check/conversion failed: {e}")
         normalized_path = audio_path
     
     # STT
@@ -76,10 +93,13 @@ def run_stt_pipeline_with_fallback(audio_path: str, attempt: int = 1) -> Provide
         return google_res
     
     # 2. Try Whisper STT (Fallback) if Google fails or quality is low
-    print(f"🔄 Google STT failed ({google_res.quality_gate.reason}), falling back to Whisper...")
-    whisper_res = run_single_provider(audio_path, "whisper", attempt)
-    
-    return whisper_res
+    if whisper_adapter:
+        print(f"🔄 Google STT failed ({google_res.quality_gate.reason}), falling back to Whisper...")
+        whisper_res = run_single_provider(audio_path, "whisper", attempt)
+        return whisper_res
+    else:
+        print(f"⚠️ Google STT failed ({google_res.quality_gate.reason}), but Whisper is disabled/failed. Returning Google result.")
+        return google_res
 
 def generate_final_response(provider_result: ProviderResult) -> str:
     """Generate final response based on provider result"""

@@ -28,6 +28,10 @@ Your goal is to parse user queries into structured JSON for a search engine.
    - History: [U: "Mat", A: "Pet or Bath?"], Current: "No" -> item: "Mat" (Revert to broad item)
 3. **Query Rewrite**: Combine attributes and item for a better search query.
    - "Good for writing" -> query_rewrite: "Ballpoint Pen Pencil Notebook" (Expand context)
+3. **Phonetic Similarity Handling**: STT may misrecognize Korean words (e.g., '멀티지' -> '물티슈'). If the input looks like a misrecognition of a common product, map it to the correct intended product.
+   - Example: "멀티지", "물티시", "물티수" -> item: "물티슈"
+   - Example: "요거압에", "요가메태", "요가매투" -> item: "요가매트"
+   - Example: "테이푸", "태이프" -> item: "테이프"
 4. **Unsupported**: If the query is just "Hi" or "Hungry", set intent to UNSUPPORTED.
 
 ## Few-Shot Examples

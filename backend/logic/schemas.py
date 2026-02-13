@@ -14,11 +14,16 @@ class NLUSlots(BaseModel):
     query_rewrite: Optional[str] = Field(None, description="Optimized query for search engine")
     
 class Product(BaseModel):
-    id: int
+    id: int | str  # Allow both for safety
     name: str
     price: int
     image_url: Optional[str] = None
     rank: Optional[int] = None
+    
+    # Extra fields for frontend/map logic
+    desc: Optional[str] = None
+    meta: Dict[str, Any] = Field(default_factory=dict)
+    score: Optional[float] = None
 
 class NLUResponse(BaseModel):
     request_id: str = Field(..., description="Unique ID for tracking")

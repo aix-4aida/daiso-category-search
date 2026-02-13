@@ -55,7 +55,16 @@ class QdrantVectorRetriever:
     """
     url: str                      # ex) http://localhost:6333
     collection_name: str
-    timeout_s: int = 10
+    timeout_s: int = 5
+
+    def check_connection(self) -> bool:
+        """Check if Qdrant is reachable."""
+        try:
+            url = f"{self.url.rstrip('/')}/"
+            r = requests.get(url, timeout=self.timeout_s)
+            return r.status_code == 200
+        except Exception:
+            return False
 
     def query(self, qvec: List[float], *, top_k: int) -> List[ScoredDoc]:
         endpoint = f"{self.url.rstrip('/')}/collections/{self.collection_name}/points/search"

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # 1. Databases
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: daiso-qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+    restart: always
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    container_name: daiso-elastic
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ./es_data:/usr/share/elasticsearch/data
+    restart: always
+
+  # 2. Backend (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: daiso-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - QDRANT_URL=http://qdrant:6333
+      - ELASTIC_URL=http://elasticsearch:9200
+      - DISABLE_WHISPER=true
+    depends_on:
+      - qdrant
+      - elasticsearch
+    restart: always
+
+  # 3. Frontend (Nginx)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: daiso-frontend
+    ports:
+      - "3000:80" # Map host 3000 to container 80 (Nginx)
+    depends_on:
+      - backend
+    restart: always

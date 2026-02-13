@@ -113,10 +113,22 @@ class StreamingSTTSession:
     async def initialize(self):
         """Initialize Google STT client"""
         try:
-            credentials = service_account.Credentials.from_service_account_file(
-                self.credentials_path
-            )
-            self.client = SpeechClient(credentials=credentials)
+            import os
+            api_key = os.getenv("GOOGLE_API_KEY")
+            
+            if self.credentials_path and Path(self.credentials_path).exists():
+                credentials = service_account.Credentials.from_service_account_file(
+                    self.credentials_path
+                )
+                self.client = SpeechClient(credentials=credentials)
+            elif api_key:
+                from google.api_core.client_options import ClientOptions
+                client_options = ClientOptions(api_key=api_key)
+                self.client = SpeechClient(client_options=client_options)
+                print(f"✅ STT client initialized using API KEY")
+            else:
+                self.client = SpeechClient()
+                
             print(f"✅ STT client initialized (RunID: {self.run_id}, TestID: {self.test_id})")
             return True
         except Exception as e:

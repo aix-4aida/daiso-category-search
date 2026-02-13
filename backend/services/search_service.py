@@ -42,16 +42,24 @@ def load_products_as_documents(db_path: Path) -> list:
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        query = "SELECT id, name, category_major, category_middle FROM products"
+        query = "SELECT id, name, price, category_major, category_middle, floor, section, shelf_label, image_url FROM products"
         cursor.execute(query)
         rows = cursor.fetchall()
         for row in rows:
-            p_id, name, major, middle = row
+            p_id, name, price, major, middle, floor, section, shelf_label, image_url = row
             docs.append(Document(
                 doc_id=str(p_id),
                 title=name or "",
                 text=name or "",
-                meta={"major": major, "middle": middle}
+                meta={
+                    "price": price, 
+                    "major": major, 
+                    "middle": middle,
+                    "floor": floor,
+                    "section": section,
+                    "shelf_label": shelf_label,
+                    "image_url": image_url
+                }
             ))
         conn.close()
         print(f"✅ Loaded {len(docs)} products")
@@ -93,16 +101,24 @@ if BACKEND_DB_PATH.exists():
         
         # 1. BM25 (Primary: Elastic if available, Fallback: Local)
         try:
-            bm25_engine = ElasticBM25Retriever(docs=docs, base_url=ELASTIC_URL, index="products_idx")
-            print(f"✅ ElasticBM25Retriever initialized ({ELASTIC_URL})")
+            elastic = ElasticBM25Retriever(docs=docs, base_url=ELASTIC_URL, index="products_idx")
+            if elastic.check_connection():
+                bm25_engine = elastic
+                print(f"✅ ElasticBM25Retriever initialized ({ELASTIC_URL})")
+            else:
+                raise ConnectionError("ElasticSearch not reachable")
         except Exception as e:
             print(f"⚠️ ElasticBM25 init failed: {e}. Falling back to LocalBM25.")
             bm25_engine = LocalBM25(docs=docs)
         
         # 2. Vector (Primary: Qdrant if available, Secondary: Chroma)
         try:
-            vector_retriever = QdrantVectorRetriever(url=QDRANT_URL, collection_name="products")
-            print(f"✅ QdrantVectorRetriever initialized ({QDRANT_URL})")
+            qdrant = QdrantVectorRetriever(url=QDRANT_URL, collection_name="products")
+            if qdrant.check_connection():
+                vector_retriever = qdrant
+                print(f"✅ QdrantVectorRetriever initialized ({QDRANT_URL})")
+            else:
+                raise ConnectionError("Qdrant not reachable")
         except Exception as e:
             print(f"⚠️ Qdrant init failed: {e}. Attempting ChromaDB.")
             try:
@@ -117,7 +133,7 @@ if BACKEND_DB_PATH.exists():
 # ============================================================
 # Main Search Function
 # ============================================================
-def search_products(query: str, top_k: int = 30, use_hybrid: bool = True, fusion_method: str = "rrf") -> list[dict]:
+def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_method: str = "rrf") -> list[dict]:
     if not bm25_engine:
         return []
     
@@ -131,24 +147,28 @@ def search_products(query: str, top_k: int = 30, use_hybrid: bool = True, fusion
         query_emb = get_query_embedding(query)
         if query_emb:
             try:
-                dense_results = vector_retriever.query(query_emb, top_k=top_k * 2)
+                # Fetch more than top_k to account for potential DB/Vector sync gaps
+                dense_results = vector_retriever.query(query_emb, top_k=top_k * 5)
                 if fusion_method == "rrf":
-                    fused_results = rrf_fusion(dense_results, sparse_results, rrf_k=60, top_k=top_k)
+                    fused_results = rrf_fusion(dense_results, sparse_results, rrf_k=60, top_k=top_k * 5)
                 else:
-                    fused_results = weighted_fusion(dense_results, sparse_results, alpha=0.5, top_k=top_k)
+                    fused_results = weighted_fusion(dense_results, sparse_results, alpha=0.5, top_k=top_k * 5)
             except Exception as e:
                 print(f"⚠️ Vector search failed: {e}")
     
-    # 3. Output
+    # 3. Output - Robust collection (ignore zombie IDs)
     results = []
-    for sd in fused_results[:top_k]:
+    for sd in fused_results:
         doc = docs_map.get(sd.doc_id)
         if doc:
             results.append({
                 "id": doc.doc_id,
                 "name": doc.title,
                 "desc": doc.text,
+                "price": doc.meta.get("price", 0),
                 "meta": doc.meta,
                 "score": sd.score
             })
+            if len(results) >= top_k:
+                break
     return results

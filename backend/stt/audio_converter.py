@@ -135,6 +135,11 @@ class AudioConverter:
             output_path = self.output_dir / output_filename
             
             print(f"🔄 [AudioConverter] Converting {input_path.suffix} to WAV (16kHz, mono)...")
+            
+            # Apply Normalization to fix low volume issues (for Google STT)
+            from pydub.effects import normalize
+            audio = normalize(audio)
+            
             # Export as WAV PCM
             audio.export(
                 output_path,

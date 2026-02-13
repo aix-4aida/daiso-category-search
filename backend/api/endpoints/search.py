@@ -70,9 +70,10 @@ async def search_audio(audio: UploadFile = File(...)):
     except Exception as e:
         return {"status": "error", "message": str(e)}
     finally:
-        # Cleanup temp file
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        # Cleanup temp file (TEMPORARILY DISABLED FOR DEBUGGING)
+        # if os.path.exists(temp_path):
+        #     os.remove(temp_path)
+        pass
 
 class TextSearchRequest(BaseModel):
     query: str
@@ -86,4 +87,6 @@ async def search_text(request: TextSearchRequest):
         result = await run_text_pipeline(request.query)
         return result
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))

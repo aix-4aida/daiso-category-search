@@ -6,7 +6,7 @@ from pathlib import Path
 # Add project root to sys.path to ensure imports work correctly
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.api import api_router
 
@@ -29,6 +29,12 @@ app.add_middleware(
 # Include Routers
 app.include_router(api_router)
 
+# WebSocket STT
+from backend.ws_stt import handle_streaming_stt
+@app.websocket("/ws/stt")
+async def websocket_endpoint(websocket: WebSocket):
+    await handle_streaming_stt(websocket)
+
 @app.get("/")
 def root():
     return {
@@ -48,4 +54,5 @@ def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Use import string for reload to work
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)

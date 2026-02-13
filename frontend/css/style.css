@@ -48,7 +48,10 @@ body {
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow: hidden;
+  /* Enforce tablet landscape fixed view */
+  height: 100vh;
+  width: 100vw;
 }
 
 body {
@@ -178,6 +181,10 @@ img {
   flex-direction: column;
   align-items: center;
   padding: 0 32px;
+  overflow: hidden;
+  /* Prevent main content scroll */
+  height: calc(100vh - 80px - 70px);
+  /* Adjust based on header and tab-bar height */
 }
 
 /* =============================================
@@ -590,14 +597,17 @@ img {
 }
 
 .results-panel {
-  width: 340px;
-  min-width: 340px;
+  width: 400px;
+  /* Slightly wider for better tablet use */
+  min-width: 400px;
   background: var(--color-bg);
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  /* Independent scroll for results */
   padding: 24px;
+  height: 100%;
 }
 
 .results-title {
@@ -713,6 +723,169 @@ img {
   opacity: 0.9;
 }
 
+/* Results Page Layout (3-Column Grid) */
+.results-page {
+  display: grid;
+  grid-template-columns: 400px 1fr 300px;
+  height: calc(100vh - 150px);
+  padding: 0;
+  background: #f8f9fa;
+  position: relative;
+  overflow: hidden;
+}
+
+.results-panel {
+  width: 400px;
+  /* Slightly wider for better tablet use */
+  min-width: 400px;
+  background: #f8f9fa;
+  /* Changed to gray background */
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  /* Independent scroll for results */
+  padding: 24px;
+  height: 100%;
+}
+
+.results-content-wrapper {
+  background: transparent;
+  width: 100%;
+}
+
+.result-card {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  /* Card remains white */
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  box-shadow: var(--shadow-card);
+}
+
+/* Map Panel (Center) */
+.map-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fcfcfc;
+  position: relative;
+}
+
+.result-map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+/* Legend inside Map Panel Overlay */
+.map-legend-overlay {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  gap: 16px;
+  box-shadow: var(--shadow-md);
+  z-index: 50;
+}
+
+/* 3rd Column: Side Panel (QR) */
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Perfect vertical/horizontal center */
+  background: #f8f9fa;
+  border-left: 1px solid var(--color-border);
+  height: 100%;
+  padding: 0 40px;
+  /* Side padding only to avoid vertical offset */
+  box-sizing: border-box;
+}
+
+/* Centered QR Section */
+.qr-section {
+  width: 100%;
+  max-width: 250px;
+  padding: 36px 28px;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 40px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease;
+  margin: 0;
+  /* Let flex parent handle it */
+}
+
+.qr-section h4 {
+  margin-bottom: 24px;
+  font-size: 19px;
+  /* Larger */
+  font-weight: 800;
+  /* Bold */
+  color: #111;
+}
+
+.result-img-real {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.result-img-text {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-primary);
+  opacity: 0.3;
+}
+
+/* Kakao Button Refinement */
+.kakao-btn {
+  width: 100%;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  font-size: 15px;
+  margin-top: 20px;
+}
+
+.kakao-logo-bubble {
+  width: 28px;
+  height: 28px;
+  background: #3C1E1E;
+  color: #FEE500;
+  border-radius: 50% 50% 50% 5px;
+  /* Speech bubble shape */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
 /* Map Panel */
 .map-panel {
   flex: 1;
@@ -720,8 +893,18 @@ img {
   position: relative;
   overflow: hidden;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 /* =============================================
@@ -774,15 +957,22 @@ img {
 .map-image-container {
   position: relative;
   width: 100%;
+  height: 100%;
   border-radius: var(--radius-md);
   overflow: hidden;
   background: white;
   box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .map-base-img {
-  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
+  object-fit: contain;
   display: block;
 }
 
@@ -823,6 +1013,53 @@ img {
 .map-pin.dimmed {
   opacity: 0.3;
   background: #999;
+}
+
+/* Map Overlay & Marker Refinement */
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.map-legend-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.legend-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-item .dot.blue {
+  background: #2962FF;
+}
+
+.legend-item .dot.red {
+  background: #E50000;
 }
 
 .map-pin.active {
@@ -904,6 +1141,9 @@ img {
 .result-map-wrapper {
   padding: 24px;
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .result-map-header {
@@ -1274,4 +1514,13 @@ img {
     padding: 24px;
     min-height: auto;
   }
+}
+
+/* No Results Message */
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-light);
+  font-size: 16px;
+  background: transparent;
 }
