@@ -40,6 +40,9 @@ CSV_LOG_PATH = Path("outputs/streaming_poc_results.csv")
 AUDIO_SAVE_DIR = Path("outputs/streaming_audio")
 AUDIO_SAVE_ENABLED = False  # Feature flag (controlled by metadata)
 
+# Default credentials path (absolute, based on this file's location)
+DEFAULT_CREDENTIALS_PATH = str(Path(__file__).parent / "daisoproject-sst.json")
+
 # CSV Header
 CSV_HEADER = [
     "timestamp", "run_id", "test_id", "utterance_type", "spoken_text_ref",
@@ -378,7 +381,7 @@ class StreamingSTTSession:
         self.is_running = False  # Final safety force-stop
 
 
-async def handle_streaming_stt(websocket: WebSocket, credentials_path: str = "backend/daisoproject-sst.json"):
+async def handle_streaming_stt(websocket: WebSocket, credentials_path: str = DEFAULT_CREDENTIALS_PATH):
     await websocket.accept()
     print("🔌 WebSocket connected")
     
