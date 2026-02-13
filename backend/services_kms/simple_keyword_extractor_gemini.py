@@ -14,12 +14,16 @@ if not api_key:
     api_key = os.getenv("GOOGLE_API_KEY")
 
 if not api_key:
-    print("Error: GEMINI_API_KEY or GOOGLE_API_KEY not found in .env")
-    exit(1)
-
-# Configure Gemini
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-2.0-flash") # Reverted to 2.0-flash for optimized prompt performance
+    print("Warning: GEMINI_API_KEY or GOOGLE_API_KEY not found in .env. Keyword extraction will fail.")
+    model = None
+else:
+    # Configure Gemini
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-2.0-flash") # Reverted to 2.0-flash for optimized prompt performance
+    except Exception as e:
+        print(f"Error initializing Gemini: {e}")
+        model = None
 
 
 # Paths
@@ -72,6 +76,9 @@ def extract_keyword(query):
     """
     
     try:
+        if not model:
+            return {"error": "Gemini model not initialized (Missing API Key)"}
+            
         start_time = time.time()
         response = model.generate_content(prompt)
         end_time = time.time()
