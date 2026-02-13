@@ -1,2 +1,2 @@
 id	raw_text	intent_text	expected_doc_ids	expected_category	needs_clarification	notes
-STT-00001	혹시 얼굴팩 있나요?	마스크팩			false	Src:voice_79a0e092_이선영_일반03.wav|Exp:마스크팩,얼굴,팩,미용,피부관리
+STT-00001	알콜솜.	알콜스왑			false	Src:text_input_057c7ab5-ee6e-452f-aada-b9bf25a5fe9d.wav|Exp:알콜스왑,상처,소독,의약외품,위생

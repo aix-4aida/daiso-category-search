@@ -1,38 +1,37 @@
 [
   {
     "id": 1,
-    "filename": "voice_ce548365_이선영_일반03.wav",
-    "utterance": "혹시 얼굴 팩 있나요?",
+    "filename": "text_input_057c7ab5-ee6e-452f-aada-b9bf25a5fe9d.wav",
+    "utterance": "알콜솜.",
     "intent_validation": {
       "is_valid": "Y",
-      "latency_ms": 997
+      "latency_ms": 742
     },
     "extraction": {
-      "keyword": "마스크팩",
-      "latency": 1.3415825366973877,
+      "keyword": "알콜스왑",
+      "latency": 1.0629334449768066,
       "tokens": {
-        "prompt": 565,
-        "completion": 71,
-        "total": 636
+        "prompt": 561,
+        "completion": 51,
+        "total": 612
       }
     },
     "expansion": {
       "expanded_keywords": [
-        "마스크팩",
-        "피부",
-        "팩",
-        "미용",
-        "피부관리",
-        "수분공급",
-        "진정"
+        "알콜스왑",
+        "상처",
+        "소독",
+        "의약외품",
+        "위생",
+        "소독용"
       ],
       "meta": {
-        "total_time_seconds": 1.1460378170013428,
-        "api_latency_seconds": 1.1449289321899414,
-        "processing_overhead_seconds": 0.0011088848114013672,
-        "total_tokens": 389,
-        "prompt_tokens": 358,
-        "completion_tokens": 31
+        "total_time_seconds": 1.1338067054748535,
+        "api_latency_seconds": 1.130730390548706,
+        "processing_overhead_seconds": 0.003076314926147461,
+        "total_tokens": 403,
+        "prompt_tokens": 359,
+        "completion_tokens": 44
       }
     }
   }

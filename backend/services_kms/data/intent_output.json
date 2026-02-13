@@ -1,11 +1,11 @@
 [
   {
     "id": 1,
-    "filename": "voice_ce548365_이선영_일반03.wav",
-    "utterance": "혹시 얼굴 팩 있나요?",
+    "filename": "text_input_057c7ab5-ee6e-452f-aada-b9bf25a5fe9d.wav",
+    "utterance": "알콜솜.",
     "intent_validation": {
       "is_valid": "Y",
-      "latency_ms": 997
+      "latency_ms": 742
     }
   }
 ]
