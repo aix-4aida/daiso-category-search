@@ -68,7 +68,7 @@ print("✅ All adapters initialized")
 app = FastAPI(
     title="Daiso STT Pipeline API",
     description="Speech-to-Text pipeline with quality & policy gates - Whisper + Google comparison",
-    version="1.1.0-poc"
+    version="1.1.1-debug"
 )
 
 # CORS for Next.js frontend
