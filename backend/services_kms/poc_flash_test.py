@@ -35,7 +35,8 @@ else:
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
         }
         
-        system_prompt = \"\"\"
+        
+        system_prompt = """
 너는 다이소 매장의 태블릿에 탑재된 AI 점원이다.
 사용자의 발화를 분석하여, 매장 직원의 응대가 필요한지(Y), 필요 없는지(N) 판단하여 알파벳 한 글자만 출력하라.
 
@@ -60,7 +61,7 @@ User: "비트코인 얼마야?" -> Model: N
 User: "맥도날드 가격 알려줘" -> Model: N
 User: "나랑 결혼할래?" -> Model: N
 User: "사랑해" -> Model: N
-\"\"\"
+"""
 
         model = genai.GenerativeModel(
             model_name=MODEL_NAME,
