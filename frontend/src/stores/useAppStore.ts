@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import type { Screen, Product, MapInfo, QueryInfo } from '../types';
+import type { Screen, Product, MapInfo, QueryInfo, Waypoint } from '../types';
 import { fetchSearch } from '../services/api';
+import { buildWaypoints, KIOSK_POSITION } from '../utils/pathfinding';
 
 interface AppState {
   screen: Screen;
@@ -50,8 +51,28 @@ export const useAppStore = create<AppState>((set) => ({
 
   setScreen: (screen: Screen) => set({ screen }),
 
-  selectProduct: (product: Product) =>
-    set({ selectedProduct: product, screen: 'map' }),
+  selectProduct: (product: Product) => {
+    const state = useAppStore.getState();
+    let mapInfo = state.mapInfo;
+
+    // Recalculate mapInfo if product has location data
+    if (product.destination_x != null && product.destination_y != null && mapInfo) {
+      const path = buildWaypoints(product.destination_x, product.destination_y);
+      const waypoints: Waypoint[] = path.map(p => ({ x: p.x, y: p.y }));
+      mapInfo = {
+        ...mapInfo,
+        floor: product.location_floor ?? mapInfo.floor,
+        map_image: `/static/maps/map_${(product.location_floor ?? mapInfo.floor).toLowerCase()}.jpg`,
+        counter_number: product.counter_number,
+        section_description: product.location_description ?? '',
+        destination: { x: product.destination_x, y: product.destination_y },
+        start: { x: KIOSK_POSITION.x, y: KIOSK_POSITION.y },
+        waypoints,
+      };
+    }
+
+    set({ selectedProduct: product, mapInfo, screen: 'map' });
+  },
 
   reset: () =>
     set({

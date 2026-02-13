@@ -6,7 +6,8 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from app.models.schemas import SearchResponse, ProductResult, MapInfo, QueryInfo
+from app.models.schemas import SearchResponse, ProductResult, MapInfo, QueryInfo, Waypoint
+from app.data.store_locations import get_location, build_waypoints, KIOSK_POSITION
 from app.services.gemini_service import GeminiService
 from app.services.es_service import ESService
 from app.services.qdrant_service import QdrantService
@@ -87,6 +88,7 @@ class SearchService:
         # Build response
         product_results = []
         for i, p in enumerate(top_results):
+            loc = get_location(p.get("category_middle"))
             product_results.append(
                 ProductResult(
                     id=p.get("id", 0),
@@ -97,16 +99,34 @@ class SearchService:
                     category_major=p.get("category_major"),
                     category_middle=p.get("category_middle"),
                     score=p.get("score", 0.0),
+                    counter_number=loc.counter_number if loc else None,
+                    destination_x=loc.x if loc else None,
+                    destination_y=loc.y if loc else None,
+                    location_floor=loc.floor if loc else None,
+                    location_description=loc.section_description if loc else None,
                 )
             )
 
         map_info = None
         if product_results:
             first = product_results[0]
-            map_info = MapInfo(
-                section=first.category_major or "",
-                map_image="/static/maps/store.png",
-            )
+            location = get_location(first.category_middle)
+            if location:
+                path = build_waypoints(location.x, location.y, location.floor)
+                map_info = MapInfo(
+                    floor=location.floor,
+                    section=first.category_major or "",
+                    map_image=f"/static/maps/map_{location.floor.lower()}.jpg",
+                    counter_number=location.counter_number,
+                    section_description=location.section_description,
+                    destination=Waypoint(x=location.x, y=location.y),
+                    start=Waypoint(x=KIOSK_POSITION["x"], y=KIOSK_POSITION["y"]),
+                    waypoints=[Waypoint(x=p["x"], y=p["y"]) for p in path],
+                )
+            else:
+                map_info = MapInfo(
+                    section=first.category_major or "",
+                )
 
         return SearchResponse(
             results=product_results,

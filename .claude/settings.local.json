@@ -42,7 +42,8 @@
       "Bash(C:ProgramDataminiforge3Scriptspoetry.exe run pytest:*)",
       "Bash(cmd /c \"cd /d C:\\\\Users\\\\pengveloper\\\\daiso-category-search\\\\backend && poetry run pytest ../tests/backend/ -v --tb=short\")",
       "Bash(powershell -Command:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(python -m poetry run pytest:*)"
     ]
   }
 }

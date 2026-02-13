@@ -85,6 +85,35 @@ async def test_search_returns_map_info(search_service):
         assert result.map_info.section != ""
 
 
+async def test_map_info_includes_navigation_data(search_service):
+    """Should include waypoints, destination, and counter in map info"""
+    search_service._search_qdrant = AsyncMock(return_value=[])
+
+    result = await search_service.search("물티슈")
+    if result.results:
+        mi = result.map_info
+        assert mi is not None
+        assert mi.counter_number is not None
+        assert mi.destination is not None
+        assert mi.start is not None
+        assert len(mi.waypoints) >= 3
+        assert mi.section_description != ""
+
+
+async def test_product_result_includes_location_data(search_service):
+    """Each product result should include location fields"""
+    search_service._search_qdrant = AsyncMock(return_value=[])
+
+    result = await search_service.search("물티슈")
+    if result.results:
+        p = result.results[0]
+        assert p.counter_number is not None
+        assert p.destination_x is not None
+        assert p.destination_y is not None
+        assert p.location_floor is not None
+        assert p.location_description is not None
+
+
 async def test_rrf_fusion(search_service):
     """Should merge ES and Qdrant results via RRF"""
     es_results = [
