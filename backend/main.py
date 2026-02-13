@@ -45,10 +45,15 @@ whisper_adapter: WhisperAdapter = get_adapter(  # type: ignore[assignment]
     **config["stt"]["whisper"]
 )
 
+
 # Initialize Google adapter
-google_config = config["stt"].get("google", {})
-google_config["credentials_path"] = "backend/daisoproject-sst.json"
+google_config = config["stt"].get("google", {}).copy()
+google_config.pop("enabled", None)  # config gating only
+google_config["credentials_path"] = "daisoproject-sst.json"
+
 google_adapter: GoogleAdapter = get_adapter("google", **google_config)  # type: ignore[assignment]
+
+
 
 quality_gate = QualityGate(
     **config["quality_gate"]

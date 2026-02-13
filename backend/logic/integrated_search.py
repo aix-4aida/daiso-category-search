@@ -400,6 +400,7 @@ class IntegratedSearchPipeline:
                 "searchable_desc": doc.payload.get("bm25_text", doc.text),
                 "category": doc.category,
                 "price": doc.payload.get("price", 0),
+                "image_url": doc.payload.get("image_url", ""),
                 "score": doc.score,
                 "source": doc.source,
             })

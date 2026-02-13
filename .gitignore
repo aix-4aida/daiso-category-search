@@ -21,3 +21,8 @@ frontend/.env.local
 
 # Custom
 poc/bjy/old/
+
+
+# 구글 스트리밍 json
+**/daisoproject-sst.json
+poc/lsy/outputs/streaming_audio/**

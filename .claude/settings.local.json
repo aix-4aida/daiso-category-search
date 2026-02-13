@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c \"C:\\\\Users\\\\301\\\\miniforge3\\\\condabin\\\\conda.bat run -n stt --no-banner python --version\")",
+      "Bash(\"C:\\\\Users\\\\301\\\\miniforge3\\\\envs\\\\stt\\\\python.exe\" -m pip show pytest google-cloud-speech pyyaml faster-whisper pydub)",
+      "Bash(\"C:\\\\Users\\\\301\\\\miniforge3\\\\envs\\\\stt\\\\python.exe\" -m pytest:*)",
+      "Bash(\"C:\\\\Users\\\\301\\\\miniforge3\\\\envs\\\\stt\\\\python.exe\" -m pytest tests/test_indexer_db.py -v --tb=short)"
+    ]
+  }
+}

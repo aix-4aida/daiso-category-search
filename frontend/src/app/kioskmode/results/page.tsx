@@ -101,6 +101,8 @@ function ResultsContent() {
                 product: product.name,
                 product_id: String(product.product_id),
                 price: String(product.price),
+                category_major: product.category_major || "",
+                category_middle: product.category_middle || "",
             });
             if (response?.top1_handover?.qr_payload) {
                 params.set("qr", response.top1_handover.qr_payload);
