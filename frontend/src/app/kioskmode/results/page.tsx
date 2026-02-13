@@ -17,6 +17,7 @@ import {
     addToHistory,
     incrementClarification,
 } from "@/store/searchStore";
+import BottomTabBar from "@/components/BottomTabBar";
 
 function formatPrice(price: number): string {
     return `₩${price.toLocaleString()}`;
@@ -156,7 +157,7 @@ function ResultsContent() {
     // Loading state
     if (isLoading) {
         return (
-            <main className="flex min-h-screen flex-col bg-gray-50">
+            <main className="flex min-h-[100dvh] flex-col bg-gray-50 pb-20">
                 <header className="w-full bg-white px-6 py-4 border-b border-gray-100">
                     <div className="flex items-center gap-3">
                         <button
@@ -182,12 +183,13 @@ function ResultsContent() {
                         </p>
                     </div>
                 </div>
+                <BottomTabBar />
             </main>
         );
     }
 
     return (
-        <main className="flex min-h-screen flex-col bg-gray-50">
+        <main className="flex min-h-[100dvh] flex-col bg-gray-50 pb-20">
             {/* Header */}
             <header className="w-full bg-white px-6 py-4 border-b border-gray-100">
                 <div className="flex items-center gap-3">
@@ -429,6 +431,8 @@ function ResultsContent() {
                     )}
                 </div>
             )}
+
+            <BottomTabBar />
         </main>
     );
 }

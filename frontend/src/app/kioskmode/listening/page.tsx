@@ -11,6 +11,7 @@ import {
     setError,
     getSearchState,
 } from "@/store/searchStore";
+import BottomTabBar from "@/components/BottomTabBar";
 
 export default function ListeningPage() {
     const router = useRouter();
@@ -181,7 +182,7 @@ export default function ListeningPage() {
     })();
 
     return (
-        <main className="flex min-h-screen flex-col items-center bg-white relative">
+        <main className="flex min-h-[100dvh] flex-col items-center bg-white relative pb-20">
             {/* Back Button */}
             <header className="w-full px-6 py-4">
                 <button
@@ -256,6 +257,15 @@ export default function ListeningPage() {
                     </p>
                 </div>
 
+                {/* Retry Link */}
+                <button
+                    onClick={handleRetry}
+                    disabled={isSearching}
+                    className="text-sm text-red-500 hover:text-red-700 underline underline-offset-2 cursor-pointer mb-6 focus:outline-none focus:ring-2 focus:ring-red-300 rounded disabled:opacity-50"
+                >
+                    다시 말하기
+                </button>
+
                 {/* Action Buttons */}
                 <div className="flex items-center gap-3">
                     <button
@@ -301,6 +311,8 @@ export default function ListeningPage() {
                     }
                 }
             `}</style>
+
+            <BottomTabBar />
         </main>
     );
 }

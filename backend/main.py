@@ -4,6 +4,7 @@ FastAPI Server for Daiso Category Search
 Integrated Pipeline: STT → NLU → Search → Rerank → Location
 """
 
+import os
 import yaml
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile, HTTPException, Body, WebSocket
@@ -18,42 +19,53 @@ import sys
 sys.path.append(str(Path(__file__).parent))
 sys.path.append(str(Path(__file__).parent.parent))
 
-from poc.stt.adapters import get_adapter, WhisperAdapter, GoogleAdapter
 from poc.stt.quality_gate import QualityGate
 from poc.stt.policy_gate import PolicyGate
-from poc.stt.audio_converter import AudioConverter
 from poc.stt.types import (
     PipelineResult, STTResult, QualityGateResult, PolicyIntent,
     ProviderResult, ComparisonPipelineResult
 )
 from backend.logic.integrated_search import get_pipeline
 
-# Audio converter for normalizing audio to WAV/LINEAR16/16kHz/mono
-audio_converter = AudioConverter(output_dir="outputs/normalized")
-
-
 # Load configuration
 config_path = Path(__file__).parent / "config.yaml"
 with open(config_path, "r", encoding="utf-8") as f:
     config = yaml.safe_load(f)
 
-# Initialize components
+# Initialize STT adapters (graceful — 서버는 STT 없이도 기동)
 print("🔄 Initializing STT adapters...")
 
-whisper_adapter: WhisperAdapter = get_adapter(  # type: ignore[assignment]
-    "whisper",
-    **config["stt"]["whisper"]
-)
+whisper_adapter = None
+google_adapter = None
+audio_converter = None
 
+try:
+    from poc.stt.adapters import get_adapter, WhisperAdapter, GoogleAdapter
+    whisper_adapter = get_adapter("whisper", **config["stt"]["whisper"])
+    print("✅ Whisper adapter initialized")
+except Exception as e:
+    print(f"⚠️ Whisper adapter 사용 불가 (서버는 정상 기동): {e}")
 
-# Initialize Google adapter
-google_config = config["stt"].get("google", {}).copy()
-google_config.pop("enabled", None)  # config gating only
-google_config["credentials_path"] = "daisoproject-sst.json"
+try:
+    from poc.stt.adapters import get_adapter, GoogleAdapter
+    google_config = config["stt"].get("google", {}).copy()
+    google_config.pop("enabled", None)
+    # credentials 경로: 환경변수 → 컨테이너 마운트 경로 → 로컬 fallback
+    google_config["credentials_path"] = os.getenv(
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "credentials/daisoproject-sst.json"
+    )
+    google_adapter = get_adapter("google", **google_config)
+    print("✅ Google STT adapter initialized")
+except Exception as e:
+    print(f"⚠️ Google STT adapter 사용 불가: {e}")
 
-google_adapter: GoogleAdapter = get_adapter("google", **google_config)  # type: ignore[assignment]
-
-
+try:
+    from poc.stt.audio_converter import AudioConverter
+    audio_converter = AudioConverter(output_dir="outputs/normalized")
+    print("✅ Audio converter initialized")
+except Exception as e:
+    print(f"⚠️ Audio converter 사용 불가: {e}")
 
 quality_gate = QualityGate(
     **config["quality_gate"]
@@ -64,7 +76,7 @@ policy_gate = PolicyGate(
     unsupported_patterns=config["policy_gate"]["unsupported_patterns"]
 )
 
-print("✅ All adapters initialized")
+print("✅ Policy/Quality gates initialized")
 
 # Initialize integrated search pipeline
 search_pipeline = get_pipeline()
@@ -77,10 +89,12 @@ app = FastAPI(
     version="2.0.0-integrated"
 )
 
-# CORS for Next.js frontend
+# CORS — 환경변수 CORS_ORIGINS로 설정 (쉼표 구분), 기본값: 모든 origin 허용
+_cors_origins_raw = os.getenv("CORS_ORIGINS", "*")
+_cors_origins = ["*"] if _cors_origins_raw == "*" else [o.strip() for o in _cors_origins_raw.split(",")]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js default port
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -198,6 +212,8 @@ async def search_endpoint(request: SearchRequest):
 def run_single_provider(audio_path: str, provider: str, attempt: int = 1):
     """Run STT pipeline for a single provider"""
     adapter = whisper_adapter if provider == "whisper" else google_adapter
+    if adapter is None:
+        raise HTTPException(status_code=503, detail=f"{provider} STT adapter가 초기화되지 않았습니다.")
     model = config["stt"]["whisper"]["model_size"] if provider == "whisper" else "default"
     
     # Convert audio to WAV/LINEAR16/16kHz/mono for STT

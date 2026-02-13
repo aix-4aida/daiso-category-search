@@ -10,6 +10,7 @@ import {
     setError,
     getSearchState,
 } from "@/store/searchStore";
+import BottomTabBar from "@/components/BottomTabBar";
 
 const SEARCH_SUGGESTIONS = [
     "세탁세제 어디 있어요?",
@@ -70,7 +71,7 @@ function NotFoundContent() {
     );
 
     return (
-        <main className="flex min-h-screen flex-col bg-white">
+        <main className="flex min-h-[100dvh] flex-col bg-white pb-20">
             {/* Header */}
             <header className="w-full px-6 py-4">
                 <button
@@ -203,6 +204,8 @@ function NotFoundContent() {
                     </button>
                 </div>
             </div>
+
+            <BottomTabBar />
         </main>
     );
 }

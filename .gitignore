@@ -22,7 +22,20 @@ frontend/.env.local
 # Custom
 poc/bjy/old/
 
-
 # 구글 스트리밍 json
 **/daisoproject-sst.json
 poc/lsy/outputs/streaming_audio/**
+
+# 배포 환경변수 (비밀키 포함)
+.env.production
+.env.local
+
+# credentials: 폴더는 유지, 실제 키(json)만 제외
+credentials/*.json
+!credentials/.gitkeep
+
+# Backend outputs
+backend/outputs/
+outputs/
+
+backend/*.log

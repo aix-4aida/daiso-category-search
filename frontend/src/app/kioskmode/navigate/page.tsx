@@ -4,6 +4,7 @@ import { useCallback, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { findShelfByCategory, floorMaps } from "@/lib/mapData";
+import BottomTabBar from "@/components/BottomTabBar";
 
 function NavigateContent() {
     const router = useRouter();
@@ -46,7 +47,7 @@ function NavigateContent() {
     }, [mobileUrl]);
 
     return (
-        <main className="flex min-h-screen flex-col bg-gray-50">
+        <main className="flex min-h-[100dvh] flex-col bg-gray-50 pb-20">
             {/* Header */}
             <header className="w-full bg-white px-6 py-4 border-b border-gray-100">
                 <button
@@ -264,6 +265,8 @@ function NavigateContent() {
                     </div>
                 </div>
             </div>
+
+            <BottomTabBar />
         </main>
     );
 }

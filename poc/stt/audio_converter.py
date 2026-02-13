@@ -12,10 +12,15 @@ import time
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-# Add FFmpeg to PATH (Temporary fix for Windows)
-ffmpeg_path = r"C:\Users\301\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin"
-if os.path.exists(ffmpeg_path):
-    os.environ["PATH"] += os.pathsep + ffmpeg_path
+# FFmpeg PATH 설정:
+#   1) FFMPEG_PATH 환경변수가 있으면 PATH에 추가
+#   2) 없으면 시스템 PATH의 ffmpeg을 그대로 사용 (Docker apt / brew 등)
+_ffmpeg_path = os.getenv("FFMPEG_PATH", "")
+if _ffmpeg_path and os.path.exists(_ffmpeg_path):
+    os.environ["PATH"] += os.pathsep + _ffmpeg_path
+elif not shutil.which("ffmpeg"):
+    import warnings
+    warnings.warn("ffmpeg not found in PATH. Audio conversion may fail.")
 
 from pydub import AudioSegment
 

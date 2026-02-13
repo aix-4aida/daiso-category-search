@@ -10,8 +10,27 @@ import type {
     STTServerMessage,
 } from "@/types/search";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const WS_BASE = API_BASE.replace(/^http/, "ws");
+/**
+ * API_BASE 결정:
+ *  - NEXT_PUBLIC_API_URL 환경변수가 있으면 그 값 사용
+ *    (로컬 dev: "http://localhost:8000", 배포: 미설정)
+ *  - 없으면 "/api" (nginx 리버스 프록시 경로, 상대 경로)
+ *
+ * 주의: 브라우저에서 실행되므로 절대 컨테이너 내부 주소(http://backend:8000)를 쓰면 안 됨
+ */
+const API_BASE: string = process.env.NEXT_PUBLIC_API_URL || "/api";
+
+function resolveWsBase(): string {
+    if (typeof window === "undefined") return API_BASE.replace(/^http/, "ws");
+    // 상대 경로("/api")인 경우 현재 origin 기반으로 ws URL 생성
+    if (API_BASE.startsWith("/")) {
+        const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+        return `${proto}//${window.location.host}${API_BASE}`;
+    }
+    return API_BASE.replace(/^http/, "ws");
+}
+
+const WS_BASE: string = resolveWsBase();
 
 // ============================================================================
 // REST API: Search
