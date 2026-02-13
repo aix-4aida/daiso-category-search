@@ -7,32 +7,35 @@ from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from dotenv import load_dotenv
 
 # .env 파일 로드
+# .env 파일 로드
 load_dotenv()
 API_KEY = os.environ.get("GOOGLE_API_KEY")
 
+model = None
+
 if not API_KEY:
-    print("Error: GOOGLE_API_KEY environment variable is not set.")
-    exit(1)
-
-genai.configure(api_key=API_KEY)
-
-MODEL_NAME = "gemini-2.0-flash"
-
-generation_config = {
-    "temperature": 0.0,
-    "top_p": 1,
-    "top_k": 1,
-    "max_output_tokens": 5,
-}
-
-safety_settings = {
-    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-}
-
-system_prompt = """
+    print("Warning: GOOGLE_API_KEY environment variable is not set. Gemini features will be disabled.")
+else:
+    try:
+        genai.configure(api_key=API_KEY)
+        
+        MODEL_NAME = "gemini-2.0-flash"
+        
+        generation_config = {
+            "temperature": 0.0,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 5,
+        }
+        
+        safety_settings = {
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+        }
+        
+        system_prompt = \"\"\"
 너는 다이소 매장의 태블릿에 탑재된 AI 점원이다.
 사용자의 발화를 분석하여, 매장 직원의 응대가 필요한지(Y), 필요 없는지(N) 판단하여 알파벳 한 글자만 출력하라.
 
@@ -57,19 +60,16 @@ User: "비트코인 얼마야?" -> Model: N
 User: "맥도날드 가격 알려줘" -> Model: N
 User: "나랑 결혼할래?" -> Model: N
 User: "사랑해" -> Model: N
-"""
+\"\"\"
 
-try:
-    model = genai.GenerativeModel(
-        model_name=MODEL_NAME,
-        generation_config=generation_config,
-        system_instruction=system_prompt
-    )
-except Exception as e:
-    print(f"Error initializing model '{MODEL_NAME}': {e}")
-    exit(1)
-
-
+        model = genai.GenerativeModel(
+            model_name=MODEL_NAME,
+            generation_config=generation_config,
+            system_instruction=system_prompt
+        )
+    except Exception as e:
+        print(f"Error initializing model '{MODEL_NAME}': {e}")
+        # Do not exit, just leave model as None
 
 # Default paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -77,6 +77,11 @@ INPUT_JSON_PATH = os.path.join(BASE_DIR, "backend", "services_kms", "data", "stt
 OUTPUT_JSON_PATH = os.path.join(BASE_DIR, "backend", "services_kms", "data", "intent_output.json")
 
 def process_data(input_path=None, output_path=None):
+    if not model:
+        print("Model not initialized. Skipping intent check.")
+        # Return dummy result or just pass through
+        return
+        
     if not input_path: input_path = INPUT_JSON_PATH
     if not output_path: output_path = OUTPUT_JSON_PATH
     
