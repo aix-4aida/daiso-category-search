@@ -9,15 +9,22 @@ from dotenv import load_dotenv
 # Setup Environment
 load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"))
 api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
 
-# Model Configuration
-# Using Gemini 2.0 Flash for speed and reasoning capability
-# Set response_mime_type to application/json for strict structured output
-model = genai.GenerativeModel(
-    'gemini-2.0-flash',
-    generation_config={"response_mime_type": "application/json"}
-)
+model = None
+if api_key:
+    try:
+        genai.configure(api_key=api_key)
+        # Model Configuration
+        # Using Gemini 2.0 Flash for speed and reasoning capability
+        # Set response_mime_type to application/json for strict structured output
+        model = genai.GenerativeModel(
+            'gemini-2.0-flash',
+            generation_config={"response_mime_type": "application/json"}
+        )
+    except Exception as e:
+        print(f"Error configuring Gemini in poc_v5: {e}")
+else:
+    print("Warning: GOOGLE/GEMINI API KEY missing in poc_v5. Reranking will fail.")
 
 # --- SYSTEM PROMPT (The "Brain" of PoC v5) ---
 SYSTEM_PROMPT = """
@@ -75,6 +82,9 @@ def advanced_rerank(user_query, candidates):
     """
     if not candidates:
         return {"selected_id": None, "reason": "No candidates provided."}
+
+    if not model:
+        return {"selected_id": None, "reason": "Gemini model not initialized (Missing API Key)."}
 
     # Prepare Candidate Text
     candidate_text = ""
