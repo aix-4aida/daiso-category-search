@@ -80,6 +80,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Global Exception Handler
+from fastapi.responses import JSONResponse
+from fastapi import Request
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import traceback
+    error_detail = "".join(traceback.format_exception(None, exc, exc.__traceback__))
+    print(f"🔥 Global Exception: {exc}") # Print to server logs
+    return JSONResponse(
+        status_code=500,
+        content={"message": "Internal Server Error", "detail": str(exc), "trace": error_detail},
+    )
+
 # Import WebSocket handler
 from fastapi import WebSocket
 from ws_stt import handle_streaming_stt
