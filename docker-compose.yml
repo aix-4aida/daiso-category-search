@@ -30,6 +30,8 @@ services:
     volumes:
       # Mount data volume for persistence (adjust as needed for production)
       - ./backend/services_kms/data:/app/services_kms/data
+      # Mount Google Cloud credentials (not in Git for security)
+      - ./backend/daisoproject-sst.json:/app/backend/daisoproject-sst.json:ro
     environment:
       - QDRANT_URL=http://qdrant:6333
       - ELASTIC_URL=http://elasticsearch:9200
