@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
-import { MapPin, Search, ArrowLeft, QrCode } from 'lucide-react'
+import { MapPin, Search, ArrowLeft, QrCode, Home } from 'lucide-react'
 import Layout from '../components/Layout'
 import Button from '../components/Button'
 import { searchProducts, getProductsByCategory } from '../lib/api'
@@ -248,8 +248,13 @@ const SearchResults = () => {
                 <div className="flex items-center text-2xl font-bold text-daiso-red">
                     어디다이소
                 </div>
-                <div className="ml-auto text-gray-500 text-sm font-medium bg-gray-100 px-4 py-2 rounded-full hidden md:block">
-                    ⓘ 도움말
+                <div className="ml-auto flex items-center gap-3">
+                    <button
+                        onClick={() => router.push('/')}
+                        className="flex items-center gap-2 px-4 py-2 bg-daiso-red text-white rounded-lg font-medium hover:bg-red-700 transition-colors shadow-sm text-sm"
+                    >
+                        <Home size={16} /> 홈으로
+                    </button>
                 </div>
             </header>
 

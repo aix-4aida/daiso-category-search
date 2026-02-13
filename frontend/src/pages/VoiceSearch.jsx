@@ -1,14 +1,20 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Mic, MicOff } from 'lucide-react'
 import Layout from '../components/Layout'
+import { AudioRecorder } from '../utils/AudioRecorder'
 
 const VoiceSearch = () => {
-    console.log("VoiceSearch Component Loaded - Timestamp: " + new Date().toISOString());
     const router = useRouter()
-    const [isProcessing, setIsProcessing] = useState(false)
-    const [transcribedText, setTranscribedText] = useState('')
-    const fileInputRef = useRef(null)
+    const [isRecording, setIsRecording] = useState(false)
+    const [transcript, setTranscript] = useState('')
+    const [interimText, setInterimText] = useState('')
+    const [statusMessage, setStatusMessage] = useState('음성 인식을 준비하고 있습니다...')
+
+    const recorderRef = useRef(null)
+    const wsRef = useRef(null)
+    const seqRef = useRef(0)
+    const autoStartedRef = useRef(false)
 
     // Audio visualizer bars animation
     const AudioVisualizer = () => {
@@ -18,10 +24,11 @@ const VoiceSearch = () => {
                 {barHeights.map((height, i) => (
                     <div
                         key={i}
-                        className="w-1.5 bg-daiso-red rounded-full audio-bar"
+                        className={`w-1.5 rounded-full audio-bar ${isRecording ? 'bg-daiso-red' : 'bg-gray-300'}`}
                         style={{
                             height: `${height}px`,
-                            animationDelay: `${i * 0.08}s`
+                            animationDelay: `${i * 0.08}s`,
+                            animationPlayState: isRecording ? 'running' : 'paused'
                         }}
                     />
                 ))}
@@ -29,117 +36,179 @@ const VoiceSearch = () => {
         )
     }
 
-    const handleFileUpload = async (e) => {
-        const file = e.target.files[0]
-        if (!file) return
+    const stopRecording = useCallback(() => {
+        if (recorderRef.current) {
+            recorderRef.current.stop()
+            recorderRef.current = null
+        }
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({ type: 'stop' }))
+        }
+        setIsRecording(false)
+    }, [])
 
-        setIsProcessing(true)
-        setTranscribedText('음성을 분석하고 있습니다...')
+    const startRecording = useCallback(async () => {
+        setTranscript('')
+        setInterimText('')
+        setStatusMessage('연결 중...')
+        seqRef.current = 0
 
         // Clear previous results
-        localStorage.removeItem('voiceSearchResults');
-        localStorage.removeItem('voiceSearchKeyword');
-
-        const formData = new FormData()
-        formData.append('file', file)
+        localStorage.removeItem('voiceSearchResults')
+        localStorage.removeItem('voiceSearchKeyword')
+        localStorage.removeItem('voiceRerankedResults')
 
         try {
-            const hostname = window.location.hostname;
-            const response = await fetch(`http://${hostname}:8000/api/search/voice`, {
-                method: 'POST',
-                body: formData,
-            })
+            const hostname = window.location.hostname
+            const wsUrl = `ws://${hostname}:8000/ws/stt`
+            const ws = new WebSocket(wsUrl)
+            wsRef.current = ws
 
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.detail || 'Voice search failed')
+            ws.onopen = () => {
+                console.log('🔌 WebSocket connected')
+                ws.send(JSON.stringify({
+                    type: 'start',
+                    meta: { run_id: `web_${Date.now()}`, test_id: `voice_${Date.now()}` },
+                    config: {}
+                }))
             }
 
-            const data = await response.json()
-            setIsProcessing(false)
+            ws.onmessage = async (event) => {
+                const msg = JSON.parse(event.data)
 
-            if (data.text) {
-                // DEBUG: Show what data we actually received
-                alert("API RESPONSE DEBUG:\n" + JSON.stringify(data, null, 2));
+                if (msg.type === 'started') {
+                    setStatusMessage('듣고 있습니다...')
+                    setIsRecording(true)
 
-                setTranscribedText(`"${data.text}"`)
+                    const recorder = new AudioRecorder()
+                    recorderRef.current = recorder
 
-                // Store keyword for handleConfirm fallback
-                if (data.keyword) {
-                    localStorage.setItem('voiceSearchKeyword', data.keyword);
-                }
+                    await recorder.start((pcm16) => {
+                        if (ws.readyState === WebSocket.OPEN) {
+                            const bytes = new Uint8Array(pcm16.buffer)
+                            let binary = ''
+                            for (let i = 0; i < bytes.length; i++) {
+                                binary += String.fromCharCode(bytes[i])
+                            }
+                            const b64 = btoa(binary)
 
-                // Store pipeline results if available (from main.py 'results' key)
-                if (data.results && data.results.length > 0) {
-                    localStorage.setItem('voiceSearchResults', JSON.stringify(data.results));
-                    console.log("Stored voice results:", data.results.length);
-                }
+                            ws.send(JSON.stringify({
+                                type: 'audio',
+                                pcm_b64: b64,
+                                seq: seqRef.current++
+                            }))
+                        }
+                    })
+                } else if (msg.type === 'interim') {
+                    setInterimText(msg.text)
+                } else if (msg.type === 'final') {
+                    const finalText = msg.text || ''
+                    setTranscript(finalText)
+                    setInterimText('')
 
-                // Navigate after a short delay so user sees the transcription
-                setTimeout(() => {
-                    // Priority: Keyword (e.g. "마스크팩") > Text ("얼굴 팩 있나요?")
-                    // This ensures SearchResults gets a clean product term
-                    let queryText = data.keyword || data.text;
-                    console.log("Navigation Query Text:", queryText);
+                    if (recorderRef.current) {
+                        recorderRef.current.stop()
+                        recorderRef.current = null
+                    }
+                    setIsRecording(false)
 
-                    const queryParams = { q: queryText };
+                    if (finalText) {
+                        setStatusMessage('검색 중...')
 
-                    // If we have results from voice search, mark source as voice
-                    if (data.results && data.results.length > 0) {
-                        queryParams.source = 'voice';
+                        try {
+                            const pipelineResp = await fetch(`http://${window.location.hostname}:8000/api/search/process_text`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ text: finalText })
+                            })
+                            const data = await pipelineResp.json()
+
+                            const queryText = data.keyword || finalText
+                            if (data.keyword) {
+                                localStorage.setItem('voiceSearchKeyword', data.keyword)
+                            }
+                            if (data.results && data.results.length > 0) {
+                                localStorage.setItem('voiceSearchResults', JSON.stringify(data.results))
+                            }
+                            if (data.reranked && data.reranked.length > 0) {
+                                localStorage.setItem('voiceRerankedResults', JSON.stringify(data.reranked))
+                            }
+
+                            router.push({
+                                pathname: '/VoiceResults',
+                                query: { q: queryText }
+                            })
+                        } catch (pipeErr) {
+                            console.error('Pipeline error:', pipeErr)
+                            router.push({
+                                pathname: '/SearchResults',
+                                query: { q: finalText }
+                            })
+                        }
+                    } else {
+                        setStatusMessage('음성을 인식하지 못했습니다.')
+                        setTimeout(() => {
+                            setStatusMessage('버튼을 눌러 다시 시도해주세요')
+                        }, 2000)
                     }
 
-                    console.log("Final Navigation Query:", queryParams);
-                    router.push({
-                        pathname: '/SearchResults',
-                        query: queryParams
-                    })
-                }, 500)
-            } else {
-                setIsProcessing(false)
-                router.push({
-                    pathname: '/search/fail',
-                    query: { message: '음성을 인식하지 못했습니다.' }
-                })
+                    ws.close()
+                    wsRef.current = null
+                } else if (msg.type === 'error') {
+                    console.error('STT Error:', msg.message)
+                    setStatusMessage('오류가 발생했습니다. 다시 시도해주세요.')
+                    stopRecording()
+                }
             }
+
+            ws.onerror = (err) => {
+                console.error('WebSocket error:', err)
+                setStatusMessage('연결에 실패했습니다.')
+                stopRecording()
+            }
+
+            ws.onclose = () => {
+                console.log('🔌 WebSocket closed')
+            }
+
         } catch (error) {
-            console.error("Voice search error:", error)
-            setIsProcessing(false)
-            router.push({
-                pathname: '/search/fail',
-                query: { message: `오류가 발생했습니다: ${error.message}` }
-            })
+            console.error('Recording start failed:', error)
+            setStatusMessage('마이크 접근에 실패했습니다.')
+            setIsRecording(false)
         }
-    }
+    }, [router, stopRecording])
 
-    const handleConfirm = () => {
-        if (transcribedText) {
-            // Priority: Stored keyword > Current Transcription
-            const storedKeyword = localStorage.getItem('voiceSearchKeyword');
-            const storedResults = localStorage.getItem('voiceSearchResults');
+    const handleMicClick = useCallback(() => {
+        if (isRecording) {
+            stopRecording()
+        } else {
+            startRecording()
+        }
+    }, [isRecording, startRecording, stopRecording])
 
-            const cleanText = transcribedText.replace(/^"|"$/g, '')
-            let queryText = storedKeyword || cleanText;
+    // Keep a ref to the latest startRecording so auto-start always works
+    const startRecordingRef = useRef(startRecording)
+    startRecordingRef.current = startRecording
 
-            const queryParams = { q: queryText };
-            if (storedResults) {
-                queryParams.source = 'voice';
+    // Auto-start recording on page load (fires once on mount, no deps issue)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            startRecordingRef.current()
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [])
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (recorderRef.current) {
+                recorderRef.current.stop()
             }
-
-            router.push({
-                pathname: '/SearchResults',
-                query: queryParams
-            })
+            if (wsRef.current) {
+                wsRef.current.close()
+            }
         }
-    }
-
-    const handleCancel = () => {
-        router.back()
-    }
-
-    const triggerFileUpload = () => {
-        fileInputRef.current?.click()
-    }
+    }, [])
 
     return (
         <Layout className="p-6 relative">
@@ -158,61 +227,47 @@ const VoiceSearch = () => {
                 <div className="w-full max-w-md flex flex-col items-center space-y-8">
                     {/* Title */}
                     <h1 className="text-4xl font-bold text-gray-900">
-                        듣고 있습니다...
+                        음성 검색
                     </h1>
+
+                    {/* Status Message */}
+                    <p className="text-lg text-gray-500 font-medium text-center">
+                        {statusMessage}
+                    </p>
 
                     {/* Audio Visualizer */}
                     <div className="py-4">
                         <AudioVisualizer />
                     </div>
 
-                    {/* Transcribed Text Display */}
+                    {/* Mic Button (for manual stop/restart) */}
+                    <button
+                        onClick={handleMicClick}
+                        className={`w-24 h-24 rounded-full flex items-center justify-center shadow-lg transition-all ${isRecording
+                            ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                            : 'bg-daiso-red hover:bg-red-700'
+                            }`}
+                    >
+                        {isRecording ? (
+                            <MicOff size={40} color="white" />
+                        ) : (
+                            <Mic size={40} color="white" />
+                        )}
+                    </button>
+
+                    {/* Transcript Display */}
                     <div className="w-full">
-                        <div className="bg-white border border-gray-200 rounded-full px-6 py-4 text-center shadow-sm min-h-[56px] flex items-center justify-center">
-                            {transcribedText ? (
-                                <span className="text-gray-800 text-lg">{transcribedText}</span>
+                        <div className="bg-white border border-gray-200 rounded-2xl px-6 py-4 text-center shadow-sm min-h-[56px] flex items-center justify-center">
+                            {transcript || interimText ? (
+                                <span className="text-gray-800 text-lg">
+                                    {transcript} <span className="text-gray-400">{interimText}</span>
+                                </span>
                             ) : (
                                 <span className="text-gray-400 text-lg">
-                                    녹음 파일을 업로드하세요
+                                    음성이 여기에 표시됩니다
                                 </span>
                             )}
                         </div>
-                    </div>
-
-                    {/* Hidden file input */}
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        accept="audio/*"
-                        className="hidden"
-                    />
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-4 pt-4">
-                        <button
-                            onClick={handleCancel}
-                            className="px-8 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                        >
-                            취소
-                        </button>
-
-                        {transcribedText && !isProcessing ? (
-                            <button
-                                onClick={handleConfirm}
-                                className="px-8 py-3 bg-daiso-red text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-                            >
-                                확인
-                            </button>
-                        ) : (
-                            <button
-                                onClick={triggerFileUpload}
-                                disabled={isProcessing}
-                                className="px-8 py-3 bg-daiso-red text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isProcessing ? '처리 중...' : '파일 선택'}
-                            </button>
-                        )}
                     </div>
                 </div>
             </div>

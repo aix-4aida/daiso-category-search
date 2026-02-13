@@ -189,8 +189,8 @@ def process_benchmark_output(run_dir, catalog_path, output_file):
             
             # Get candidates from retrieval phase
             # run_benchmark outputs 'predicted_doc_ids' (Top N)
-            # User request: Limit to Top 5
-            top_ids = case.get("predicted_doc_ids", [])[:5]
+            # User request: Limit to Top 3
+            top_ids = case.get("predicted_doc_ids", [])[:3]
             
             candidates = []
             retrieved_display = [] # To show ID + Name

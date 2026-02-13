@@ -119,15 +119,18 @@ def process_data(input_path=None, output_path=None):
         prediction = "ERROR"
 
         try:
-            response = model.generate_content(utterance, safety_settings=safety_settings)
-            raw_text = response.text.strip().upper()
+            if model:
+                response = model.generate_content(utterance, safety_settings=safety_settings)
+                raw_text = response.text.strip().upper()
 
-            if 'Y' in raw_text:
-                prediction = 'Y'
-            elif 'N' in raw_text:
-                prediction = 'N'
+                if 'Y' in raw_text:
+                    prediction = 'Y'
+                elif 'N' in raw_text:
+                    prediction = 'N'
+                else:
+                    prediction = raw_text
             else:
-                prediction = raw_text
+                prediction = "SKIPPED" # Model not initialized
 
         except Exception as e:
             print(f"\n  Error: {e}")
