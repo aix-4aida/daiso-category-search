@@ -8,10 +8,10 @@ services:
       dockerfile: Dockerfile
     # Image name for Docker Hub (Replace 'your-dockerhub-username' with actaul username)
     image: ${DOCKER_USERNAME:-daiso-user}/daiso-frontend:latest
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000} # Default to localhost, override in prod env
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-/api}
     depends_on:
       - backend
     restart: always
@@ -25,8 +25,8 @@ services:
     env_file:
       - .env
     command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
-    ports:
-      - "8000:8000"
+    # ports:
+    #   - "8000:8000"
     volumes:
       # Mount data volume for persistence (adjust as needed for production)
       - ./backend/services_kms/data:/app/services_kms/data
@@ -39,6 +39,27 @@ services:
       - qdrant
       - elasticsearch
     restart: always
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: always
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   qdrant:
     image: qdrant/qdrant:latest

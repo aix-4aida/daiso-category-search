@@ -61,8 +61,8 @@ const VoiceSearch = () => {
 
         try {
             // 1. Connect WebSocket
-            const hostname = window.location.hostname
-            const wsUrl = `ws://${hostname}:8000/ws/stt`
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+            const wsUrl = `${protocol}//${window.location.host}/ws/stt`
             const ws = new WebSocket(wsUrl)
             wsRef.current = ws
 
@@ -123,7 +123,7 @@ const VoiceSearch = () => {
 
                         // Send text to pipeline
                         try {
-                            const pipelineResp = await fetch(`http://${window.location.hostname}:8000/api/search/process_text`, {
+                            const pipelineResp = await fetch(`/api/search/process_text`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ text: finalText })
