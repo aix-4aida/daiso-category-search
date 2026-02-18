@@ -77,6 +77,13 @@ const CATEGORY_TO_SHELF: Record<string, string> = {
     "뷰티/위생": "17",
     "패션/잡화": "18",
     "육아/안전": "19",
+    "반려동물": "19", // 육아/안전 통합
+    "식품": "12", // 주방용품 통합
+    "캠핑": "14", // 공구/디지털 통합
+    "차량용품": "14", // 공구/디지털 통합
+    "취미": "14", // 공구/디지털 통합
+    "유아 완구": "19", // 육아/안전 통합
+    "완구": "19", // 육아/안전 통합
 };
 
 // Keyword to category mapping for product name search
@@ -102,39 +109,73 @@ const KEYWORD_TO_CATEGORY: Record<string, string> = {
     // 공구/디지털 (14번 매대)
     "충전기": "공구/디지털", "케이블": "공구/디지털", "공구": "공구/디지털",
     "드라이버": "공구/디지털", "디지털": "공구/디지털", "배터리": "공구/디지털",
-    "이어폰": "공구/디지털", "USB": "공구/디지털",
+    "이어폰": "공구/디지털", "USB": "공구/디지털", "건전지": "공구/디지털",
+    "멀티탭": "공구/디지털", "마우스": "공구/디지털", "키보드": "공구/디지털",
+
+    // 캠핑/차량/취미 (14번 매대 통합)
+    "캠핑": "캠핑", "텐트": "캠핑", "의자": "캠핑", "램프": "캠핑",
+    "차량": "차량용품", "와이퍼": "차량용품", "세차": "차량용품", "방향제": "차량용품",
+    "낚시": "취미", "골프": "취미", "자전거": "취미",
 
     // 인테리어 (15번 매대)
     "인테리어": "인테리어", "조명": "인테리어", "액자": "인테리어", "꽃병": "인테리어",
-    "화분": "인테리어", "시계": "인테리어", "거울": "인테리어",
+    "화분": "인테리어", "시계": "인테리어", "거울": "인테리어", "캔들": "인테리어",
+    "디퓨저": "인테리어", "조화": "인테리어", "원예": "인테리어", "식물": "인테리어",
 
     // 수납 (16번 매대)
     "수납": "수납", "바구니": "수납", "정리함": "수납", "서랍": "수납",
-    "박스": "수납", "행거": "수납", "옷걸이": "수납",
+    "박스": "수납", "행거": "수납", "옷걸이": "수납", "리빙박스": "수납",
 
     // 뷰티/위생 (17번 매대)
     "화장품": "뷰티/위생", "립스틱": "뷰티/위생", "뷰티": "뷰티/위생",
     "마스크": "뷰티/위생", "핸드크림": "뷰티/위생", "화장솜": "뷰티/위생",
-    "손톱깎이": "뷰티/위생", "면봉": "뷰티/위생",
+    "손톱깎이": "뷰티/위생", "면봉": "뷰티/위생", "파우치": "뷰티/위생",
 
     // 패션/잡화 (18번 매대)
     "패션": "패션/잡화", "양말": "패션/잡화", "모자": "패션/잡화",
     "장갑": "패션/잡화", "머리끈": "패션/잡화", "헤어핀": "패션/잡화",
+    "우산": "패션/잡화", "슬리퍼": "패션/잡화", "가방": "패션/잡화",
 
     // 육아/안전 (19번 매대)
     "유아": "육아/안전", "아기": "육아/안전", "장난감": "육아/안전",
     "파티": "육아/안전", "풍선": "육아/안전", "안전": "육아/안전",
+
+    // 반려동물 (19번 매대 통합)
+    "반려동물": "반려동물", "강아지": "반려동물", "고양이": "반려동물", "간식": "반려동물",
+    "사료": "반려동물", "패드": "반려동물", "장난감(애완)": "반려동물",
+
+    // 유아 완구 (19번 매대 통합 - 육아/안전 근처)
+    "완구": "유아 완구", "로봇": "유아 완구", "인형": "유아 완구", "블록": "유아 완구",
+    "자동차": "유아 완구", "기차": "유아 완구", "미니어처": "유아 완구",
+
+    // 식품 (12번 매대 통합 - 주방용품 근처)
+    "식품": "식품", "과자": "식품", "라면": "식품", "음료": "식품",
+    "커피": "식품", "차": "식품", "초콜릿": "식품", "젤리": "식품",
 };
 
 /**
  * Find product location based on product name or location string
  * @param nameOrLocation - Product name or location string (e.g., "10번 매대 (욕실)")
+ * @param category - Optional category name to prioritize mapping
  * @returns Shelf location object with floor, x, y coordinates
  */
-export function findProductLocation(nameOrLocation: string): ShelfLocation {
-    if (!nameOrLocation) return mapConfig.shelves["17"]; // Default: 뷰티/위생
-
+export function findProductLocation(nameOrLocation: string, category?: string): ShelfLocation {
     const { shelves } = mapConfig;
+
+    // 0. If category is provided, prioritize it
+    if (category) {
+        // Direct match
+        if (CATEGORY_TO_SHELF[category] && shelves[CATEGORY_TO_SHELF[category]]) {
+            return shelves[CATEGORY_TO_SHELF[category]];
+        }
+        // Try fuzzy match? (Not implemented for now, exact match expected for category keys)
+    }
+
+    if (!nameOrLocation) {
+        // Fallback to category if name is empty but category provided
+        if (category && CATEGORY_TO_SHELF[category]) return shelves[CATEGORY_TO_SHELF[category]];
+        return mapConfig.shelves["17"]; // Default: 뷰티/위생
+    }
 
     // First, try to extract shelf number from location string like "10번 매대 (욕실)"
     const shelfMatch = nameOrLocation.match(/(\d+)번\s*매대/);
@@ -142,16 +183,16 @@ export function findProductLocation(nameOrLocation: string): ShelfLocation {
         return shelves[shelfMatch[1]];
     }
 
-    // Try to match category directly
+    // Try to match category directly (if nameOrLocation is actually a category name)
     const shelfId = CATEGORY_TO_SHELF[nameOrLocation];
     if (shelfId && shelves[shelfId]) {
         return shelves[shelfId];
     }
 
     // Search by keywords in product name
-    for (const [keyword, category] of Object.entries(KEYWORD_TO_CATEGORY)) {
+    for (const [keyword, cat] of Object.entries(KEYWORD_TO_CATEGORY)) {
         if (nameOrLocation.includes(keyword)) {
-            const shelfId = CATEGORY_TO_SHELF[category];
+            const shelfId = CATEGORY_TO_SHELF[cat];
             if (shelfId && shelves[shelfId]) {
                 return shelves[shelfId];
             }

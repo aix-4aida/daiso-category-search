@@ -40,6 +40,13 @@ config_path = Path(__file__).parent / "config.yaml"
 with open(config_path, "r", encoding="utf-8") as f:
     config = yaml.safe_load(f)
 
+# [CONFIG] 선별된 대분류 카테고리 목록 (Configurable)
+# 이 목록에 있는 카테고리만 홈 화면/카테고리 탭에 노출됩니다.
+ALLOWED_CATEGORIES = [
+    "문구", "주방", "욕실", "디지털", "식품", 
+    "화장품", "패션", "인테리어소품", "캐릭터", "파티·유아동"
+]
+
 # Initialize components
 print("🔄 Initializing STT adapters...")
 
@@ -50,8 +57,13 @@ whisper_adapter = get_adapter(
 
 # Initialize Google adapter
 google_config = config["stt"].get("google", {})
-google_config["credentials_path"] = "backend/daisoproject-sst.json"
-google_adapter = get_adapter("google", **google_config)
+cred_path = "backend/daisoproject-sst.json"
+if os.path.exists(cred_path):
+    google_config["credentials_path"] = cred_path
+    google_adapter = get_adapter("google", **google_config)
+else:
+    print(f"⚠️ Warning: Google credentials not found at {cred_path}. Google STT disabled.")
+    google_adapter = None
 
 quality_gate = QualityGate(
     **config["quality_gate"]
@@ -366,7 +378,29 @@ async def products_search_api(q: str = ""):
     return results
 
 
-@app.get("/api/products/category/{category}")
+@app.get("/api/categories")
+async def get_categories_api():
+    """
+    Get allowed category list from DB (Product Majors)
+    """
+    try:
+        from backend.database.database import get_all_category_majors
+        db_categories = get_all_category_majors()
+        
+        if not db_categories:
+            # Fallback
+            categories = [{"id": c, "name": c} for c in ALLOWED_CATEGORIES]
+        else:
+            # Use DB categories
+            categories = [{"id": c, "name": c} for c in db_categories]
+            
+        return {"categories": categories}
+    except Exception as e:
+        print(f"Error getting categories: {e}")
+        return {"categories": [{"id": c, "name": c} for c in ALLOWED_CATEGORIES]}
+
+
+@app.get("/api/products/category/{category:path}")
 async def products_by_category_api(category: str):
     """
     Get products by category

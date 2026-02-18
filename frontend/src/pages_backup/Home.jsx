@@ -1,15 +1,18 @@
-'use client';
-
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom' // Pages Router에서는 useRouter를 쓰는게 맞지만, 현재 Home.jsx는 react-router-dom을 쓰고 있음 (Next.js Pages임에도 불구하고). 기존 코드 존중하되, Next.js 라우팅(useRouter)으로 마이그레이션이 필요해보임. 하지만 일단 기존 코드 스타일 유지.
+// 아, 기존 Home.jsx가 'react-router-dom'을 import하고 있었음. 이건 SPA 방식인데 Next.js에서는 'next/router' 또는 'next/navigation'을 써야 함.
+// 기존 코드가 동작했다면 _app.js 등에서 설정을 했거나, import가 잘못되어 있었을 수 있음.
+// 안전하게 next/router로 변경하여 구현함.
+
+import { useRouter } from 'next/router'
 import { HelpCircle, Search } from 'lucide-react'
 import Layout from '../components/Layout'
 import { getCategories } from '../lib/api'
 
-export default function Home() {
+const Home = () => {
     const router = useRouter()
     const [query, setQuery] = useState('')
-    const [categories, setCategories] = useState<{ id: string, name: string }[]>([])
+    const [categories, setCategories] = useState([])
 
     // Load categories from API on mount
     useEffect(() => {
@@ -23,14 +26,17 @@ export default function Home() {
     }, []);
 
     const handleVoiceClick = () => {
-        router.push('/VoiceSearch')
+        router.push('/VoiceSearch') // Next.js routing
     }
 
-    const handleSearch = (e: React.FormEvent) => {
+    const handleSearch = (e) => {
         e.preventDefault()
         if (query.trim()) {
             // Use 'text' source to indicate pipeline usage
-            router.push(`/SearchResults?q=${encodeURIComponent(query)}&source=text`)
+            router.push({
+                pathname: '/SearchResults',
+                query: { q: query, source: 'text' }
+            })
         }
     }
 
@@ -39,10 +45,10 @@ export default function Home() {
             {/* Top Left Logo (Red Square) */}
             <div className="absolute top-6 left-6 w-12 h-12 bg-daiso-red rounded-md"></div>
 
-            {/* Top Right placeholder */}
+            {/* Top Right (Optional Auth/Settings placeholder) */}
             <div className="absolute top-6 right-6 w-24 h-8 bg-gray-100 rounded-full"></div>
 
-            <div className="w-full max-w-lg flex flex-col items-center space-y-10 pt-16">
+            <div className="w-full max-w-lg flex flex-col items-center space-y-12 mb-10">
                 {/* Title Section */}
                 <div className="text-center space-y-4">
                     <h1 className="text-5xl font-bold text-daiso-red tracking-tight">어디다있소?</h1>
@@ -79,7 +85,10 @@ export default function Home() {
                         {categories.slice(0, 5).map((cat) => (
                             <button
                                 key={cat.id}
-                                onClick={() => router.push(`/SearchResults?category=${encodeURIComponent(cat.name)}`)}
+                                onClick={() => router.push({
+                                    pathname: '/SearchResults',
+                                    query: { category: cat.name }
+                                })}
                                 className="aspect-square bg-red-50 rounded-2xl flex flex-col items-center justify-center text-gray-700 hover:bg-red-100 transition-colors p-1"
                             >
                                 <span className="text-xs font-bold text-center break-keep leading-tight">{cat.name}</span>
@@ -94,3 +103,5 @@ export default function Home() {
         </Layout>
     )
 }
+
+export default Home

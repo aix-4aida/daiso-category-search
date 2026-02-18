@@ -131,6 +131,15 @@ def search_products(keyword: str) -> List[Dict]:
     conn.close()
     return [dict(row) for row in rows]
 
+def get_all_category_majors() -> List[str]:
+    """Get all unique major categories"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT category_major FROM products WHERE category_major IS NOT NULL")
+    rows = cursor.fetchall()
+    conn.close()
+    return [row[0] for row in rows]
+
 def get_products_by_category(category: str) -> List[Dict]:
     """
     Search products by category columns
@@ -168,7 +177,23 @@ def get_related_products_for_context(keyword: str, limit: int = 5) -> str:
     return "\n".join(context_list)
 
 
+
+def get_all_category_majors() -> List[str]:
+    """Get all unique major categories from products table"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT DISTINCT category_major FROM products WHERE category_major IS NOT NULL AND category_major != ''")
+        rows = cursor.fetchall()
+        return [row[0] for row in rows if row[0]]
+    except Exception as e:
+        print(f"Error fetching categories: {e}")
+        return []
+    finally:
+        conn.close()
+
 if __name__ == "__main__":
     init_database()
     print(f"Products: {get_product_count()}")
     print(f"Utterances: {get_utterance_count()}")
+

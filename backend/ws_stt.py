@@ -3,6 +3,7 @@
 WebSocket endpoint for real-time streaming STT
 Uses Google Cloud Speech-to-Text v1 API with SpeechHelpers signature
 STT WORKER THREAD VERSION - streaming_recognize + response iteration in same thread
+Fallback to Whisper if Google credentials are missing (Pseudo-streaming)
 """
 
 import asyncio
@@ -14,6 +15,7 @@ import struct
 import traceback
 import csv
 import os
+import yaml
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Iterator, Dict
@@ -29,6 +31,9 @@ from google.cloud.speech_v1.types import (
 )
 from google.oauth2 import service_account
 
+# Local imports
+from stt import get_adapter
+
 # Session configuration
 MAX_SESSION_DURATION_SEC = 30
 SILENCE_TIMEOUT_SEC = 1.5
@@ -42,6 +47,15 @@ AUDIO_SAVE_ENABLED = False  # Feature flag (controlled by metadata)
 
 # Default credentials path (absolute, based on this file's location)
 DEFAULT_CREDENTIALS_PATH = str(Path(__file__).parent / "daisoproject-sst.json")
+CONFIG_PATH = Path(__file__).parent / "config.yaml"
+
+# Load config for Whisper fallback
+try:
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        CONFIG = yaml.safe_load(f)
+except Exception as e:
+    print(f"⚠️ Failed to load config.yaml in ws_stt: {e}")
+    CONFIG = {"stt": {"whisper": {"model_size": "medium", "device": "cuda", "compute_type": "float16"}}}
 
 # CSV Header
 CSV_HEADER = [
@@ -92,6 +106,8 @@ class StreamingSTTSession:
         self.save_audio = self.meta.get("save_audio", False)
         
         self.client: Optional[SpeechClient] = None
+        self.use_fallback = False
+        self.whisper_adapter = None
         
         # Timing
         self.start_ts: Optional[float] = None
@@ -114,18 +130,34 @@ class StreamingSTTSession:
         self.worker_thread = None
         
     async def initialize(self):
-        """Initialize Google STT client"""
+        """Initialize Google STT client, fallback to Whisper if failed"""
+        # Check if credential file exists
+        if not os.path.exists(self.credentials_path):
+            print(f"⚠️ Google credentials not found at {self.credentials_path}. Using Whisper fallback.")
+            self.use_fallback = True
+            return await self._init_whisper()
+
         try:
             credentials = service_account.Credentials.from_service_account_file(
                 self.credentials_path
             )
             self.client = SpeechClient(credentials=credentials)
-            print(f"✅ STT client initialized (RunID: {self.run_id}, TestID: {self.test_id})")
+            print(f"✅ Google STT client initialized (RunID: {self.run_id})")
             return True
         except Exception as e:
-            print(f"❌ STT init failed: {e}")
-            traceback.print_exc()
-            await self.send_error(str(e))
+            print(f"⚠️ Google STT init failed: {e}. Trying Whisper fallback.")
+            self.use_fallback = True
+            return await self._init_whisper()
+
+    async def _init_whisper(self):
+        try:
+            whisper_config = CONFIG["stt"]["whisper"]
+            self.whisper_adapter = get_adapter("whisper", **whisper_config)
+            print(f"✅ Whisper Fallback initialized (RunID: {self.run_id})")
+            return True
+        except Exception as e:
+            print(f"❌ Whisper init failed: {e}")
+            await self.send_error(f"STT Init Failed: {e}")
             return False
     
     async def send_message(self, msg: dict):
@@ -162,9 +194,12 @@ class StreamingSTTSession:
         })
         print(f"📝 final transcript: '{text}' | {status} | {confidence:.2f}")
         
-        # 1. Save Audio if enabled
+        # 1. Save Audio if enabled (or fallback required it)
         audio_path_str = ""
-        if self.save_audio or AUDIO_SAVE_ENABLED:
+        # Always save if fallback mode (needed for processing) or explicit save requested
+        should_save = self.save_audio or AUDIO_SAVE_ENABLED or self.use_fallback
+        
+        if should_save and len(self.full_audio_buffer) > 0:
             try:
                 AUDIO_SAVE_DIR.mkdir(parents=True, exist_ok=True)
                 filename = f"{self.run_id}_{self.test_id}.wav"
@@ -182,6 +217,7 @@ class StreamingSTTSession:
                 
                 audio_path_str = str(save_path)
                 print(f"💾 Audio saved: {audio_path_str}")
+                
             except Exception as e:
                 print(f"❌ Failed to save audio: {e}")
 
@@ -221,9 +257,8 @@ class StreamingSTTSession:
                 
                 self.chunk_count += 1
                 
-                # Buffer for saving
-                if self.save_audio or AUDIO_SAVE_ENABLED:
-                    self.full_audio_buffer.extend(chunk)
+                # Buffer for saving/fallback
+                self.full_audio_buffer.extend(chunk)
                 
                 yield StreamingRecognizeRequest(audio_content=chunk)
                 
@@ -233,11 +268,8 @@ class StreamingSTTSession:
                 continue
     
     def _stt_worker_thread(self):
-        """
-        STT worker thread: streaming_recognize + response iteration
-        """
-        print("🔧 STT worker: thread started")
-        
+        """Standard Google STT Worker"""
+        print("🔧 Google STT worker: thread started")
         try:
             recognition_config = RecognitionConfig(
                 encoding=RecognitionConfig.AudioEncoding.LINEAR16,
@@ -259,11 +291,8 @@ class StreamingSTTSession:
             
             for response in responses:
                 self.response_count += 1
-                
                 for result in response.results:
-                    if not result.alternatives:
-                        continue
-                    
+                    if not result.alternatives: continue
                     alt = result.alternatives[0]
                     text = alt.transcript
                     conf = getattr(alt, 'confidence', 0.0)
@@ -275,32 +304,70 @@ class StreamingSTTSession:
                     else:
                         self.result_queue.put({"type": "interim", "text": text})
             
-            # Response loop ended without final
             status = "NO_SPEECH" if self.chunk_count == 0 else "TOO_SHORT"
-            self.result_queue.put({"type": "final", "text": "", "confidence": 0.0, "status": status, "reason": "No final result"})
+            self.result_queue.put({"type": "final", "text": "", "confidence": 0.0, "status": status})
             
         except Exception as e:
-            print(f"❌ STT worker error: {e}")
-            traceback.print_exc()
+            print(f"❌ Google STT worker error: {e}")
             self.result_queue.put({"type": "error", "message": str(e)})
         finally:
-            print("🔧 STT worker: thread finished")
-    
-    async def process_audio(self, pcm_b64: str, seq: int):
-        """Called from WS thread - puts audio into queue for worker"""
+            print("🔧 Google STT worker: thread finished")
+
+    def _fallback_worker_thread(self):
+        """Whisper Fallback Worker (Pseudo-streaming)"""
+        print("🔧 Whisper Fallback worker: thread started")
         try:
-            audio = base64.b64decode(pcm_b64)
-            self.audio_queue.put(audio)
-            self.last_audio_ts = time.time()
-        except:
-            pass
-    
+            # Just consume the queue until stop
+            while not self.stop_event.is_set():
+                try:
+                    chunk = self.audio_queue.get(timeout=0.5)
+                    if chunk is None: break
+                    self.full_audio_buffer.extend(chunk)
+                    self.chunk_count += 1
+                except Empty:
+                    continue
+            
+            # Processing after stop
+            print(f"🎤 Recording stopped. Processing {len(self.full_audio_buffer)} bytes with Whisper...")
+            
+            if len(self.full_audio_buffer) < 4000: # < 0.25s (16000*2*0.25)
+                self.result_queue.put({"type": "final", "text": "", "status": "TOO_SHORT"})
+                return
+
+            # Save to temporary file for Whisper
+            AUDIO_SAVE_DIR.mkdir(parents=True, exist_ok=True)
+            temp_filename = f"fallback_{self.run_id}.wav"
+            temp_path = AUDIO_SAVE_DIR / temp_filename
+            
+            with open(temp_path, "wb") as f:
+                f.write(struct.pack('<4sI4s', b'RIFF', 36 + len(self.full_audio_buffer), b'WAVE'))
+                f.write(struct.pack('<4sIHHIIHH', b'fmt ', 16, 1, 1, SAMPLE_RATE, SAMPLE_RATE * 2, 2, 16))
+                f.write(struct.pack('<4sI', b'data', len(self.full_audio_buffer)))
+                f.write(self.full_audio_buffer)
+            
+            # Run Whisper
+            print(f"🔄 Running Whisper on {temp_path}...")
+            # Note: whisper_adapter.transcribe expects file path
+            result = self.whisper_adapter.transcribe(str(temp_path))
+            text = result.text_raw
+            
+            print(f"✅ Whisper Result: {text}")
+            self.result_queue.put({"type": "final", "text": text, "confidence": 1.0})
+            
+        except Exception as e:
+            print(f"❌ Whisper worker error: {e}")
+            traceback.print_exc()
+            self.result_queue.put({"type": "error", "message": f"Fallback error: {str(e)}"})
+        finally:
+            print("🔧 Whisper Fallback worker: thread finished")
+
     async def start(self):
         self.is_running = True
         self.start_ts = time.time()
         self.stop_event.clear()
         
-        self.worker_thread = threading.Thread(target=self._stt_worker_thread, daemon=True)
+        target_func = self._fallback_worker_thread if self.use_fallback else self._stt_worker_thread
+        self.worker_thread = threading.Thread(target=target_func, daemon=True)
         self.worker_thread.start()
         
         asyncio.create_task(self._process_results())
@@ -308,8 +375,6 @@ class StreamingSTTSession:
     
     async def _process_results(self):
         """Process results from STT worker and send to WS"""
-        # Keep running until is_running becomes False (set by self or stop timeout)
-        # unrelated to stop_event (which is for worker thread)
         while self.is_running:
             try:
                 r = self.result_queue.get_nowait()
@@ -326,7 +391,7 @@ class StreamingSTTSession:
                     self.stop_event.set()
                 elif r["type"] == "error":
                     await self.send_error(r["message"])
-                    await self.send_final(text="", status="FAIL", failure_reason=r["message"]) # Log failure
+                    await self.send_final(text="", status="FAIL", failure_reason=r["message"])
                     self.is_running = False
                     self.stop_event.set()
             except Empty:
@@ -342,7 +407,8 @@ class StreamingSTTSession:
                 await self.stop("TIMEOUT")
                 return
             
-            if self.last_audio_ts and (now - self.last_audio_ts) >= SILENCE_TIMEOUT_SEC:
+            # Silence detection (only for Google streaming, Fallback handles silence manually if needed)
+            if not self.use_fallback and self.last_audio_ts and (now - self.last_audio_ts) >= SILENCE_TIMEOUT_SEC:
                 await self.stop("SILENCE")
                 return
     
@@ -353,32 +419,23 @@ class StreamingSTTSession:
         print(f"🛑 Stopping session: {reason}")
         self.stop_event.set()
 
-        # Inject ~500ms of silence to help STT finalize the last utterance
-        # 16000 Hz * 2 bytes/sample * 0.5s = 16000 bytes
+        # Inject silence/Poison pill
         silence_frame = b'\x00' * 16000
         self.audio_queue.put(silence_frame)
-
-        self.audio_queue.put(None)  # Poison pill
+        self.audio_queue.put(None)
         
-        # Do not set is_running = False here. 
-        # Let the worker finish and msg pass to _process_results.
-        # _process_results will set is_running = False when it sees "final" or "error".
-        
-        # Wait for worker to finish (with timeout)
         if self.worker_thread and self.worker_thread.is_alive():
-            # Run join in executor to avoid blocking event loop
             await asyncio.get_event_loop().run_in_executor(None, self.worker_thread.join, 2.0)
             if self.worker_thread.is_alive():
                 print("⚠️ Worker thread still alive after timeout")
         
-        # Ensure we don't hang forever if worker failed to produce result
-        # Force shutdown after short grace period if still running
+        # Force shutdown loop
         for _ in range(10): 
             if not self.is_running: 
                 break
             await asyncio.sleep(0.1)
         
-        self.is_running = False  # Final safety force-stop
+        self.is_running = False
 
 
 async def handle_streaming_stt(websocket: WebSocket, credentials_path: str = DEFAULT_CREDENTIALS_PATH):
@@ -394,9 +451,7 @@ async def handle_streaming_stt(websocket: WebSocket, credentials_path: str = DEF
             
             if msg["type"] == "start":
                 print("▶️ Start session request")
-                # Extract metadata
                 meta = msg.get("meta", {})
-                config = msg.get("config", {})
                 
                 session = StreamingSTTSession(websocket, credentials_path, meta=meta)
                 if await session.initialize():

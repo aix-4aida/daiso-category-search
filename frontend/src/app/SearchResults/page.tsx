@@ -14,10 +14,11 @@ interface Product {
     price?: number;
     location?: string;
     image_url?: string;
+    category_major?: string;
 }
 
-const SimpleMap = ({ targetLocation, productName }: { targetLocation?: string, productName?: string }) => {
-    const target = findProductLocation(targetLocation || productName || '')
+const SimpleMap = ({ targetLocation, productName, category }: { targetLocation?: string, productName?: string, category?: string }) => {
+    const target = findProductLocation(targetLocation || productName || '', category)
 
     const [ratios, setRatios] = useState({ B1: 1.4, B2: 1.4 });
 
@@ -161,6 +162,20 @@ function SearchResultsContent() {
         setSelectedProduct(product)
     }
 
+    const getDisplayLocation = (product: Product) => {
+        if (product.location) return product.location;
+        const mapInfo = findProductLocation(product.name, product.category_major);
+
+        if (product.category_major) {
+            if (mapInfo) {
+                return `${product.category_major} (${mapInfo.floor} ${mapInfo.id}번 매대)`;
+            }
+            return product.category_major;
+        }
+
+        return mapInfo?.section || "위치 정보 없음";
+    }
+
     if (loading) {
         return (
             <Layout className="bg-white items-center justify-center">
@@ -249,7 +264,7 @@ function SearchResultsContent() {
                                             </h3>
                                             <div className="flex items-center text-xs text-red-500 mb-1">
                                                 <MapPin size={12} className="mr-1" />
-                                                {product.location || findProductLocation(product.name)?.section}
+                                                {getDisplayLocation(product)}
                                             </div>
                                             <div className="font-bold text-gray-900 text-sm">
                                                 {product.price?.toLocaleString()}원
@@ -285,7 +300,7 @@ function SearchResultsContent() {
                             <span className="text-gray-500 text-sm font-medium mr-2">선택된 상품:</span>
                             <span className="text-daiso-red font-bold">{selectedProduct.name}</span>
                             <span className="mx-2 text-gray-300">|</span>
-                            <span className="text-gray-800 font-bold text-sm">{selectedProduct.location || findProductLocation(selectedProduct.name)?.section}</span>
+                            <span className="text-gray-800 font-bold text-sm">{getDisplayLocation(selectedProduct)}</span>
                         </div>
                     )}
 
@@ -293,6 +308,7 @@ function SearchResultsContent() {
                         <SimpleMap
                             targetLocation={selectedProduct?.location}
                             productName={selectedProduct?.name}
+                            category={selectedProduct?.category_major}
                         />
                     </div>
                 </div>

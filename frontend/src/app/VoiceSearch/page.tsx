@@ -175,9 +175,15 @@ const VoiceSearch = () => {
                 console.log('🔌 WebSocket closed')
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Recording start failed:', error)
-            setStatusMessage('마이크 접근에 실패했습니다.')
+            if (error.name === 'NotFoundError' || error.message?.includes('device not found')) {
+                setStatusMessage('마이크가 연결되어 있지 않습니다.')
+            } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                setStatusMessage('마이크 권한이 허용되지 않았습니다.')
+            } else {
+                setStatusMessage('마이크 접근에 실패했습니다.')
+            }
             setIsRecording(false)
         }
     }, [router, stopRecording])
