@@ -111,24 +111,29 @@ if BACKEND_DB_PATH.exists():
             print(f"⚠️ ElasticBM25 init failed: {e}. Falling back to LocalBM25.")
             bm25_engine = LocalBM25(docs=docs)
         
-        # 2. Vector (Primary: Qdrant if available, Secondary: Chroma)
+        # 2. Vector (Primary: ChromaDB if exists locally, Secondary: Qdrant)
+        # We prioritize ChromaDB here because we are baking the index into the Docker image.
         try:
-            qdrant = QdrantVectorRetriever(url=QDRANT_URL, collection_name="products")
-            if qdrant.check_connection():
-                vector_retriever = qdrant
-                print(f"✅ QdrantVectorRetriever initialized ({QDRANT_URL})")
-            else:
-                raise ConnectionError("Qdrant not reachable")
-        except Exception as e:
-            print(f"⚠️ Qdrant init failed: {e}. Attempting ChromaDB.")
-            try:
+            if CHROMA_DB_PATH.exists() and any(CHROMA_DB_PATH.iterdir()):
+                print(f"📂 Found local ChromaDB at {CHROMA_DB_PATH}. Using it.")
                 vector_retriever = ChromaVectorRetriever(
                     collection_name="products",
                     persist_directory=str(CHROMA_DB_PATH)
                 )
                 print(f"✅ ChromaVectorRetriever initialized at {CHROMA_DB_PATH}")
-            except Exception as e2:
-                print(f"⚠️ ChromaDB init failed: {e2}")
+            else:
+                raise FileNotFoundError("ChromaDB path not found or empty")
+        except Exception as e_chroma:
+            print(f"⚠️ ChromaDB init skipped/failed: {e_chroma}. Attempting Qdrant.")
+            try:
+                qdrant = QdrantVectorRetriever(url=QDRANT_URL, collection_name="products")
+                if qdrant.check_connection():
+                    vector_retriever = qdrant
+                    print(f"✅ QdrantVectorRetriever initialized ({QDRANT_URL})")
+                else:
+                    raise ConnectionError("Qdrant not reachable")
+            except Exception as e_qdrant:
+                print(f"⚠️ Qdrant init failed: {e_qdrant}")
 
 # ============================================================
 # Main Search Function
@@ -137,9 +142,14 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
     if not bm25_engine:
         return []
     
-    # 1. BM25
-    top_k_sparse = top_k * 2 if use_hybrid else top_k
-    sparse_results = bm25_engine.query(query, top_k=top_k_sparse)
+    # 1. BM25 — fetch same volume as Vector for fair RRF fusion
+    top_k_fetch = top_k * 5
+    sparse_results = bm25_engine.query(query, top_k=top_k_fetch)
+    
+    
+    # Debug: show BM25 top results
+    bm25_top = [(sr.doc_id, f"{sr.score:.2f}") for sr in sparse_results[:3]]
+    print(f"    [BM25] Top 3: {bm25_top}")
     
     # 2. Hybrid
     fused_results = sparse_results
@@ -147,12 +157,21 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
         query_emb = get_query_embedding(query)
         if query_emb:
             try:
-                # Fetch more than top_k to account for potential DB/Vector sync gaps
-                dense_results = vector_retriever.query(query_emb, top_k=top_k * 5)
-                if fusion_method == "rrf":
-                    fused_results = rrf_fusion(dense_results, sparse_results, rrf_k=60, top_k=top_k * 5)
+                dense_results = vector_retriever.query(query_emb, top_k=top_k_fetch)
+                
+                # Filter out near-zero scores (stale/corrupted vector index)
+                valid_dense = [d for d in dense_results if d.score > 0.1]
+                print(f"    [Vector] Total={len(dense_results)}, Valid(score>0.1)={len(valid_dense)}")
+                
+                if valid_dense:
+                    if fusion_method == "rrf":
+                        fused_results = rrf_fusion(valid_dense, sparse_results, rrf_k=60, top_k=top_k_fetch, sparse_weight=2.0)
+                    else:
+                        fused_results = weighted_fusion(valid_dense, sparse_results, alpha=0.5, top_k=top_k_fetch)
+                    fused_top = [(fr.doc_id, f"{fr.score:.4f}") for fr in fused_results[:3]]
+                    print(f"    [Fusion] Top 3: {fused_top}")
                 else:
-                    fused_results = weighted_fusion(dense_results, sparse_results, alpha=0.5, top_k=top_k * 5)
+                    print(f"    [Vector] All scores near-zero → BM25-only mode")
             except Exception as e:
                 print(f"⚠️ Vector search failed: {e}")
     
@@ -172,3 +191,4 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
             if len(results) >= top_k:
                 break
     return results
+
