@@ -35,6 +35,9 @@ def init_database():
             image_url TEXT,
             image_name TEXT,
             image_path TEXT,
+            description TEXT,
+            reviews TEXT,
+            tags TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(name)
         )
@@ -74,16 +77,60 @@ def init_database():
         print(f"✅ ChromaDB initialized: {CHROMA_DB_PATH}")
     except Exception as e:
         print(f"⚠️ ChromaDB init failed: {e}")
+        
+    ensure_schema()
+
+def ensure_schema():
+    """Migrate database schema if needed"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Check if columns exist
+    cursor.execute("PRAGMA table_info(products)")
+    columns = [info[1] for info in cursor.fetchall()]
+    
+    new_cols = {
+        'description': 'TEXT',
+        'reviews': 'TEXT',
+        'tags': 'TEXT'
+    }
+    
+    for col, dtype in new_cols.items():
+        if col not in columns:
+            print(f"📦 Adding column '{col}' to products table...")
+            try:
+                cursor.execute(f"ALTER TABLE products ADD COLUMN {col} {dtype}")
+            except Exception as e:
+                print(f"⚠️ Failed to add column {col}: {e}")
+                
+    conn.commit()
+    conn.close()
 
 def insert_product(rank: int, name: str, price: int, image_url: str, 
-                   image_name: str = None, image_path: str = None) -> bool:
+                   image_name: str = None, image_path: str = None,
+                   category_major: str = None, category_middle: str = None,
+                   description: str = None, reviews: str = None, tags: str = None) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
     try:
+        # Check if columns exist (for migration)
+        # In production, better to use migration script, but here we just try insert
+        # If schema changed, we might need to alter table or recreate.
+        # For now, let's assume we recreate DB or alter manually if needed.
+        # Actually, let's try to add columns if not exist in init_database, but here we just update insert.
+        
         cursor.execute('''
-            INSERT OR IGNORE INTO products (rank, name, price, image_url, image_name, image_path)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (rank, name, price, image_url, image_name, image_path))
+            INSERT INTO products (rank, name, price, image_url, image_name, image_path, category_major, category_middle, description, reviews, tags)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(name) DO UPDATE SET
+                price=excluded.price,
+                image_url=excluded.image_url,
+                image_name=excluded.image_name,
+                image_path=excluded.image_path,
+                description=excluded.description,
+                reviews=excluded.reviews,
+                tags=excluded.tags
+        ''', (rank, name, price, image_url, image_name, image_path, category_major, category_middle, description, reviews, tags))
         conn.commit()
         return cursor.rowcount > 0
     except Exception as e:

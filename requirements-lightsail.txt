@@ -11,6 +11,7 @@ aiohttp>=3.9.0
 # Google Gemini API (LLM: NLU + Rerank)
 google-generativeai==0.8.6
 google-genai>=1.0.0
+langgraph
 
 # Search
 chromadb>=0.4.0
