@@ -14,6 +14,13 @@ All notable changes to this project will be documented in this file.
 - **Nginx 502 Error**: Resolved proxy communication issues in AWS Lightsail by updating internal service routing.
 - **STT Environment**: Fixed audio conversion failures by installing FFmpeg in the Docker container and optimizing the Whisper model for low-resource environments.
 
+## [0.3.0] - 2026-02-19
+
+### Changed
+- **Crawler Logic**: Updated `crawler_full.py` to allow updating existing products (`ON CONFLICT DO UPDATE`) instead of skipping them, enabling detail data backfilling.
+- **Database**: Modified `insert_product` in `database.py` to support upsert operations for seamless data updates.
+- **Git Config**: Optimized `.gitignore` to exclude heavy virtual environment files (`.venv`) and temporary debug files (`debug_html`).
+
 ## [0.2.0] - 2026-02-13
 
 ### Added
