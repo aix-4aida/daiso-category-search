@@ -65,3 +65,5 @@ uritemplate==4.2.0
 # ── Jinja (FastAPI templates) ──
 Jinja2==3.1.6
 MarkupSafe==3.0.3
+
+faster-whisper==1.0.3

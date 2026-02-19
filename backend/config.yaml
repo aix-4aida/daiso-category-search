@@ -4,7 +4,7 @@
 
 stt:
   whisper:
-    model_size: "medium"  # large-v3 requires ~10GB VRAM, RTX 3050 4GB → medium
+    model_size: "small"  # large-v3 requires ~10GB VRAM, RTX 3050 4GB → medium
     device: "cpu"
     compute_type: "int8"
     fallback_model: "small"  # If medium OOM
@@ -63,7 +63,7 @@ fallback:
   enabled: true
   buffer_max_sec: 15
   whisper:
-    model_size: "medium"
+    model_size: "small"
     device: "cpu"
     compute_type: "int8"
     fallback_model: "small"
@@ -73,3 +73,4 @@ fallback:
     target_dBFS: -20
     denoise: true
   postprocess: true
+

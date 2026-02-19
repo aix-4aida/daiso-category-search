@@ -86,7 +86,7 @@ async def lifespan(app: FastAPI):
     stt_config = config.get("stt", {}).get("whisper", {})
     try:
         whisper_adapter = WhisperAdapter(
-            model_size=stt_config.get("model", "medium"),
+            model_size=stt_config.get("model", "small"),
             device=stt_config.get("device", "cuda"),
             compute_type=stt_config.get("compute_type", "float16"),
             fallback_model=stt_config.get("fallback_model", "small"),

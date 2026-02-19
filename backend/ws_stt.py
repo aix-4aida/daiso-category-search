@@ -285,7 +285,7 @@ class WhisperFallbackManager:
                 return
             try:
                 self.model = WhisperAdapter(
-                    model_size=whisper_cfg.get("model_size", "medium"),
+                    model_size=whisper_cfg.get("model_size", "small"),
                     device=whisper_cfg.get("device", "cpu"),
                     compute_type=whisper_cfg.get("compute_type", "int8"),
                     fallback_model=whisper_cfg.get("fallback_model", "small"),

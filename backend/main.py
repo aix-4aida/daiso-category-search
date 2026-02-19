@@ -164,7 +164,7 @@ def root():
 def health_check():
     return {
         "status": "healthy",
-        "whisper_model": whisper_adapter.model_size,
+        "whisper_model": getattr(whisper_adapter, "model_size", None),
         "google_ready": google_adapter.client is not None,
         "search_pipeline": "ready"
     }

@@ -4,7 +4,7 @@
 
 stt:
   whisper:
-    model_size: "medium"  # large-v3 requires ~10GB VRAM, RTX 3050 4GB → medium
+    model_size: "small"  # large-v3 requires ~10GB VRAM, RTX 3050 4GB → medium
     device: "cpu"
     compute_type: "int8"
     fallback_model: "small"  # If medium OOM
