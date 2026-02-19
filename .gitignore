@@ -39,3 +39,4 @@ backend/outputs/
 outputs/
 
 backend/*.log
+certbot/
