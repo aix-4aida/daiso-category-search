@@ -2,13 +2,17 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Mic, MicOff } from 'lucide-react'
+import { ArrowLeft, Mic, MicOff, Keyboard } from 'lucide-react'
 import Layout from '../../components/Layout'
 import { AudioRecorder } from '../../utils/AudioRecorder'
+import { useUnifiedSearch } from '../../hooks/useUnifiedSearch'
 
 const VoiceSearch = () => {
     const router = useRouter()
+    const { handleSearch, isLoading } = useUnifiedSearch()
+
     const [isRecording, setIsRecording] = useState(false)
+    const [isKeyboardMode, setIsKeyboardMode] = useState(false)
     const [transcript, setTranscript] = useState('')
     const [interimText, setInterimText] = useState('')
     const [statusMessage, setStatusMessage] = useState('음성 인식을 준비하고 있습니다...')
@@ -54,6 +58,8 @@ const VoiceSearch = () => {
     }, [])
 
     const startRecording = useCallback(async () => {
+        if (isKeyboardMode) return;
+
         setTranscript('')
         setInterimText('')
         setStatusMessage('연결 중...')
@@ -120,34 +126,8 @@ const VoiceSearch = () => {
 
                     if (finalText) {
                         setStatusMessage('검색 중...')
-
-                        // Send text to pipeline
-                        try {
-                            const pipelineResp = await fetch(`/api/search/process_text`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ text: finalText })
-                            })
-                            const data = await pipelineResp.json()
-
-                            // Store data for VoiceResults page
-                            const queryText = data.keyword || finalText
-                            if (data.keyword) {
-                                localStorage.setItem('voiceSearchKeyword', data.keyword)
-                            }
-                            if (data.results && data.results.length > 0) {
-                                localStorage.setItem('voiceSearchResults', JSON.stringify(data.results))
-                            }
-                            if (data.reranked && data.reranked.length > 0) {
-                                localStorage.setItem('voiceRerankedResults', JSON.stringify(data.reranked))
-                            }
-
-                            // Navigate to VoiceResults (Top 3 selection page)
-                            router.push(`/VoiceResults?q=${encodeURIComponent(queryText)}`)
-                        } catch (pipeErr) {
-                            console.error('Pipeline error:', pipeErr)
-                            router.push(`/SearchResults?q=${encodeURIComponent(finalText)}`)
-                        }
+                        // Use Unified Search
+                        await handleSearch(finalText, 'voice');
                     } else {
                         setStatusMessage('음성을 인식하지 못했습니다.')
                         setTimeout(() => {
@@ -186,7 +166,7 @@ const VoiceSearch = () => {
             }
             setIsRecording(false)
         }
-    }, [router, stopRecording])
+    }, [handleSearch, isKeyboardMode, stopRecording])
 
     const handleMicClick = useCallback(() => {
         if (isRecording) {
@@ -196,17 +176,37 @@ const VoiceSearch = () => {
         }
     }, [isRecording, startRecording, stopRecording])
 
+    const toggleInputMode = () => {
+        if (isRecording) stopRecording();
+        setIsKeyboardMode(prev => !prev);
+        if (!isKeyboardMode) {
+            setStatusMessage('검색어를 입력해주세요.');
+        } else {
+            setStatusMessage('버튼을 눌러 상품을 찾아보세요.');
+        }
+    };
+
+    const handleTextSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (transcript.trim()) {
+            handleSearch(transcript, 'text');
+        }
+    };
+
     // Keep a ref to the latest startRecording so auto-start always works
     const startRecordingRef = useRef(startRecording)
     startRecordingRef.current = startRecording
 
-    // Auto-start recording on page load (fires once on mount, no deps issue)
+    // Auto-start recording on page load (fires once on mount, only if not keyboard mode)
     useEffect(() => {
         const timer = setTimeout(() => {
-            startRecordingRef.current()
+            if (!isKeyboardMode && !autoStartedRef.current) {
+                startRecordingRef.current()
+                autoStartedRef.current = true;
+            }
         }, 500)
         return () => clearTimeout(timer)
-    }, [])
+    }, []) // Empty deps intended for mount only
 
     // Cleanup on unmount
     useEffect(() => {
@@ -222,6 +222,15 @@ const VoiceSearch = () => {
 
     return (
         <Layout className="p-6 relative">
+            {/* Loading Overlay */}
+            {isLoading && (
+                <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-daiso-red mb-6"></div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">상품을 찾고 있습니다</h2>
+                    <p className="text-gray-500 animate-pulse">잠시만 기다려주세요...</p>
+                </div>
+            )}
+
             {/* Back Button */}
             <div className="absolute top-6 left-6">
                 <button
@@ -237,7 +246,7 @@ const VoiceSearch = () => {
                 <div className="w-full max-w-md flex flex-col items-center space-y-8">
                     {/* Title */}
                     <h1 className="text-4xl font-bold text-gray-900">
-                        음성 검색
+                        {isKeyboardMode ? "검색" : "음성 검색"}
                     </h1>
 
                     {/* Status Message */}
@@ -246,44 +255,83 @@ const VoiceSearch = () => {
                     </p>
 
                     {/* Guidance */}
-                    <p className="text-sm text-gray-400 text-center">
-                        {isRecording ? "말씀이 끝나면 자동으로 검색됩니다." : "버튼을 눌러 상품을 찾아보세요."}
-                    </p>
+                    {!isKeyboardMode && (
+                        <p className="text-sm text-gray-400 text-center">
+                            {isRecording ? "말씀이 끝나면 자동으로 검색됩니다." : "버튼을 눌러 상품을 찾아보세요."}
+                        </p>
+                    )}
 
-                    {/* Audio Visualizer */}
-                    <div className="py-4">
-                        <AudioVisualizer />
+                    {/* Audio Visualizer or Text Input Helper */}
+                    <div className="py-4 min-h-[64px] flex items-center justify-center">
+                        {!isKeyboardMode && <AudioVisualizer />}
                     </div>
 
-                    {/* Mic Button */}
+                    {/* Input Area: Mic or Text Input */}
+                    {isKeyboardMode ? (
+                        <form onSubmit={handleTextSubmit} className="w-full">
+                            <input
+                                type="text"
+                                value={transcript}
+                                onChange={(e) => setTranscript(e.target.value)}
+                                placeholder="상품명이나 증상을 입력하세요"
+                                className="w-full h-16 px-6 rounded-full bg-gray-100 text-xl focus:outline-none focus:ring-2 focus:ring-daiso-red transition-shadow text-center"
+                                autoFocus
+                            />
+                            <button
+                                type="submit"
+                                className="w-full mt-4 bg-daiso-red text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors"
+                            >
+                                검색하기
+                            </button>
+                        </form>
+                    ) : (
+                        <button
+                            onClick={handleMicClick}
+                            className={`w-24 h-24 rounded-full flex items-center justify-center shadow-lg transition-all ${isRecording
+                                ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                                : 'bg-daiso-red hover:bg-red-700'
+                                }`}
+                        >
+                            {isRecording ? (
+                                <MicOff size={40} color="white" />
+                            ) : (
+                                <Mic size={40} color="white" />
+                            )}
+                        </button>
+                    )}
+
+                    {/* Transcript Display (Only in Voice Mode) */}
+                    {!isKeyboardMode && (
+                        <div className="w-full">
+                            <div className="bg-white border border-gray-200 rounded-2xl px-6 py-4 text-center shadow-sm min-h-[56px] flex items-center justify-center">
+                                {transcript || interimText ? (
+                                    <span className="text-gray-800 text-lg">
+                                        {transcript} <span className="text-gray-400">{interimText}</span>
+                                    </span>
+                                ) : (
+                                    <span className="text-gray-400 text-lg">
+                                        음성이 여기에 표시됩니다
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Toggle Mode Button */}
                     <button
-                        onClick={handleMicClick}
-                        className={`w-24 h-24 rounded-full flex items-center justify-center shadow-lg transition-all ${isRecording
-                            ? 'bg-red-600 hover:bg-red-700 animate-pulse'
-                            : 'bg-daiso-red hover:bg-red-700'
-                            }`}
+                        onClick={toggleInputMode}
+                        className="flex items-center gap-2 text-gray-500 hover:text-daiso-red transition-colors mt-4 text-sm font-medium"
                     >
-                        {isRecording ? (
-                            <MicOff size={40} color="white" />
+                        {isKeyboardMode ? (
+                            <>
+                                <Mic size={16} /> 음성으로 검색하기
+                            </>
                         ) : (
-                            <Mic size={40} color="white" />
+                            <>
+                                <Keyboard size={16} /> 키보드로 입력하기
+                            </>
                         )}
                     </button>
-
-                    {/* Transcript Display */}
-                    <div className="w-full">
-                        <div className="bg-white border border-gray-200 rounded-2xl px-6 py-4 text-center shadow-sm min-h-[56px] flex items-center justify-center">
-                            {transcript || interimText ? (
-                                <span className="text-gray-800 text-lg">
-                                    {transcript} <span className="text-gray-400">{interimText}</span>
-                                </span>
-                            ) : (
-                                <span className="text-gray-400 text-lg">
-                                    음성이 여기에 표시됩니다
-                                </span>
-                            )}
-                        </div>
-                    </div>
 
                     {/* Attribution */}
                     <p className="text-xs text-gray-300 mt-4">

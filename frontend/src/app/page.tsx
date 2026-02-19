@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { HelpCircle, Search } from 'lucide-react'
 import Layout from '../components/Layout'
 import { getCategories } from '../lib/api'
+import { useUnifiedSearch } from '../hooks/useUnifiedSearch'
 
 export default function Home() {
     const router = useRouter()
@@ -26,11 +27,12 @@ export default function Home() {
         router.push('/VoiceSearch')
     }
 
-    const handleSearch = (e: React.FormEvent) => {
+    const { handleSearch, isLoading } = useUnifiedSearch();
+
+    const onSearch = (e: React.FormEvent) => {
         e.preventDefault()
         if (query.trim()) {
-            // Use 'text' source to indicate pipeline usage
-            router.push(`/SearchResults?q=${encodeURIComponent(query)}&source=text`)
+            handleSearch(query, 'text');
         }
     }
 
@@ -58,7 +60,7 @@ export default function Home() {
                 </button>
 
                 {/* Search Input (New Feature) */}
-                <form onSubmit={handleSearch} className="w-full relative">
+                <form onSubmit={onSearch} className="w-full relative">
                     <div className="relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                         <input

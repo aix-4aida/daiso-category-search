@@ -129,6 +129,18 @@ class StreamingSTTSession:
         # Thread reference
         self.worker_thread = None
         
+    async def process_audio(self, b64_data: str, seq: int):
+        """Process incoming audio chunk from WS"""
+        if not self.is_running: return
+        
+        try:
+            pcm = base64.b64decode(b64_data)
+            if len(pcm) > 0:
+                self.audio_queue.put(pcm)
+                self.last_audio_ts = time.time()
+        except Exception as e:
+            print(f"❌ process_audio error: {e}")
+        
     async def initialize(self):
         """Initialize Google STT client, fallback to Whisper if failed"""
         # Check if credential file exists

@@ -3,9 +3,18 @@
 FastAPI Server for STT Pipeline
 PoC Phase 1: Batch audio processing with Whisper + Google comparison
 """
-# 파일 상단 임포트 부분에 추가
+import sys
+import os
+import pydantic  # Added missing import
+
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+
+
 
 
 import yaml
@@ -16,10 +25,6 @@ import shutil
 import time
 import uuid
 import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 import sys
 sys.path.append(str(Path(__file__).parent))
@@ -30,6 +35,7 @@ from stt.types import (
     ProviderResult, ComparisonPipelineResult
 )
 from backend.database.database import search_products, get_products_by_category, get_product_by_id
+
 
 # Audio converter for normalizing audio to WAV/LINEAR16/16kHz/mono
 audio_converter = AudioConverter(output_dir="outputs/normalized")
@@ -421,90 +427,52 @@ async def product_by_id_api(product_id: int):
     return result
 
 
-# ============== Full Pipeline Endpoint from Text ==============
-import pydantic
+
+# ... (imports)
+from backend.logic.search_manager import search_manager
+
+
+
+# ... (existing code)
+
+# ============== Unified Search Endpoint ==============
 
 class TextSearchRequest(pydantic.BaseModel):
     text: str
 
+class SearchRequest(pydantic.BaseModel):
+    query: str
+    input_mode: str = "text" # "text" or "voice"
+    session_id: str = None
+
+@app.post("/api/search")
+async def unified_search_api(request: SearchRequest):
+    """
+    Unified Search API (Text & Voice Logic)
+    """
+    if not request.query:
+        return {"status": "error", "message": "Query is empty"}
+        
+    try:
+        result = await search_manager.process_search(
+            query=request.query,
+            input_mode=request.input_mode,
+            session_id=request.session_id
+        )
+        return result
+    except Exception as e:
+        print(f"❌ Search Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/search/process_text")
 async def process_text_api(request: TextSearchRequest):
     """
-    Run full pipeline from text input (e.g. from real-time STT)
-    STT → Intent → Keyword → Expansion → Benchmark → Rerank
+    Legacy endpoint for text processing (redirects to unified search)
     """
-    text = request.text
-    if not text or not text.strip():
-        return {"error": "Empty text"}
+    return await unified_search_api(SearchRequest(query=request.text, input_mode="text"))
 
-    print(f"🚀 Processing text pipeline: '{text}'")
-
-    # Dummy audio path (pipeline expects it for logging)
-    dummy_audio_path = f"outputs/text_input_{uuid.uuid4()}.wav"
-
-    try:
-        from backend.services_kms.run_all_pipeline import run_pipeline_for_voice
-
-        # Run pipeline (stt_elapsed=0 since we already have text)
-        pipeline_result = await run_pipeline_for_voice(dummy_audio_path, text, 0.0)
-
-        # Parse final results (Similar logic to voice_search_api)
-        final_json = pipeline_result.get('final_results', [])
-        product_list = []
-
-        if final_json and len(final_json) > 0:
-            first_result = final_json[0]
-
-            # Get retrieved items
-            retrieved_strs = first_result.get("retrieved_ids", [])
-            if not retrieved_strs:
-                retrieved_strs = first_result.get("retrieved_results", [])
-
-            item_strs = list(retrieved_strs)
-
-            # Prioritize selected_id
-            selected_val = first_result.get("selected_id")
-            if selected_val:
-                if selected_val in item_strs:
-                    item_strs.remove(selected_val)
-                item_strs.insert(0, selected_val) # Selected ID is first (Top 1)
-
-            print(f"📦 Pipeline items (top 3): {item_strs[:3]}")
-
-            for item_str in item_strs[:3]: # Limit to Top 3
-                try:
-                    if "(" in item_str:
-                        doc_id_str = item_str.split("(")[0].strip()
-                    else:
-                        doc_id_str = item_str.strip()
-
-                    if not doc_id_str.isdigit():
-                        continue
-
-                    doc_id = int(doc_id_str)
-                    product = get_product_by_id(doc_id)
-                    if product:
-                        if product['id'] not in [p['id'] for p in product_list]:
-                            product_list.append(product)
-                except Exception as e:
-                    print(f"⚠️ Error fetching product {item_str}: {e}")
-
-        final_keyword = pipeline_result.get("keyword") or (final_json[0].get("query") if final_json else text)
-
-        return {
-            "text": text,
-            "results": product_list,
-            "keyword": final_keyword,
-            "reranked": final_json,
-            "pipeline_status": "completed",
-            "reason": final_json[0].get("reason", "") if final_json else ""
-        }
-
-    except Exception as e:
-        print(f"❌ Text pipeline error: {e}")
-        import traceback
-        traceback.print_exc()
-        return {"error": str(e)}
 
 
 # ============== Full Pipeline Endpoint ==============
