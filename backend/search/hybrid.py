@@ -412,6 +412,10 @@ class HybridSearchService:
         timing["total_ms"] = sum(timing.values())
         metadata["result_count"] = len(docs)
 
+        # Expose raw per-source scores for search case logging
+        metadata["bm25_scores"] = {sd.doc_id: sd.score for sd in bm25_results}
+        metadata["dense_scores"] = {sd.doc_id: sd.score for sd in dense_results}
+
         return SearchResult(
             query=query,
             docs=docs,

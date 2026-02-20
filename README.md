@@ -55,6 +55,16 @@ npm install
 npm run dev
 ```
 
+### 검색 로그 확인 (search_cases.jsonl)
+
+```bash
+# 서버 기동 후 검색 요청
+curl -X POST http://localhost:8000/v1/search -H "Content-Type: application/json" -d '{"query":"물티슈"}'
+# JSONL 로그 확인 (한 줄 = 한 요청, candidates_scores 포함)
+cat backend/logs/search_cases.jsonl
+# 또는 실시간 모니터링: tail -f backend/logs/search_cases.jsonl
+```
+
 ### 4. 사용 방법
 
 브라우저에서 `http://localhost:3000`으로 접속하여 검색어를 입력합니다.

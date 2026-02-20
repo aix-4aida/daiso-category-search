@@ -13,6 +13,7 @@ import json
 import time
 import uuid
 import logging
+from datetime import datetime
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
@@ -33,6 +34,7 @@ from backend.logic.ambiguity import (
 )
 from backend.database.database import search_products
 from backend.database.category_matcher import match_product_to_category
+from backend.search.search_logger import write_search_log
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +149,10 @@ class IntegratedSearchPipeline:
             if nlu_result.intent.value == "UNSUPPORTED":
                 result["is_in_scope"] = False
                 result["message"] = "죄송합니다. 상품 찾기 외의 질문은 아직 답변하기 어렵습니다."
+                logger.warning(
+                    f"[is_in_scope=False] intent=UNSUPPORTED | query={query!r} "
+                    f"| item={nlu_result.slots.item} | generated_question={nlu_result.generated_question}"
+                )
                 result["timing_ms"] = {
                     "nlu": nlu_time,
                     "total": int((time.time() - start_time) * 1000),
@@ -339,6 +345,42 @@ class IntegratedSearchPipeline:
                 "total": int((time.time() - start_time) * 1000),
             }
             return result
+        finally:
+            self._emit_search_log(result)
+
+    def _emit_search_log(self, result: Dict[str, Any]) -> None:
+        """Write one search-case JSONL entry (side-effect only, never raises)."""
+        try:
+            search_meta = result.get("metadata", {}).get("search", {})
+            rerank_meta = result.get("metadata", {}).get("rerank", {})
+
+            # selected_id — "doc_id (title)" format
+            selected_id_raw = rerank_meta.get("selected_id")
+            selected_id = None
+            if selected_id_raw and result.get("top3"):
+                for item in result["top3"]:
+                    if str(item.get("product_id")) == str(selected_id_raw):
+                        selected_id = f"{selected_id_raw} ({item['name']})"
+                        break
+                if not selected_id:
+                    selected_id = str(selected_id_raw)
+
+            request_id = result.get("request_id", "")
+
+            entry = {
+                "case_id": f"SEARCH-{request_id[:8]}",
+                "timestamp": datetime.now().isoformat(timespec="milliseconds"),
+                "query": result.get("query", ""),
+                "retrieved_ids": search_meta.get("retrieved_ids", []),
+                "selected_id": selected_id,
+                "reason": rerank_meta.get("reason", "auto"),
+                "latency_ms": result.get("timing_ms", {}).get("total", 0),
+                "candidates_scores": search_meta.get("candidates_scores", {}),
+            }
+
+            write_search_log(entry)
+        except Exception as e:
+            logger.error(f"_emit_search_log failed: {e}")
 
     def _format_top3(
         self,
@@ -390,8 +432,15 @@ class IntegratedSearchPipeline:
 
         search_result = self._hybrid_service.search(query_text, top_k=10, mode="hybrid")
 
-        # Convert ScoredDoc to candidate dict format
+        # Raw per-source scores for logging
+        bm25_scores = search_result.metadata.get("bm25_scores", {})
+        dense_scores = search_result.metadata.get("dense_scores", {})
+
+        # Convert ScoredDoc to candidate dict format + build log fields
         candidates = []
+        candidates_scores: Dict[str, Dict[str, float]] = {}
+        retrieved_ids: List[str] = []
+
         for doc in search_result.docs:
             candidates.append({
                 "id": doc.doc_id,
@@ -405,10 +454,21 @@ class IntegratedSearchPipeline:
                 "source": doc.source,
             })
 
-        # Store hybrid search timing in metadata
+            label = f"{doc.doc_id} ({doc.title})" if doc.title else doc.doc_id
+            retrieved_ids.append(label)
+
+            candidates_scores[doc.doc_id] = {
+                "bm25": round(bm25_scores.get(doc.doc_id, 0.0), 6),
+                "dense": round(dense_scores.get(doc.doc_id, 0.0), 6),
+                "final": round(doc.score, 6),
+            }
+
+        # Store hybrid search timing + log fields in metadata
         result["metadata"]["search"] = {
             "hybrid_timing": search_result.timing_ms,
             "hybrid_metadata": search_result.metadata,
+            "candidates_scores": candidates_scores,
+            "retrieved_ids": retrieved_ids,
         }
 
         return candidates
