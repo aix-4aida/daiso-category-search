@@ -5,7 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, Star, Package, Home } from 'lucide-react'
 import Layout from '../../components/Layout'
 
+import { useUnifiedSearch } from '../../hooks/useUnifiedSearch'
+
 const getBaseUrl = () => {
+    // ... (keep existing)
     if (typeof window !== 'undefined') {
         const hostname = window.location.hostname;
         return `http://${hostname}:8000/api`;
@@ -19,6 +22,9 @@ const VoiceResultsContent = () => {
     const queryParam = searchParams?.get('q') || ''
     const statusParam = searchParams?.get('status')
 
+    // Use Unified Search Hook
+    const { handleSearch, isLoading: isSearchLoading } = useUnifiedSearch()
+
     const [selectedItem, setSelectedItem] = useState<any>(null)
     const [otherItems, setOtherItems] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -30,8 +36,15 @@ const VoiceResultsContent = () => {
     const [suggestions, setSuggestions] = useState<string[]>([])
 
     useEffect(() => {
+        // ... (keep existing loadResults logic)
         const loadResults = async () => {
             setLoading(true)
+
+            // Reset status states initially
+            setResponseStatus('ok')
+            setMessage('')
+            setSuggestions([])
+
             try {
                 // If there's a specific status indicating non-success
                 if (statusParam && statusParam !== 'ok') {
@@ -63,6 +76,7 @@ const VoiceResultsContent = () => {
                 }
 
                 const reranked = JSON.parse(storedReranked)
+                // ... (rest of parsing logic, unrelated to fix)
                 if (!reranked || reranked.length === 0) {
                     if (!statusParam) {
                         router.replace(`/SearchResults?q=${encodeURIComponent(storedKeyword || queryParam)}&source=voice`)
@@ -79,6 +93,7 @@ const VoiceResultsContent = () => {
                 const retrievedIds = first.retrieved_ids || []
                 const reason = first.reason || ''
 
+                // Helper functions
                 const parseId = (str: string) => {
                     if (!str) return null
                     const match = str.match(/^(\d+)/)
@@ -108,6 +123,14 @@ const VoiceResultsContent = () => {
                     selectedProduct = await fetchProduct(selectedId)
                 }
 
+                // [NEW] Get scores
+                const scoresMap = first.candidates_scores || {}
+
+                const getScores = (id: number | null | undefined) => {
+                    if (id === null || id === undefined) return null
+                    return scoresMap[String(id)] || null
+                }
+
                 const selected = {
                     id: selectedId,
                     name: selectedProduct?.name || parseName(selectedIdStr),
@@ -115,7 +138,8 @@ const VoiceResultsContent = () => {
                     location: selectedProduct?.location || '',
                     image_url: selectedProduct?.image_url || '',
                     reason: reason,
-                    product: selectedProduct
+                    product: selectedProduct,
+                    scores: getScores(selectedId) // Attach scores
                 }
 
                 // Fetch other products
@@ -132,7 +156,8 @@ const VoiceResultsContent = () => {
                         price: product?.price || 0,
                         location: product?.location || '',
                         image_url: product?.image_url || '',
-                        product: product
+                        product: product,
+                        scores: getScores(pid) // Attach scores
                     })
 
                     if (others.length >= 2) break
@@ -148,7 +173,7 @@ const VoiceResultsContent = () => {
         }
 
         loadResults()
-    }, [statusParam]) // Add statusParam dependency
+    }, [searchParams, statusParam])
 
     const handleProductClick = (item: any) => {
         const productName = item.product?.name || item.name
@@ -158,9 +183,23 @@ const VoiceResultsContent = () => {
         router.push(`/SearchResults?q=${encodeURIComponent(productName)}&source=voice`)
     }
 
-    if (loading) {
+    // Handle suggestion click with active search
+    const handleSuggestionClick = (suggestion: string) => {
+        handleSearch(suggestion, 'text');
+    }
+
+    if (loading || isSearchLoading) {
         return (
-            <Layout className="items-center justify-center">
+            <Layout className="items-center justify-center relative">
+                {/* Overlay for search loading */}
+                {isSearchLoading && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-daiso-red mb-6"></div>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">상품을 찾고 있습니다</h2>
+                        <p className="text-gray-500 animate-pulse">잠시만 기다려주세요...</p>
+                    </div>
+                )}
+
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-daiso-red mx-auto mb-4"></div>
                     <div className="text-xl text-gray-600 font-medium">AI가 최적의 상품을 찾고 있습니다...</div>
@@ -173,6 +212,7 @@ const VoiceResultsContent = () => {
     if (responseStatus !== 'ok' && responseStatus !== 'start') {
         return (
             <Layout className="bg-gray-50 p-6 relative flex flex-col items-center justify-center">
+
                 {/* Back Button */}
                 <div className="absolute top-6 left-6 z-10">
                     <button
@@ -203,24 +243,7 @@ const VoiceResultsContent = () => {
                                 {suggestions.map((s, i) => (
                                     <button
                                         key={i}
-                                        onClick={() => router.push(`/VoiceResults?q=${encodeURIComponent(s)}`)}
-                                        onClickCapture={(e) => {
-                                            e.preventDefault();
-                                            // Handle redirection or re-search logic here if needed
-                                            // Since we are not in VoiceSearch, we should go to VoiceSearch with this text?
-                                            // Or call API?
-                                            // Let's route to VoiceSearch for consistency
-                                            // But VoiceSearch needs to auto-start or auto-search with query?
-                                            // We haven't implemented query param handling in VoiceSearch/page.tsx yet!
-                                            // But for now let's just push to VoiceSearch, user can say it or type it.
-                                            // Ideally we want to search immediately.
-                                            // Let's handle this later if strict requirement.
-                                            // Actually, useUnifiedSearch is a hook.
-                                            // I can't call it easily here without importing and using it.
-                                            // But I am in a loop.
-                                            // Let's just push to VoiceSearch for now.
-                                            router.push('/VoiceSearch')
-                                        }}
+                                        onClick={() => handleSuggestionClick(s)}
                                         className="w-full py-3 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 font-medium hover:bg-daiso-red hover:text-white hover:border-transparent transition-all text-left"
                                     >
                                         "{s}"
@@ -229,6 +252,7 @@ const VoiceResultsContent = () => {
                             </div>
                         </div>
                     )}
+
 
                     <div className="pt-6 border-t mt-6 flex gap-3">
                         <button

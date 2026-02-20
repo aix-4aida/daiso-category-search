@@ -323,6 +323,23 @@ def run_benchmark(
                 "metrics": cm,
             }
         )
+
+        # [Modified] Capture detailed scores for debugging/UI
+        # Create lookups
+        score_details = []
+        dense_map = {d.doc_id: d.score for d in dense}
+        bm25_map = {d.doc_id: d.score for d in sparse}
+        
+        for d in final:
+            score_details.append({
+                "doc_id": d.doc_id,
+                "score": d.score,
+                "bm25_score": bm25_map.get(d.doc_id, 0.0),
+                "dense_score": dense_map.get(d.doc_id, 0.0)
+            })
+        
+        case_payload["predicted_docs_details"] = score_details
+        
         logger.log("case", case_payload)
 
     summary = aggregate(per_case_metrics)

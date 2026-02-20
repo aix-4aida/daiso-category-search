@@ -192,10 +192,23 @@ def process_benchmark_output(run_dir, catalog_path, output_file):
             # User request: Limit to Top 3
             top_ids = case.get("predicted_doc_ids", [])[:3]
             
+            # Load score details
+            details_map = {d.get('doc_id') or d.get('id'): d for d in case.get("predicted_docs_details", [])}
+
             candidates = []
             retrieved_display = [] # To show ID + Name
+            candidates_scores = {} # Map for frontend: doc_id -> {bm25, dense, final}
             
             for doc_id in top_ids:
+                # Retrieve scores
+                s = details_map.get(str(doc_id))
+                if s:
+                    candidates_scores[doc_id] = {
+                        "bm25": s.get("bm25_score"),
+                        "dense": s.get("dense_score"),
+                        "final": s.get("score")
+                    }
+
                 if doc_id in catalog:
                     item = catalog[doc_id]
                     candidates.append(item)
@@ -221,7 +234,8 @@ def process_benchmark_output(run_dir, catalog_path, output_file):
                 "retrieved_ids": retrieved_display,
                 "selected_id": f"{sel_id}{sel_name}" if sel_id else None,
                 "reason": rerank_result.get("reason"),
-                "latency_ms": rerank_result.get("latency", 0) * 1000
+                "latency_ms": rerank_result.get("latency", 0) * 1000,
+                "candidates_scores": candidates_scores # [NEW] Pass scores to frontend
             }
             results.append(output_item)
             
