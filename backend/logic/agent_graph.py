@@ -81,8 +81,6 @@ async def ambiguity_check_node(state: GraphState):
         is_ambiguous = False # Handle in response node
     elif not candidates:
         is_ambiguous = True # Need to explain or ask
-    elif len(candidates) > 5: # Too many results
-        is_ambiguous = True
     elif state["final_response"].needs_clarification: # NLU flagged it
         is_ambiguous = True
         
