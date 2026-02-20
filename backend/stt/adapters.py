@@ -1,4 +1,4 @@
-# backend/stt/adapters.py
+﻿# backend/stt/adapters.py
 """
 STT Adapter Pattern Implementation
 Whisper (faster-whisper) + Google Cloud Speech-to-Text
@@ -77,12 +77,12 @@ class WhisperAdapter(BaseAdapter):
             print(f"[OK] {self.model_size} model loaded successfully")
         except OSError as e:
             if getattr(e, 'winerror', 0) == 1314:
-                print(f"\n[CRITICAL] 윈도우 권한 오류 발생 (WinError 1314)")
-                print("HuggingFace 모델 로드 중 심볼릭 링크 생성에 실패했습니다.")
-                print("해결 방법:")
-                print("1. 터미널(CMD/PowerShell)을 '관리자 권한'으로 다시 실행해주세요.")
-                print("2. 또는 윈도우 설정 > 개인정보 및 보안 > 개발자용 > '개발자 모드'를 켜주세요.\n")
-                raise RuntimeError("관리자 권한이 필요합니다 (WinError 1314)") from e
+                print(f"\n[CRITICAL] ?덈룄??沅뚰븳 ?ㅻ쪟 諛쒖깮 (WinError 1314)")
+                print("HuggingFace 紐⑤뜽 濡쒕뱶 以??щ낵由?留곹겕 ?앹꽦???ㅽ뙣?덉뒿?덈떎.")
+                print("?닿껐 諛⑸쾿:")
+                print("1. ?곕???CMD/PowerShell)??'愿由ъ옄 沅뚰븳'?쇰줈 ?ㅼ떆 ?ㅽ뻾?댁＜?몄슂.")
+                print("2. ?먮뒗 ?덈룄???ㅼ젙 > 媛쒖씤?뺣낫 諛?蹂댁븞 > 媛쒕컻?먯슜 > '媛쒕컻??紐⑤뱶'瑜?耳쒖＜?몄슂.\n")
+                raise RuntimeError("愿由ъ옄 沅뚰븳???꾩슂?⑸땲??(WinError 1314)") from e
             raise
 
         except (RuntimeError, Exception) as e:
@@ -195,14 +195,24 @@ class GoogleAdapter(BaseAdapter):
         try:
             import os
             from google.cloud import speech
+            from google.api_core.client_options import ClientOptions
             
-            # Set credentials
+            # 1. Try API Key from .env
+            api_key = os.getenv("GOOGLE_API_KEY")
+            
+            # 2. Set credentials via JSON file if exists
             if self.credentials_path and Path(self.credentials_path).exists():
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
                     Path(self.credentials_path).resolve()
                 )
-            
-            self.client = speech.SpeechClient()
+                self.client = speech.SpeechClient()
+            elif api_key:
+                # 3. Use API Key if JSON is missing but key is present
+                print(f"[INFO] Using Google API Key for STT")
+                client_options = ClientOptions(api_key=api_key)
+                self.client = speech.SpeechClient(client_options=client_options)
+            else:
+                self.client = speech.SpeechClient()
             print(f"[OK] Google STT client initialized")
         except Exception as e:
             print(f"[ERROR] Google STT client init failed: {e}")
@@ -229,15 +239,15 @@ class GoogleAdapter(BaseAdapter):
             
             from google.cloud import speech
             
-            # Read audio file
+            # Read audio file and STRIP WAV HEADER (44 bytes)
+            # Google STT (LINEAR16) expects raw PCM bytes, but pydub exports with WAV header.
             with open(audio_path, "rb") as f:
-                audio_content = f.read()
+                header = f.read(44) # Read header
+                audio_content = f.read() # Read remaining raw PCM data
             
             audio = speech.RecognitionAudio(content=audio_content)
             
-            # Encoding fixed to LINEAR16
-            # Reason: audio_converter.py guarantees WAV/PCM/16kHz/mono output
-            # All input formats (m4a, mp3, etc.) are normalized before reaching here
+            # Explicitly use LINEAR16 with raw PCM data
             config = speech.RecognitionConfig(
                 encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
                 sample_rate_hertz=self.sample_rate_hertz,

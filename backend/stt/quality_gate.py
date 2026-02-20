@@ -1,4 +1,4 @@
-# backend/stt/quality_gate.py
+﻿# backend/stt/quality_gate.py
 """
 Quality Gate Implementation
 Validates STT output quality and determines RETRY/FAIL strategy
@@ -13,7 +13,7 @@ from .types import QualityGateResult, STTResult
 class QualityGate:
     """
     Quality gate for STT output validation
-    Implements R1→R2→R3→R4 priority-based rejection rules
+    Implements R1?뭃2?뭃3?뭃4 priority-based rejection rules
     """
     
     def __init__(
@@ -25,10 +25,10 @@ class QualityGate:
         self.min_chars = min_chars
         self.min_confidence = min_confidence
         self.nonsense_patterns = nonsense_patterns or [
-            r"(ㅋ|ㅎ){3,}",
-            r"(ㅇ){3,}",
+            r"(????{3,}",
+            r"(??{3,}",
             r"[!?]{3,}",
-            r"^(아+|음+|어+|그+)$"
+            r"^(??|??|??|洹?)$"
         ]
         self._compiled_patterns = [re.compile(p) for p in self.nonsense_patterns]
     

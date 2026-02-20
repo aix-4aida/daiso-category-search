@@ -1,4 +1,4 @@
-# backend/stt/audio_converter.py
+﻿# backend/stt/audio_converter.py
 """
 Audio Format Converter
 Normalizes all audio inputs to standard format: WAV / PCM LINEAR16 / 16kHz / mono
@@ -12,12 +12,40 @@ import time
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-# Add FFmpeg to PATH (Temporary fix for Windows)
-ffmpeg_path = r"C:\Users\301\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin"
-if os.path.exists(ffmpeg_path):
-    os.environ["PATH"] += os.pathsep + ffmpeg_path
+# FFmpeg Auto-Discovery for Windows
+def discover_ffmpeg():
+    # 1. Check if already in PATH
+    if shutil.which("ffmpeg"):
+        return "ffmpeg"
+    
+    # 2. Common Windows paths
+    possible_paths = [
+        r"C:\ffmpeg\bin\ffmpeg.exe",
+        r"C:\Program Files\ffmpeg\bin\ffmpeg.exe",
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), r"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin\ffmpeg.exe"),
+    ]
+    
+    # 3. Conda environment path
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        possible_paths.append(os.path.join(conda_prefix, "Library", "bin", "ffmpeg.exe"))
+        possible_paths.append(os.path.join(conda_prefix, "bin", "ffmpeg.exe"))
+
+    for p in possible_paths:
+        if os.path.exists(p):
+            print(f"🚀 [AudioConverter] FFmpeg found at: {p}")
+            os.environ["PATH"] += os.pathsep + str(Path(p).parent)
+            return p
+    return None
+
+discovered_path = discover_ffmpeg()
+if not discovered_path:
+    print("⚠️ [AudioConverter] FFmpeg not found. Audio conversion might be slow or fail for some formats.")
 
 from pydub import AudioSegment
+# Force pydub to use discovered path if available
+if discovered_path:
+    AudioSegment.converter = discovered_path
 
 
 class AudioConverter:
@@ -106,12 +134,19 @@ class AudioConverter:
             output_filename = f"{input_path.stem}.wav"
             output_path = self.output_dir / output_filename
             
+            print(f"🔄 [AudioConverter] Converting {input_path.suffix} to WAV (16kHz, mono)...")
+            
+            # Apply Normalization to fix low volume issues (for Google STT)
+            from pydub.effects import normalize
+            audio = normalize(audio)
+            
             # Export as WAV PCM
             audio.export(
                 output_path,
                 format="wav",
                 parameters=["-acodec", "pcm_s16le"]
             )
+            print(f"✅ [AudioConverter] Exported to: {output_path}")
         else:
             # No conversion needed, use original
             output_path = input_path

@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 venv/
+.venv/
 .env
 
 # Node.js
@@ -21,3 +22,10 @@ frontend/.env.local
 
 # Custom
 poc/bjy/old/
+backend/database/debug_html/
+
+# Data Volumes
+es_data/
+qdrant_data/
+outputs/
+nlu_debug.log

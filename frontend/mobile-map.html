@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>어디다있소 - 모바일 지도</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="mobile-container">
+        <!-- Header -->
+        <header class="mobile-header">
+            <button class="back-btn" onclick="history.back()">←</button>
+            <div class="header-logo">
+                <div class="logo-text" style="font-size:20px;">
+                    <span>어디</span><span class="red">다</span><span class="mix-iss">있</span><span class="red">소</span>
+                </div>
+            </div>
+            <button class="back-btn" style="font-size:20px;">☰</button>
+        </header>
+
+        <!-- Product Info Card -->
+        <div class="mobile-product-card">
+            <div class="prod-img" id="prod-img"
+                style="display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#E50000;background:#FFEBEB;">
+                욕</div>
+            <div>
+                <h3 id="prod-name">규조토 욕실 매트</h3>
+                <span class="location-badge" id="prod-location">B1-B01</span>
+                <div class="time-info" id="prod-time">약 30초 소요</div>
+            </div>
+        </div>
+
+        <!-- Map View -->
+        <div class="mobile-map-view">
+            <div style="width:100%;max-width:400px;">
+                <div style="text-align:right;margin-bottom:8px;">
+                    <span style="font-size:48px;font-weight:800;color:#E50000;opacity:0.2;" id="floor-label">B1</span>
+                </div>
+                <div class="map-grid" id="mobile-map-grid" style="aspect-ratio:1;"></div>
+                <div style="text-align:center;margin-top:12px;">
+                    <span style="font-size:12px;color:#2962FF;">● 현재위치</span>
+                    <span style="margin:0 12px;color:#ccc;">|</span>
+                    <span style="font-size:12px;color:#E50000;">● 상품위치</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Buttons -->
+        <div class="mobile-bottom-buttons">
+            <button class="btn-map-view" onclick="/* already on map */">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"
+                    style="vertical-align:middle;margin-right:6px;">
+                    <path
+                        d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5z" />
+                </svg>
+                지도 보기
+            </button>
+            <button class="btn-ar-nav" onclick="window.location.href='mobile-ar.html'+window.location.search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#E50000"
+                    style="vertical-align:middle;margin-right:6px;">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+                AR 네비
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL params
+        const params = new URLSearchParams(window.location.search);
+        const productName = params.get('name') || '규조토 욕실 매트';
+        const shelf = params.get('shelf') || 'B1-B01';
+
+        document.getElementById('prod-name').textContent = productName;
+        document.getElementById('prod-location').textContent = shelf;
+
+        const floor = shelf.startsWith('B2') ? 'B2' : 'B1';
+        document.getElementById('floor-label').textContent = floor;
+
+        // Simple map rendering
+        const B1_CELLS = [
+            ['포장', '모구', '', '출입구'],
+            ['디지털', '파티·유아동', '캐릭터', '건강기능'],
+            ['', '인테리어', '패션', '시즌'],
+            ['식품', '인테리어소품', '화장품', '계산대']
+        ];
+
+        const B2_CELLS = [
+            ['욕실', '청소', '세탁', '득템'],
+            ['일본수입', '홈패브릭', '수납정리', '내추럴'],
+            ['공구', '스포츠', '수예', '캠핑'],
+            ['여행', '원예', '문구', '주방']
+        ];
+
+        const cells = floor === 'B2' ? B2_CELLS : B1_CELLS;
+        const targetSection = shelf.split('-')[1];
+
+        const grid = document.getElementById('mobile-map-grid');
+        cells.forEach((row, ri) => {
+            row.forEach((name, ci) => {
+                const div = document.createElement('div');
+                div.className = 'map-cell';
+                if (name) {
+                    div.innerHTML = `<span class="cell-name">${name}</span>`;
+                    // Highlight target
+                    if (name === '시즌' && targetSection === 'B01') div.classList.add('highlight');
+                    if (name === '화장품' && targetSection === 'C01') div.classList.add('highlight');
+                    if (name === '주방' && targetSection === 'K01') div.classList.add('highlight');
+                    if (name === '출입구') {
+                        div.style.background = '#e3f2fd';
+                    }
+                }
+                grid.appendChild(div);
+            });
+        });
+    </script>
+</body>
+
+</html>

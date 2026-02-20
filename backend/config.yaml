@@ -4,10 +4,10 @@
 
 stt:
   whisper:
-    model_size: "medium"  # large-v3 requires ~10GB VRAM, RTX 3050 4GB → medium
+    model_size: "tiny"  # medium is too heavy for Lightsail Micro CPU
     device: "cpu"
     compute_type: "int8"
-    fallback_model: "small"  # If medium OOM
+    fallback_model: "base"
     language: "ko"
   
   google:
