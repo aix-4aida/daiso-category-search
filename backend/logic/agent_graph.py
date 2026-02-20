@@ -5,24 +5,27 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from backend.logic.nlu import analyze_text, generate_tail_question, infer_product_keywords
-from backend.services.search_service import search_products
-from backend.logic.schemas import NLUResponse, Intent, NLUSlots, Product
+from backend.database.database import search_products, get_related_products_for_context
+from backend.logic.schemas import NLUResponse, Intent, NLUSlots
 
 # --- 1. Graph State Definition ---
 class GraphState(TypedDict):
     request_id: str
     input_text: str             # Normalized user input
     session_id: str             # (Added for context handling)
-    history: List[Dict]         # Conversation History
+    history: List[Dict]         # Conversation History [{"role": "user", "text": "..."}, ...]
     
+    # NLU Result
     intent: Intent              # PRODUCT_LOCATION / OTHER / UNSUPPORTED
     slots: Dict[str, Any]       # {item, attrs, query_rewrite...}
     
+    # Search Result
     search_candidates: List[Dict] # DB Search Results
     
+    # Control Flags
     is_ambiguous: bool          # Ambiguity Check Result
     clarification_count: int    # Limit max 1 turn
-    
+
     final_response: NLUResponse # Structured Object for API
 
 # --- 2. Nodes ---
@@ -51,7 +54,7 @@ async def search_node(state: GraphState):
     candidates = []
     if query:
         candidates = search_products(query, top_k=5)
-    
+
     if not candidates and query:
          print(f"    -> 0 results. attempting keyword inference...")
          keywords = await infer_product_keywords(state['input_text'])
@@ -67,26 +70,26 @@ async def rerank_node(state: GraphState):
     candidates = state["search_candidates"]
     if not candidates:
         return {"search_candidates": []}
-    
+
     print(f"--- [Node: Rerank] Ranking Top-5 to Top-3 ---")
     from backend.services.rerank_service import rerank_products
-    
+
     try:
         rerank_result = rerank_products(state["input_text"], candidates)
         top_ids = rerank_result.get("top_ids", [])
-        
+
         # Sort and filter candidates based on LLM's top_ids
         reranked = []
         cand_map = {str(c['id']): c for c in candidates}
-        
-        for rid in top_ids[:3]: 
+
+        for rid in top_ids[:3]:
             if str(rid) in cand_map:
                 reranked.append(cand_map[str(rid)])
-        
+
         # Fallback if rerank failed to find IDs
         if not reranked and candidates:
             reranked = candidates[:3]
-                
+
         print(f"    -> Reranked to {len(reranked)} results")
         return {"search_candidates": reranked}
     except Exception as e:
@@ -105,7 +108,7 @@ async def ambiguity_check_node(state: GraphState):
         is_ambiguous = True
     elif state["final_response"].needs_clarification:
         is_ambiguous = True
-        
+
     history = state.get("history", [])
     if history and history[-1]["role"] == "assistant":
         last_msg = history[-1]["text"]
@@ -125,7 +128,7 @@ async def clarification_node(state: GraphState):
     db_context = get_drill_down_context(candidates)
 
     question = await generate_tail_question(state["input_text"], slots, db_context=db_context)
-    
+
     resp = state["final_response"]
     resp.needs_clarification = True
     resp.generated_question = question
