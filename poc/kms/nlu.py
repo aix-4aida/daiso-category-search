@@ -15,6 +15,26 @@ load_dotenv()
 _client = None
 MODEL_NAME = "gemini-2.0-flash-001"
 
+# ── Structured JSONL debug logger ──────────────────────────────────────────
+from pathlib import Path as _Path
+
+_NLU_LOG_DIR = _Path(__file__).parent.parent.parent / "backend" / "logs"
+_NLU_LOG_FILE = _NLU_LOG_DIR / "nlu_debug.jsonl"
+
+
+def _write_nlu_jsonl(entry: dict) -> None:
+    """Append one JSON line to backend/logs/nlu_debug.jsonl + stdout."""
+    try:
+        if "timestamp" not in entry:
+            entry["timestamp"] = datetime.datetime.now().isoformat(timespec="milliseconds")
+        _NLU_LOG_DIR.mkdir(parents=True, exist_ok=True)
+        line = json.dumps(entry, ensure_ascii=False, default=str)
+        print(f"[NLU_DEBUG] {line}")
+        with open(_NLU_LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass  # never block NLU
+
 def get_client():
     global _client
     if _client is None:
@@ -88,15 +108,34 @@ async def analyze_text(text: str, history: List[Dict[str, str]] = []) -> NLUResp
              usage["total_tokens"] = usage["prompt_tokens"] + usage["completion_tokens"]
 
         data = json.loads(response_text)
-        
-        intent_val = data.get("intent", "UNSUPPORTED")
+
+        raw_intent = data.get("intent", "UNSUPPORTED")
+        intent_val = raw_intent
+        intent_overridden = False
         if intent_val not in Intent.__members__:
+            intent_overridden = True
             intent_val = "UNSUPPORTED"
-            
+
+        parsed_slots = data.get("slots", {})
+
+        _write_nlu_jsonl({
+            "run_id": request_id,
+            "status": "ok",
+            "model": MODEL_NAME,
+            "query": text,
+            "response_len": len(response_text),
+            "raw_intent": raw_intent,
+            "intent_overridden": intent_overridden,
+            "parsed_intent": intent_val,
+            "parsed_item": parsed_slots.get("item"),
+            "api_key_set": bool(os.getenv("GEMINI_API_KEY")),
+            "latency_ms": latency_ms,
+        })
+
         return NLUResponse(
             request_id=request_id,
             intent=Intent[intent_val],
-            slots=NLUSlots(**data.get("slots", {})),
+            slots=NLUSlots(**parsed_slots),
             needs_clarification=data.get("needs_clarification", False),
             latency_ms=latency_ms,
             token_usage=usage
@@ -105,6 +144,18 @@ async def analyze_text(text: str, history: List[Dict[str, str]] = []) -> NLUResp
     except Exception as e:
         latency_ms = int((time.time() - start_time) * 1000)
         log_debug(f"[{request_id}] Error: {e}")
+
+        _write_nlu_jsonl({
+            "run_id": request_id,
+            "status": "error",
+            "model": MODEL_NAME,
+            "query": text,
+            "error_type": type(e).__name__,
+            "error": str(e)[:300],
+            "api_key_set": bool(os.getenv("GEMINI_API_KEY")),
+            "latency_ms": latency_ms,
+        })
+
         return NLUResponse(
             request_id=request_id,
             intent=Intent.UNSUPPORTED,
