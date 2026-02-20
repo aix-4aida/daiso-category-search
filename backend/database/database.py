@@ -109,6 +109,7 @@ def ensure_schema():
 def insert_product(rank: int, name: str, price: int, image_url: str, 
                    image_name: str = None, image_path: str = None,
                    category_major: str = None, category_middle: str = None,
+                   floor: str = None, section: str = None, shelf_label: str = None,
                    description: str = None, reviews: str = None, tags: str = None) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
@@ -120,17 +121,22 @@ def insert_product(rank: int, name: str, price: int, image_url: str,
         # Actually, let's try to add columns if not exist in init_database, but here we just update insert.
         
         cursor.execute('''
-            INSERT INTO products (rank, name, price, image_url, image_name, image_path, category_major, category_middle, description, reviews, tags)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (rank, name, price, image_url, image_name, image_path, category_major, category_middle, floor, section, shelf_label, description, reviews, tags)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(name) DO UPDATE SET
                 price=excluded.price,
                 image_url=excluded.image_url,
                 image_name=excluded.image_name,
                 image_path=excluded.image_path,
+                category_major=excluded.category_major,
+                category_middle=excluded.category_middle,
+                floor=excluded.floor,
+                section=excluded.section,
+                shelf_label=excluded.shelf_label,
                 description=excluded.description,
                 reviews=excluded.reviews,
                 tags=excluded.tags
-        ''', (rank, name, price, image_url, image_name, image_path, category_major, category_middle, description, reviews, tags))
+        ''', (rank, name, price, image_url, image_name, image_path, category_major, category_middle, floor, section, shelf_label, description, reviews, tags))
         conn.commit()
         return cursor.rowcount > 0
     except Exception as e:

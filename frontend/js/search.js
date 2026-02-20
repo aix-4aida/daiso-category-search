@@ -17,8 +17,14 @@ function renderResults(products, query) {
 
     products.forEach((p, index) => {
         const card = document.createElement('div');
-        card.className = 'result-card'; // Changed from product-card to match style.css
-        if (index === 0) card.classList.add('selected');
+
+        // Best Pick Logic (First Item)
+        if (index === 0) {
+            card.className = 'best-pick-card selected';
+            card.innerHTML = `<div class="best-pick-badge">BEST PICK</div>`;
+        } else {
+            card.className = 'result-card';
+        }
 
         const price = p.formatted_price || (p.price ? p.price.toLocaleString() + '원' : '가격 정보 없음');
         const category = p.meta?.category_middle || p.meta?.category_major || '일반';
@@ -30,21 +36,24 @@ function renderResults(products, query) {
             ? `<img src="${p.image_url}" class="result-img-real" onerror="this.src='https://placehold.co/100x100?text=No+Image'">`
             : `<div class="result-img-text">${floor}</div>`;
 
-        card.innerHTML = `
+        // Append content (similar structure but Best Pick has different CSS layout)
+        card.innerHTML += `
             <div class="result-img">${imgHTML}</div>
             <div class="result-info">
-                <div class="card-tag">${category}</div>
+                ${index !== 0 ? `<div class="card-tag">${category}</div>` : ''}
                 <h3 class="result-title">${p.name}</h3>
                 <div class="result-location">위치: <strong>${floor}-${section}</strong> (${shelfLabel})</div>
                 <div class="result-price">${price}</div>
             </div>
+            ${index !== 0 ? `
             <div class="card-arrow">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 18l6-6-6-6" />
                 </svg>
-            </div>
+            </div>` : ''}
         `;
 
+        // Click event
         card.onclick = () => selectResult(p, card);
         list.appendChild(card);
 
@@ -57,7 +66,7 @@ function renderResults(products, query) {
 
 function selectResult(product, cardElement) {
     // UI Update
-    document.querySelectorAll('.result-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.result-card, .best-pick-card').forEach(c => c.classList.remove('selected'));
     cardElement.classList.add('selected');
 
     // Render Map (defined in map.js)
@@ -74,8 +83,17 @@ function generateQR(product) {
     qrArea.innerHTML = ''; // Clear existing
 
     // Using qrcodejs (loaded in index.html)
+    // Generate QR code for mobile transplant
+    const floor = product.location?.floor || 'B1';
+    const section = product.location?.section || 'N01';
+    const shelfParam = `${floor}-${section}`;
+
+    // Construct local URL for mobile-map.html
+    // Use window.location.origin to support local, tunnel, or production environments
+    const mobileUrl = `${window.location.origin}/mobile-map.html?name=${encodeURIComponent(product.name)}&shelf=${encodeURIComponent(shelfParam)}&id=${product.id}`;
+
     new QRCode(qrArea, {
-        text: `https://daiso.online/product/${product.id}`,
+        text: mobileUrl,
         width: 140,
         height: 140,
         colorDark: "#000000",

@@ -27,9 +27,8 @@ COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # Copy application code
+# Copy application code
 COPY backend/ ./backend/
-COPY app/ ./app/
-COPY data/ ./data/
 COPY .env .env
 
 # Copy frontend for static serving
