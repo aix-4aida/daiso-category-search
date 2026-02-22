@@ -1,0 +1,702 @@
+{
+    "deployments": [
+        {
+            "version": 16,
+            "state": "ACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend-v4.20",
+                    "command": [],
+                    "environment": {
+                        "ELASTIC_URL": "http://localhost:9200",
+                        "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                        "LANGCHAIN_TRACING_V2": "false",
+                        "QDRANT_URL": "http://localhost:6333"
+                    },
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend-v1.12",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                },
+                "qdrant": {
+                    "image": ":daiso-search-service.qdrant-v1.13",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "6333": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-19T19:05:54+09:00"
+        },
+        {
+            "version": 15,
+            "state": "FAILED",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend-v3.18",
+                    "command": [],
+                    "environment": {
+                        "ELASTIC_URL": "http://localhost:9200",
+                        "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                        "LANGCHAIN_TRACING_V2": "false",
+                        "QDRANT_URL": "http://localhost:6333"
+                    },
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend-v2.19",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                },
+                "qdrant": {
+                    "image": ":daiso-search-service.qdrant-v1.13",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "6333": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-19T15:42:55+09:00"
+        },
+        {
+            "version": 14,
+            "state": "FAILED",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend-v2.17",
+                    "command": [],
+                    "environment": {
+                        "ELASTIC_URL": "http://localhost:9200",
+                        "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                        "LANGCHAIN_TRACING_V2": "false",
+                        "QDRANT_URL": "http://localhost:6333"
+                    },
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend-v1.12",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                },
+                "qdrant": {
+                    "image": ":daiso-search-service.qdrant-v1.13",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "6333": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-19T14:41:56+09:00"
+        },
+        {
+            "version": 13,
+            "state": "FAILED",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend-v1.16",
+                    "command": [],
+                    "environment": {
+                        "ELASTIC_URL": "http://localhost:9200",
+                        "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                        "LANGCHAIN_TRACING_V2": "false",
+                        "QDRANT_URL": "http://localhost:6333"
+                    },
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend-v1.12",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                },
+                "qdrant": {
+                    "image": ":daiso-search-service.qdrant-v1.13",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "6333": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-19T14:15:16+09:00"
+        },
+        {
+            "version": 12,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend-v2.15",
+                    "command": [],
+                    "environment": {
+                        "ELASTIC_URL": "http://localhost:9200",
+                        "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                        "LANGCHAIN_TRACING_V2": "false",
+                        "QDRANT_URL": "http://localhost:6333"
+                    },
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend-v1.12",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                },
+                "qdrant": {
+                    "image": ":daiso-search-service.qdrant-v1.13",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "6333": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-17T01:20:22+09:00"
+        },
+        {
+            "version": 11,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend-v2.15",
+                    "command": [],
+                    "environment": {
+                        "ELASTIC_URL": "http://localhost:9200",
+                        "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                        "LANGCHAIN_TRACING_V2": "false",
+                        "QDRANT_URL": "http://localhost:6333"
+                    },
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "elasticsearch": {
+                    "image": ":daiso-search-service.elastic-v1.14",
+                    "command": [],
+                    "environment": {
+                        "ES_JAVA_OPTS": "-Xms512m -Xmx512m",
+                        "discovery.type": "single-node",
+                        "xpack.security.enabled": "false"
+                    },
+                    "ports": {
+                        "9200": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend-v1.12",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                },
+                "qdrant": {
+                    "image": ":daiso-search-service.qdrant-v1.13",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "6333": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-17T00:44:30+09:00"
+        },
+        {
+            "version": 10,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend-v2.15",
+                    "command": [],
+                    "environment": {
+                        "ELASTIC_URL": "http://localhost:9200",
+                        "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                        "QDRANT_URL": "http://localhost:6333"
+                    },
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "elasticsearch": {
+                    "image": ":daiso-search-service.elastic-v1.14",
+                    "command": [],
+                    "environment": {
+                        "ES_JAVA_OPTS": "-Xms512m -Xmx512m",
+                        "discovery.type": "single-node",
+                        "xpack.security.enabled": "false"
+                    },
+                    "ports": {
+                        "9200": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend-v1.12",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                },
+                "qdrant": {
+                    "image": ":daiso-search-service.qdrant-v1.13",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "6333": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-16T20:40:12+09:00"
+        },
+        {
+            "version": 9,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend-v1.11",
+                    "command": [],
+                    "environment": {
+                        "ELASTIC_URL": "http://localhost:9200",
+                        "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                        "QDRANT_URL": "http://localhost:6333"
+                    },
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "elasticsearch": {
+                    "image": ":daiso-search-service.elastic-v1.14",
+                    "command": [],
+                    "environment": {
+                        "ES_JAVA_OPTS": "-Xms512m -Xmx512m",
+                        "discovery.type": "single-node",
+                        "xpack.security.enabled": "false"
+                    },
+                    "ports": {
+                        "9200": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend-v1.12",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                },
+                "qdrant": {
+                    "image": ":daiso-search-service.qdrant-v1.13",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "6333": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-16T19:41:23+09:00"
+        },
+        {
+            "version": 8,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend.10",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend.9",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-10T20:56:55+09:00"
+        },
+        {
+            "version": 7,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend.8",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend.9",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-10T19:27:33+09:00"
+        },
+        {
+            "version": 6,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend.5",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend.7",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-10T19:12:18+09:00"
+        },
+        {
+            "version": 5,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend.5",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend.6",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-10T18:59:02+09:00"
+        },
+        {
+            "version": 4,
+            "state": "INACTIVE",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend.3",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend.4",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-10T17:54:52+09:00"
+        },
+        {
+            "version": 3,
+            "state": "FAILED",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend.3",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend.2",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-10T17:40:56+09:00"
+        },
+        {
+            "version": 2,
+            "state": "FAILED",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend.3",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend.2",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-10T17:29:25+09:00"
+        },
+        {
+            "version": 1,
+            "state": "FAILED",
+            "containers": {
+                "backend": {
+                    "image": ":daiso-search-service.backend.1",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "8000": "HTTP"
+                    }
+                },
+                "frontend": {
+                    "image": ":daiso-search-service.frontend.2",
+                    "command": [],
+                    "environment": {},
+                    "ports": {
+                        "80": "HTTP"
+                    }
+                }
+            },
+            "publicEndpoint": {
+                "containerName": "frontend",
+                "containerPort": 80,
+                "healthCheck": {
+                    "healthyThreshold": 2,
+                    "unhealthyThreshold": 2,
+                    "timeoutSeconds": 2,
+                    "intervalSeconds": 5,
+                    "path": "/",
+                    "successCodes": "200-499"
+                }
+            },
+            "createdAt": "2026-02-10T17:17:57+09:00"
+        }
+    ]
+}

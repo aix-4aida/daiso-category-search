@@ -1,0 +1,77 @@
+{
+    "containerServices": [
+        {
+            "containerServiceName": "daiso-search-service",
+            "arn": "arn:aws:lightsail:ap-northeast-2:867364546068:ContainerService/d65da31e-ffe9-4885-8fb4-4ef48dd7eece",
+            "createdAt": "2026-02-10T15:42:23+09:00",
+            "location": {
+                "availabilityZone": "all",
+                "regionName": "ap-northeast-2"
+            },
+            "resourceType": "ContainerService",
+            "tags": [],
+            "power": "micro",
+            "powerId": "micro-1",
+            "state": "RUNNING",
+            "scale": 1,
+            "currentDeployment": {
+                "version": 16,
+                "state": "ACTIVE",
+                "containers": {
+                    "backend": {
+                        "image": ":daiso-search-service.backend-v4.20",
+                        "command": [],
+                        "environment": {
+                            "ELASTIC_URL": "http://localhost:9200",
+                            "GOOGLE_API_KEY": "AIzaSyBMBFyDzhI75IBiWLB-cSSJmeDyyBWmPMw",
+                            "LANGCHAIN_TRACING_V2": "false",
+                            "QDRANT_URL": "http://localhost:6333"
+                        },
+                        "ports": {
+                            "8000": "HTTP"
+                        }
+                    },
+                    "frontend": {
+                        "image": ":daiso-search-service.frontend-v1.12",
+                        "command": [],
+                        "environment": {},
+                        "ports": {
+                            "80": "HTTP"
+                        }
+                    },
+                    "qdrant": {
+                        "image": ":daiso-search-service.qdrant-v1.13",
+                        "command": [],
+                        "environment": {},
+                        "ports": {
+                            "6333": "HTTP"
+                        }
+                    }
+                },
+                "publicEndpoint": {
+                    "containerName": "frontend",
+                    "containerPort": 80,
+                    "healthCheck": {
+                        "healthyThreshold": 2,
+                        "unhealthyThreshold": 2,
+                        "timeoutSeconds": 2,
+                        "intervalSeconds": 5,
+                        "path": "/",
+                        "successCodes": "200-499"
+                    }
+                },
+                "createdAt": "2026-02-19T19:05:54+09:00"
+            },
+            "isDisabled": false,
+            "principalArn": "arn:aws:iam::258974340560:role/amazon/lightsail/ap-northeast-2/containers/daiso-search-service/alg9v53dauvk9dn0jkdetq8kffthhvboberrcv6t32mlig63621g",
+            "privateDomainName": "daiso-search-service.service.local",
+            "url": "https://daiso-search-service.4f1wmb5jkjwy0.ap-northeast-2.cs.amazonlightsail.com/",
+            "privateRegistryAccess": {
+                "ecrImagePullerRole": {
+                    "isActive": false,
+                    "principalArn": ""
+                }
+            }
+        }
+    ]
+}

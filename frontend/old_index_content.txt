@@ -16,34 +16,21 @@
 
     <!-- HEADER -->
     <header class="header">
-        <a href="index.html" class="header-logo">
-            <div class="logo-icon"><span>Daiso</span></div>
+        <div class="header-logo">
+            <div class="logo-icon"><img src="images/logo.svg" alt="Logo" style="width:100%;height:100%;"></div>
             <div class="logo-text">
-                어디<span class="red">다</span>있소
-            </div>
-        </a>
-
-        <!-- Top Fixed Search Bar -->
-        <div class="top-search-container">
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="어떤 상품의 위치를 알고 싶으세요?"
-                    onkeypress="if(event.key==='Enter') doSearch()">
-                <svg class="search-icon" viewBox="0 0 24 24" onclick="doSearch()">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" />
-                </svg>
+                <span>어디</span><span class="red">다</span><span class="mix-iss">있</span><span class="red">소</span>
             </div>
         </div>
-
         <div class="header-right">
             <div class="lang-toggle">
                 <span class="active">KOR</span> / <span>ENG</span>
             </div>
             <button class="help-btn" onclick="showHelp()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9 9a3 3 0 015.12-2.13A3 3 0 0113 12.5V14" />
+                    <circle cx="12" cy="18" r="0.5" fill="currentColor" />
                 </svg>
                 도움말
             </button>
@@ -137,7 +124,15 @@
                 <p class="voice-label">어떤 상품의 위치를 알고 싶으세요?</p>
             </section>
 
-            <!-- Search Bar (text fallback - removed duplicate search bar inside the view to prefer top header) -->
+            <!-- Search Bar (text fallback) -->
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="어떤 상품의 위치를 알고 싶으세요?"
+                    onkeypress="if(event.key==='Enter') doSearch()">
+                <svg class="search-icon" viewBox="0 0 24 24" onclick="doSearch()">
+                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </div>
         </div>
 
         <!-- LOADING VIEW -->
@@ -204,7 +199,7 @@
 
     <!-- BOTTOM TAB BAR -->
     <nav class="tab-bar">
-        <button class="tab-item" data-tab="home" onclick="switchTab('home')">
+        <button class="tab-item active" data-tab="home" onclick="switchTab('home')">
             <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
@@ -216,12 +211,19 @@
             </svg>
             카테고리 지도
         </button>
-        <button class="tab-item active" data-tab="location" onclick="switchTab('location')">
+        <button class="tab-item" data-tab="search" onclick="switchTab('home')">
             <svg viewBox="0 0 24 24" fill="currentColor">
                 <path
                     d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
             </svg>
             상품 위치 찾기
+        </button>
+        <button class="tab-item" data-tab="cart">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0020.01 4H5.21l-.94-2H1zm16 16c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+            </svg>
+            장바구니
         </button>
     </nav>
 
