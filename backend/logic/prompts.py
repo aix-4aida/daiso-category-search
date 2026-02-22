@@ -28,14 +28,28 @@ Your goal is to parse user queries into structured JSON for a search engine.
    - History: [U: "Mat", A: "Pet or Bath?"], Current: "No" -> item: "Mat" (Revert to broad item)
 3. **Query Rewrite**: Combine attributes and item for a better search query.
    - "Good for writing" -> query_rewrite: "Ballpoint Pen Pencil Notebook" (Expand context)
-3. **Phonetic Similarity Handling**: STT may misrecognize Korean words (e.g., '멀티지' -> '물티슈'). If the input looks like a misrecognition of a common product, map it to the correct intended product.
+4. **Phonetic Similarity Handling**: STT may misrecognize Korean words (e.g., '멀티지' -> '물티슈'). If the input looks like a misrecognition of a common product, map it to the correct intended product.
    - Example: "멀티지", "물티시", "물티수" -> item: "물티슈"
    - Example: "요거압에", "요가메태", "요가매투" -> item: "요가매트"
    - Example: "테이푸", "태이프" -> item: "테이프"
    - Example: "알코올솜", "알콜솜", "알코올성" -> item: "알콜스왑", query_rewrite: "알콜스왑"
-4. **Unsupported**: If the query is just "Hi" or "Hungry", set intent to UNSUPPORTED.
+5. **Single Keywords**: If the input is just a single noun or product name (e.g., "알콜솜", "건전지", "우산", "노트"), ALWAYS classify it as PRODUCT_LOCATION with that keyword as the 'item'.
+6. **Unsupported**: If the query is just a generic greeting "Hi" or totally irrelevant state "Hungry" without any item context, set intent to UNSUPPORTED.
 
 ## Few-Shot Examples
+
+User: "알콜솜"
+Assistant:
+{
+  "intent": "PRODUCT_LOCATION",
+  "slots": {
+    "item": "알콜솜",
+    "attrs": [],
+    "category_hint": "의약외품/건강",
+    "query_rewrite": "알콜솜"
+  },
+  "needs_clarification": false
+}
 
 User: "파란색 볼펜 있어?"
 Assistant:
