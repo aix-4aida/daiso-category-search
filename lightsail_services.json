@@ -15,11 +15,11 @@
             "state": "RUNNING",
             "scale": 1,
             "currentDeployment": {
-                "version": 16,
+                "version": 26,
                 "state": "ACTIVE",
                 "containers": {
                     "backend": {
-                        "image": ":daiso-search-service.backend-v4.20",
+                        "image": ":daiso-search-service.backend-latest.31",
                         "command": [],
                         "environment": {
                             "ELASTIC_URL": "http://localhost:9200",
@@ -32,7 +32,7 @@
                         }
                     },
                     "frontend": {
-                        "image": ":daiso-search-service.frontend-v1.12",
+                        "image": ":daiso-search-service.frontend-latest.32",
                         "command": [],
                         "environment": {},
                         "ports": {
@@ -60,7 +60,7 @@
                         "successCodes": "200-499"
                     }
                 },
-                "createdAt": "2026-02-19T19:05:54+09:00"
+                "createdAt": "2026-02-22T21:23:45+09:00"
             },
             "isDisabled": false,
             "principalArn": "arn:aws:iam::258974340560:role/amazon/lightsail/ap-northeast-2/containers/daiso-search-service/alg9v53dauvk9dn0jkdetq8kffthhvboberrcv6t32mlig63621g",
