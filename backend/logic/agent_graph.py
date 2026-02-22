@@ -93,8 +93,9 @@ async def rerank_node(state: GraphState):
         cand_map = {str(c['id']): c for c in candidates}
         
         for rid in top_ids[:3]: 
-            if str(rid) in cand_map:
-                reranked.append(cand_map[str(rid)])
+            clean_id = str(rid).replace("ID", "").replace("id", "").strip()
+            if clean_id in cand_map:
+                reranked.append(cand_map[clean_id])
         
         # Fallback if rerank failed to find IDs
         if not reranked and candidates:

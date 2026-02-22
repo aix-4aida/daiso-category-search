@@ -90,7 +90,8 @@ function generateQR(product) {
 
     // Construct local URL for mobile-map.html
     // Use window.location.origin to support local, tunnel, or production environments
-    const mobileUrl = `${window.location.origin}/mobile-map.html?name=${encodeURIComponent(product.name)}&shelf=${encodeURIComponent(shelfParam)}&id=${product.id}`;
+    // Removed name parameter to prevent QR code length overflow
+    const mobileUrl = `${window.location.origin}/mobile-map.html?shelf=${encodeURIComponent(shelfParam)}&id=${product.id}`;
 
     new QRCode(qrArea, {
         text: mobileUrl,
@@ -98,6 +99,6 @@ function generateQR(product) {
         height: 140,
         colorDark: "#000000",
         colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
+        correctLevel: QRCode.CorrectLevel.M
     });
 }

@@ -22,7 +22,7 @@
 
         // Using existing transition function if available, or manual handling
         if (typeof showView === 'function') {
-            showView('home');
+            showView('view-home');
         } else {
             // Fallback
             window.location.href = 'index.html';

@@ -52,7 +52,7 @@ Candidates:
 
 Output JSON:
 {{
-    "top_ids": ["ID1", "ID2", "ID3"],
+    "top_ids": ["1", "2", "3"],
     "reason": "Brief Korean explanation of why these were chosen."
 }}
 """
