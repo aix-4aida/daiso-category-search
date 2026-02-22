@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-02-22
+
+### Fixed
+- **ChromaDB Index**: Fixed an issue where the `알콜솜` query returned incorrect results in production by rebuilding the local ChromaDB index using `rebuild_chroma_index.py` and pushing the updated index to AWS Lightsail.
+- **Git Tracking**: Added temporary deployment configs (`deploy_*.json`), test scripts, and system logs to `.gitignore` to prevent repository clutter.
+
+
 ## [0.1.0] - 2026-02-10
 
 ### Added

@@ -1,0 +1,124 @@
+{
+    "containerImages": [
+        {
+            "image": ":daiso-search-service.frontend-latest.24",
+            "digest": "sha256:28d2ff21cb77d8a91b61c2de073698eafd21637ff2bf8d5c6dd327773513916b",
+            "createdAt": "2026-02-20T20:17:31+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-latest.23",
+            "digest": "sha256:cfddebdbf6dfc57f8312182c4de58a35eb7df1f8bfac0f75f0dd647f9047b7c2",
+            "createdAt": "2026-02-20T20:17:16+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-v3-chroma-priority.22",
+            "digest": "sha256:47af2bbc1ed6acfe6b05fd1e866d3c37960bf2e831f11b42aef1bb5a46965b61",
+            "createdAt": "2026-02-19T20:36:53+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-v2-search-fix.21",
+            "digest": "sha256:f62d0567e0e037dae8a1668ef2fa76ade1a45f982760f6c8306ff846820ddd3b",
+            "createdAt": "2026-02-19T20:10:55+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-v4.20",
+            "digest": "sha256:278e59f125f4a7071fc265c0a95ffd897865eb803eba39d5ac78dcd299715c17",
+            "createdAt": "2026-02-19T19:04:38+09:00"
+        },
+        {
+            "image": ":daiso-search-service.frontend-v2.19",
+            "digest": "sha256:540b4dc03f5490ac99b121bbbf90c2ca5c9535838d5c13af37ee9c522187d3d9",
+            "createdAt": "2026-02-16T18:49:11+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-v3.18",
+            "digest": "sha256:0499966f5c8245c8c22982c38f2a50dbaa12de77404a575bb43b9352da6e9c8f",
+            "createdAt": "2026-02-19T15:42:00+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-v2.17",
+            "digest": "sha256:f4de848bb308397e0023427d25d03dad0b89c1c3103779bc1fa82699497a90ec",
+            "createdAt": "2026-02-19T14:39:27+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-v1.16",
+            "digest": "sha256:a38176e06643bd65a28927ceedfdec285fdfcd4322f0a2e765d0c092a04497a8",
+            "createdAt": "2026-02-19T13:48:18+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-v2.15",
+            "digest": "sha256:b08874e6989c772495d217a41bdc93789fab9b8c8763716d6ed105b1c4f175b8",
+            "createdAt": "2026-02-16T20:38:37+09:00"
+        },
+        {
+            "image": ":daiso-search-service.elastic-v1.14",
+            "digest": "sha256:9509fd6c7c02eddd488e0bae6d7b742b13d3a8bf6525a6711b72512813518719",
+            "createdAt": "2026-02-16T19:19:47+09:00"
+        },
+        {
+            "image": ":daiso-search-service.qdrant-v1.13",
+            "digest": "sha256:26509b92c44ded1ad344e18a005383c20bb3fbf9dbf4d337265a230b2aa89e79",
+            "createdAt": "2026-02-16T18:51:25+09:00"
+        },
+        {
+            "image": ":daiso-search-service.frontend-v1.12",
+            "digest": "sha256:540b4dc03f5490ac99b121bbbf90c2ca5c9535838d5c13af37ee9c522187d3d9",
+            "createdAt": "2026-02-16T18:49:11+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend-v1.11",
+            "digest": "sha256:72526c1af9ae0b6f8a3123ac1920c69cdd7f0b7bb5861375a3a0d4c57b4ccf70",
+            "createdAt": "2026-02-16T17:18:42+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend.10",
+            "digest": "sha256:08a8846e63d7092ce4d5e13bed11b29d13309ea50e45a4e51826e0c55272e41e",
+            "createdAt": "2026-02-10T20:56:19+09:00"
+        },
+        {
+            "image": ":daiso-search-service.frontend.9",
+            "digest": "sha256:4e0a7cd386f3bd0e3151f1bad36c13aba0c1addaa26b9bf46e36f4c4ca3b7fa9",
+            "createdAt": "2026-02-10T19:26:51+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend.8",
+            "digest": "sha256:e90c2907063fb3ba97ce2ca79e72f3d80e0bd8fa4334ceee7914cb9e636c5714",
+            "createdAt": "2026-02-10T19:26:45+09:00"
+        },
+        {
+            "image": ":daiso-search-service.frontend.7",
+            "digest": "sha256:a3b2412c0430583d7516ae254ed2755c50a02dbc14481111799efdd330d30156",
+            "createdAt": "2026-02-10T19:11:34+09:00"
+        },
+        {
+            "image": ":daiso-search-service.frontend.6",
+            "digest": "sha256:879272e64331f9d0dd9e84ad15e85de8588552d28c6ad0ceae5efa5b651aca3a",
+            "createdAt": "2026-02-10T18:57:43+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend.5",
+            "digest": "sha256:6aa783af7ed290f3ce553b71a6be474ccccdb8ad699ab3c9fc96b2ef328efe38",
+            "createdAt": "2026-02-10T18:57:38+09:00"
+        },
+        {
+            "image": ":daiso-search-service.frontend.4",
+            "digest": "sha256:cca3da1c7813aafde0291c205ff07712d759c30b706ed0f3a08bf1f000992221",
+            "createdAt": "2026-02-10T17:40:18+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend.3",
+            "digest": "sha256:6ff288d026011596f0bae42f499f9842bdb09ebd3502be20aa7dd4c32d4cf654",
+            "createdAt": "2026-02-10T17:28:14+09:00"
+        },
+        {
+            "image": ":daiso-search-service.frontend.2",
+            "digest": "sha256:9206fb33a95809e0b51a665e4bcda0c2051c8e037423cc701884366d125a043a",
+            "createdAt": "2026-02-10T16:35:43+09:00"
+        },
+        {
+            "image": ":daiso-search-service.backend.1",
+            "digest": "sha256:84ac00672006497568e4dea5e318370bdcb2bb4c643e417c49abfd99fc603336",
+            "createdAt": "2026-02-10T16:33:25+09:00"
+        }
+    ]
+}

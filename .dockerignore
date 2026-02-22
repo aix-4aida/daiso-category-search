@@ -1,0 +1,46 @@
+# Virtual environments
+.venv/
+venv/
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Debug / Temp
+backend/database/debug_html/
+backend/database/__pycache__/
+backend/**/__pycache__/
+__pycache__/
+
+# Large data files (images are served via URL, not locally)
+backend/database/images/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Docs / Non-runtime
+*.md
+LICENSE
+docs/
+poc/
+
+# Analysis scripts (not needed in prod)
+analyze_search_quality.py
+inspect_db_statistics.py
+search_quality_analysis.md
+
+# Misc
+.env.example
+*.pyc
+*.pyo

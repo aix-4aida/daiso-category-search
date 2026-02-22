@@ -6,15 +6,22 @@ from typing import Dict, List
 from backend.search.core.types import ScoredDoc
 
 
-def rrf_fusion(dense: List[ScoredDoc], sparse: List[ScoredDoc], *, rrf_k: int = 60, top_k: int = 50) -> List[ScoredDoc]:
-    """Reciprocal Rank Fusion.
+def rrf_fusion(dense: List[ScoredDoc], sparse: List[ScoredDoc], *, rrf_k: int = 60, top_k: int = 50, sparse_weight: float = 1.0) -> List[ScoredDoc]:
+    """Reciprocal Rank Fusion with optional sparse (BM25) weighting.
 
-    score(doc) = sum(1/(rrf_k + rank))
+    score(doc) = sum(weight * 1/(rrf_k + rank))
+    
+    Args:
+        sparse_weight: multiplier for sparse (BM25) results. Set > 1.0 to
+            boost keyword-matched results over semantic vector results.
     """
     scores: Dict[str, float] = {}
-    for lst in (dense, sparse):
-        for rank, sd in enumerate(lst, start=1):
-            scores[sd.doc_id] = scores.get(sd.doc_id, 0.0) + 1.0 / (rrf_k + rank)
+    # Dense (vector) results — weight 1.0
+    for rank, sd in enumerate(dense, start=1):
+        scores[sd.doc_id] = scores.get(sd.doc_id, 0.0) + 1.0 / (rrf_k + rank)
+    # Sparse (BM25) results — boosted weight
+    for rank, sd in enumerate(sparse, start=1):
+        scores[sd.doc_id] = scores.get(sd.doc_id, 0.0) + sparse_weight / (rrf_k + rank)
     merged = [ScoredDoc(doc_id=k, score=v, source="fused") for k, v in scores.items()]
     merged.sort(key=lambda x: x.score, reverse=True)
     return merged[:top_k]

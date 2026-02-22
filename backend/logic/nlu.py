@@ -19,7 +19,7 @@ def get_genai():
     global _genai
     if _genai is None:
         import google.generativeai as genai
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GOOGLE_API_KEY")
         genai.configure(api_key=api_key)
         _genai = genai
     return _genai
