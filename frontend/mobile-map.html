@@ -35,16 +35,30 @@
 
         <!-- Map View -->
         <div class="mobile-map-view">
-            <div style="width:100%;max-width:400px;">
-                <div style="text-align:right;margin-bottom:8px;">
+            <div
+                style="width:100%;max-width:400px;position:relative;height:400px;background:white;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.05);padding:16px;">
+                <div style="text-align:right;position:absolute;top:16px;right:20px;z-index:2;">
                     <span style="font-size:48px;font-weight:800;color:#E50000;opacity:0.2;" id="floor-label">B1</span>
                 </div>
-                <div class="map-grid" id="mobile-map-grid" style="aspect-ratio:1;"></div>
-                <div style="text-align:center;margin-top:12px;">
-                    <span style="font-size:12px;color:#2962FF;">● 현재위치</span>
-                    <span style="margin:0 12px;color:#ccc;">|</span>
-                    <span style="font-size:12px;color:#E50000;">● 상품위치</span>
+                <div class="map-image-container"
+                    style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;">
+                    <img id="mobile-map-img" src="images/map_b1.png" class="map-base-img"
+                        style="max-width:100%;max-height:100%;object-fit:contain;">
+
+                    <div class="map-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+                        <div class="map-pin current-position" style="left:50%;top:90%;">
+                            <div class="pin-label" style="opacity:1;">입구 (현위치)</div>
+                        </div>
+                        <div class="map-pin target-pin active pulse" id="mobile-target-pin" style="left:50%;top:50%;">
+                            <div class="pin-popup">여기!</div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div style="text-align:center;margin-top:16px;width:100%;">
+                <span style="font-size:12px;color:#2962FF;">● 현재위치(입구)</span>
+                <span style="margin:0 12px;color:#ccc;">|</span>
+                <span style="font-size:12px;color:#E50000;">● 상품위치</span>
             </div>
         </div>
 
@@ -81,42 +95,22 @@
         const floor = shelf.startsWith('B2') ? 'B2' : 'B1';
         document.getElementById('floor-label').textContent = floor;
 
-        // Simple map rendering
-        const B1_CELLS = [
-            ['포장', '모구', '', '출입구'],
-            ['디지털', '파티·유아동', '캐릭터', '건강기능'],
-            ['', '인테리어', '패션', '시즌'],
-            ['식품', '인테리어소품', '화장품', '계산대']
-        ];
+        // Load correct floor image
+        document.getElementById('mobile-map-img').src = 'images/map_' + floor.toLowerCase() + '.png';
 
-        const B2_CELLS = [
-            ['욕실', '청소', '세탁', '득템'],
-            ['일본수입', '홈패브릭', '수납정리', '내추럴'],
-            ['공구', '스포츠', '수예', '캠핑'],
-            ['여행', '원예', '문구', '주방']
-        ];
+        // Dummy coordinate map for sections
+        const sectionCoords = {
+            'N01': { x: 20, y: 30 }, 'N02': { x: 25, y: 30 }, 'N03': { x: 30, y: 30 },
+            'C01': { x: 60, y: 40 }, 'K01': { x: 80, y: 60 }, 'B01': { x: 40, y: 50 }
+        };
 
-        const cells = floor === 'B2' ? B2_CELLS : B1_CELLS;
         const targetSection = shelf.split('-')[1];
-
-        const grid = document.getElementById('mobile-map-grid');
-        cells.forEach((row, ri) => {
-            row.forEach((name, ci) => {
-                const div = document.createElement('div');
-                div.className = 'map-cell';
-                if (name) {
-                    div.innerHTML = `<span class="cell-name">${name}</span>`;
-                    // Highlight target
-                    if (name === '시즌' && targetSection === 'B01') div.classList.add('highlight');
-                    if (name === '화장품' && targetSection === 'C01') div.classList.add('highlight');
-                    if (name === '주방' && targetSection === 'K01') div.classList.add('highlight');
-                    if (name === '출입구') {
-                        div.style.background = '#e3f2fd';
-                    }
-                }
-                grid.appendChild(div);
-            });
-        });
+        const coords = sectionCoords[targetSection] || { x: 50, y: 50 };
+        const pin = document.getElementById('mobile-target-pin');
+        if (pin) {
+            pin.style.left = coords.x + '%';
+            pin.style.top = coords.y + '%';
+        }
     </script>
 </body>
 

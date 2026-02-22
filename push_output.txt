@@ -1,0 +1,25 @@
+6b7b6c7061b7: Waiting
+5e7756927bef: Waiting
+bca5d04786e1: Waiting
+3e2c181db1b0: Waiting
+955a8478f9ac: Waiting
+9a44e44b8d74: Waiting
+6d397a54a185: Waiting
+589002ba0eae: Waiting
+44eaddfba5c7: Waiting
+399d0898a94e: Waiting
+9a44e44b8d74: Waiting
+6d397a54a185: Layer already exists
+589002ba0eae: Layer already exists
+44eaddfba5c7: Waiting
+399d0898a94e: Layer already exists
+6b7b6c7061b7: Layer already exists
+5e7756927bef: Layer already exists
+bca5d04786e1: Layer already exists
+3e2c181db1b0: Layer already exists
+955a8478f9ac: Layer already exists
+9a44e44b8d74: Pushed
+44eaddfba5c7: Pushed
+Digest: sha256:ec819da8af408cd670fe4c6148e460af7f8e3c6137005acfef479d9d21a7d11d
+Image "daiso-frontend" registered.
+Refer to this image as ":daiso-search-service.frontend-ui-fixes.36" in deployments.

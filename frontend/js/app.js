@@ -122,31 +122,38 @@ async function executeSearchOnResultsPage() {
     const text = params.get('q');
     if (!text) return;
 
-    document.getElementById('search-input').value = text;
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = text;
 
     // Show Loading View
-    document.getElementById('view-results').classList.add('hidden');
+    const viewResults = document.getElementById('view-results');
+    if (viewResults) viewResults.classList.add('hidden');
+
     const loadingView = document.getElementById('view-loading');
+
+    // Start fetching data immediately
+    const fetchPromise = fetch('/api/search/text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: text })
+    }).then(res => {
+        if (!res.ok) throw new Error('Search failed');
+        return res.json();
+    });
+
     if (loadingView) {
         loadingView.classList.remove('hidden');
         document.getElementById('loading-query').innerText = `'${text}'`;
-        simulateProgress();
+        // Wait for the loader animation to finish its natural cycle
+        await simulateProgress(fetchPromise);
     }
 
     try {
-        const response = await fetch('/api/search/text', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: text })
-        });
-
-        if (!response.ok) throw new Error('Search failed');
-
-        const data = await response.json();
+        const data = await fetchPromise;
 
         // Hide loading, Show results
         if (loadingView) loadingView.classList.add('hidden');
-        document.getElementById('view-results').classList.remove('hidden');
+        if (viewResults) viewResults.classList.remove('hidden');
 
         // Render results (defined in search.js)
         if (typeof renderResults === 'function') {
@@ -160,20 +167,55 @@ async function executeSearchOnResultsPage() {
     }
 }
 
-function simulateProgress() {
-    let progress = 0;
-    const fill = document.getElementById('progress-fill');
-    const text = document.getElementById('progress-text');
+function simulateProgress(completionPromise) {
+    return new Promise(resolve => {
+        let progress = 0;
+        const fill = document.getElementById('progress-fill');
+        const text = document.getElementById('progress-text');
+        const centerText = document.getElementById('loader-center-text');
 
-    const interval = setInterval(() => {
-        progress += Math.random() * 30;
-        if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-        }
-        if (fill) fill.style.strokeDashoffset = 565 - (565 * progress) / 100;
-        if (text) text.innerText = `${Math.floor(progress)}%`;
-    }, 200);
+        const wordCycle = ['어', '디', '다', '있', '소', '어', '어디', '어디다', '어디다있', '어디다있소'];
+        let wordIdx = 0;
+        let isApiDone = false;
+
+        completionPromise.then(() => { isApiDone = true; }).catch(() => { isApiDone = true; });
+
+        const interval = setInterval(() => {
+            if (centerText) {
+                const currentWord = wordCycle[wordIdx % wordCycle.length];
+                centerText.innerText = currentWord;
+                if (currentWord.length >= 3) {
+                    centerText.style.fontSize = '28px';
+                    centerText.style.marginTop = '-5px';
+                } else if (currentWord.length === 2) {
+                    centerText.style.fontSize = '36px';
+                    centerText.style.marginTop = '-12px';
+                } else {
+                    centerText.style.fontSize = '48px';
+                    centerText.style.marginTop = '-20px';
+                }
+                wordIdx++;
+            }
+
+            if (!isApiDone) {
+                progress += (99 - progress) * 0.1;
+                if (progress > 99) progress = 99;
+            } else {
+                progress += 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    if (fill) fill.style.strokeDashoffset = 0;
+                    if (text) text.innerText = `100%`;
+                    setTimeout(resolve, 200);
+                    return;
+                }
+            }
+
+            if (fill) fill.style.strokeDashoffset = 565 - (565 * progress) / 100;
+            if (text) text.innerText = `${Math.floor(progress)}%`;
+        }, 150);
+    });
 }
 
 // --- 4. UI Helpers ---

@@ -88,10 +88,9 @@ function generateQR(product) {
     const section = product.location?.section || 'N01';
     const shelfParam = `${floor}-${section}`;
 
-    // Construct local URL for mobile-map.html
     // Use window.location.origin to support local, tunnel, or production environments
-    // Removed name parameter to prevent QR code length overflow
-    const mobileUrl = `${window.location.origin}/mobile-map.html?shelf=${encodeURIComponent(shelfParam)}&id=${product.id}`;
+    const nameParam = product.name ? product.name.substring(0, 15) : '';
+    const mobileUrl = `${window.location.origin}/mobile-ar.html?shelf=${encodeURIComponent(shelfParam)}&name=${encodeURIComponent(nameParam)}`;
 
     new QRCode(qrArea, {
         text: mobileUrl,

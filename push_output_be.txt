@@ -1,0 +1,26 @@
+b84ea8a524e5: Waiting
+b3e33b8f9583: Waiting
+191c1c203a47: Waiting
+5c725841714c: Waiting
+632f78adba17: Waiting
+09952aa9d86d: Waiting
+0c8d55a45c0d: Waiting
+690eaffcf0e9: Waiting
+d0d1977db485: Waiting
+63ebb7511fc1: Waiting
+0c8d55a45c0d: Layer already exists
+690eaffcf0e9: Layer already exists
+d0d1977db485: Layer already exists
+63ebb7511fc1: Layer already exists
+b84ea8a524e5: Layer already exists
+b3e33b8f9583: Layer already exists
+191c1c203a47: Waiting
+5c725841714c: Waiting
+632f78adba17: Layer already exists
+09952aa9d86d: Waiting
+09952aa9d86d: Pushed
+5c725841714c: Pushed
+191c1c203a47: Pushed
+Digest: sha256:1ea45ac55a14e6f298ea57d832c66535195dd3f8f397029e1b0624deb833029b
+Image "daiso-backend" registered.
+Refer to this image as ":daiso-search-service.backend-nlu-fix.35" in deployments.
