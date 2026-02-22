@@ -181,35 +181,35 @@ function simulateProgress(completionPromise) {
         completionPromise.then(() => { isApiDone = true; }).catch(() => { isApiDone = true; });
 
         const interval = setInterval(() => {
-            if (centerText) {
-                const currentWord = wordCycle[wordIdx % wordCycle.length];
-                centerText.innerText = currentWord;
-                if (currentWord.length >= 3) {
-                    centerText.style.fontSize = '28px';
-                    centerText.style.marginTop = '-5px';
-                } else if (currentWord.length === 2) {
-                    centerText.style.fontSize = '36px';
-                    centerText.style.marginTop = '-12px';
-                } else {
-                    centerText.style.fontSize = '48px';
-                    centerText.style.marginTop = '-20px';
-                }
-                wordIdx++;
-            }
-
             if (!isApiDone) {
+                if (centerText) {
+                    const currentWord = wordCycle[wordIdx % wordCycle.length];
+                    centerText.innerText = currentWord;
+                    if (currentWord.length >= 3) {
+                        centerText.style.fontSize = '28px';
+                    } else if (currentWord.length === 2) {
+                        centerText.style.fontSize = '36px';
+                    } else {
+                        centerText.style.fontSize = '48px';
+                    }
+                    wordIdx++;
+                }
                 progress += (99 - progress) * 0.1;
                 if (progress > 99) progress = 99;
             } else {
-                progress += 10;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    if (fill) fill.style.strokeDashoffset = 0;
-                    if (text) text.innerText = `100%`;
-                    setTimeout(resolve, 200);
-                    return;
+                progress = 100;
+                clearInterval(interval);
+                if (fill) fill.style.strokeDashoffset = 0;
+                if (text) text.innerText = `100%`;
+
+                // Force the final word to be the full phrase
+                if (centerText) {
+                    centerText.innerText = '어디다있소';
+                    centerText.style.fontSize = '28px';
                 }
+
+                setTimeout(resolve, 100); // 100ms quick finish
+                return;
             }
 
             if (fill) fill.style.strokeDashoffset = 565 - (565 * progress) / 100;
