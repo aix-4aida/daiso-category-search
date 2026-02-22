@@ -9,33 +9,21 @@ let isListening = false;
 document.addEventListener('DOMContentLoaded', () => {
     initSpeech();
     initCarousel();
+
+    if (window.location.pathname.includes('results.html')) {
+        executeSearchOnResultsPage();
+    }
 });
 
-// --- 1. View Management ---
+// --- 1. View Management (Multi-Page Routing) ---
 function showView(viewId) {
-    const views = ['view-home', 'view-loading', 'view-results', 'view-category'];
-    views.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-    });
-
-    const target = document.getElementById(viewId);
-    if (target) {
-        target.classList.remove('hidden');
-        if (viewId === 'view-results') {
-            target.classList.add('results-page');
-        }
-    }
-
-    // Tab bar active state
-    document.querySelectorAll('.tab-item').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === (viewId.split('-')[1] || 'home'));
-    });
+    console.warn("showView is deprecated in multi-page architecture. Use location.href instead.");
 }
 
 function switchTab(tab) {
-    if (tab === 'home') showView('view-home');
-    if (tab === 'category') showView('view-category');
+    if (tab === 'home') window.location.href = 'index.html';
+    if (tab === 'category') window.location.href = 'map.html';
+    if (tab === 'location') window.location.href = 'location.html';
 }
 
 // --- 2. Speech API ---
@@ -110,19 +98,40 @@ function stopVoice() {
 }
 
 function updateVoiceLabel(text) {
+    // Update center label if exists
     const label = document.querySelector('.voice-label');
     if (label) label.innerText = text;
+
+    // Update top search bar simultaneously
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = text;
 }
 
 // --- 3. Search Execution ---
 async function doSearch(query) {
-    const text = query || document.getElementById('search-input').value;
+    const text = query || (document.getElementById('search-input') ? document.getElementById('search-input').value : '');
     if (!text.trim()) return;
 
-    // Loading state
-    showView('view-loading');
-    document.getElementById('loading-query').innerText = `'${text}'`;
-    simulateProgress();
+    // Redirect to results.html with query parameter
+    window.location.href = `results.html?q=${encodeURIComponent(text)}`;
+}
+
+// Function to actually fetch and render results on results.html
+async function executeSearchOnResultsPage() {
+    const params = new URLSearchParams(window.location.search);
+    const text = params.get('q');
+    if (!text) return;
+
+    document.getElementById('search-input').value = text;
+
+    // Show Loading View
+    document.getElementById('view-results').classList.add('hidden');
+    const loadingView = document.getElementById('view-loading');
+    if (loadingView) {
+        loadingView.classList.remove('hidden');
+        document.getElementById('loading-query').innerText = `'${text}'`;
+        simulateProgress();
+    }
 
     try {
         const response = await fetch('/api/search/text', {
@@ -135,16 +144,19 @@ async function doSearch(query) {
 
         const data = await response.json();
 
+        // Hide loading, Show results
+        if (loadingView) loadingView.classList.add('hidden');
+        document.getElementById('view-results').classList.remove('hidden');
+
         // Render results (defined in search.js)
         if (typeof renderResults === 'function') {
             renderResults(data.products || [], text);
         }
 
-        showView('view-results');
     } catch (error) {
         console.error('Search error:', error);
         alert('검색 중 오류가 발생했습니다.');
-        showView('view-home');
+        window.location.href = 'index.html';
     }
 }
 
@@ -165,21 +177,26 @@ function simulateProgress() {
 }
 
 // --- 4. UI Helpers ---
+// --- 4. UI Helpers ---
 function initCarousel() {
-    let currentSlide = 0;
     const track = document.getElementById('carousel-track');
     const dots = document.querySelectorAll('.carousel-dots .dot');
 
+    // Only initialize if carousel exists on the page
+    if (!track || dots.length === 0) return;
+
+    let currentSlide = 0;
+
     window.goToSlide = (index) => {
         currentSlide = index;
-        if (track) track.style.transform = `translateX(-${index * 100}%)`;
+        track.style.transform = `translateX(-${index * 100}%)`;
         dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
     };
 
     // Auto slide
     setInterval(() => {
         currentSlide = (currentSlide + 1) % dots.length;
-        goToSlide(currentSlide);
+        window.goToSlide(currentSlide);
     }, 5000);
 }
 

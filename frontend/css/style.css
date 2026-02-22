@@ -138,6 +138,58 @@ img {
   gap: 20px;
 }
 
+/* Updated Fixed Search Bar in Header */
+.top-search-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 40px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 600px;
+  width: 100%;
+  padding: 12px 20px;
+  background: var(--color-bg-light);
+  border-radius: 30px;
+  border: 1px solid var(--color-border);
+  transition: var(--transition);
+}
+
+.search-bar:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  color: var(--color-text);
+}
+
+.search-bar input::placeholder {
+  color: var(--color-text-light);
+}
+
+.search-bar .search-icon {
+  width: 24px;
+  height: 24px;
+  fill: var(--color-text-light);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.search-bar .search-icon:hover {
+  fill: var(--color-primary);
+}
+
 .lang-toggle {
   display: flex;
   align-items: center;
@@ -422,51 +474,44 @@ img {
 }
 
 /* =============================================
-   SEARCH BAR (text mode)
+   DAISO MALL GRID (index.html)
    ============================================= */
-.search-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 600px;
+.daiso-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 16px;
   width: 100%;
-  margin: 20px auto;
-  padding: 12px 20px;
-  background: var(--color-bg-light);
-  border-radius: 30px;
-  border: 1px solid var(--color-border);
-  transition: var(--transition);
+  height: 100%;
+  padding: 16px 0;
 }
 
-.search-bar:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-light);
+.grid-cell {
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
-.search-bar input {
-  flex: 1;
-  border: none;
+.grid-banner {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Central Void for Voice Search */
+.grid-void {
+  grid-column: 2;
+  grid-row: 2;
   background: transparent;
-  font-size: 16px;
-  font-family: inherit;
-  outline: none;
-  color: var(--color-text);
-}
-
-.search-bar input::placeholder {
-  color: var(--color-text-light);
-}
-
-.search-bar .search-icon {
-  width: 24px;
-  height: 24px;
-  fill: var(--color-text-light);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.search-bar .search-icon:hover {
-  fill: var(--color-primary);
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* =============================================
