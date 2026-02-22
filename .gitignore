@@ -48,3 +48,10 @@ repro_search.py
 debug_search.py
 score_*.txt
 test_*.txt
+
+# Ignore explicit API log/deploy files
+lightsail_*.json
+check_*.json
+current_*.json
+recent_images.json
+backend_logs*.json

@@ -1,0 +1,26 @@
+b84ea8a524e5: Waiting
+b3e33b8f9583: Waiting
+0c8d55a45c0d: Waiting
+690eaffcf0e9: Waiting
+d0d1977db485: Waiting
+db6012d89681: Waiting
+63ebb7511fc1: Waiting
+c004dd57fe57: Waiting
+632f78adba17: Waiting
+9626bfcf3b34: Waiting
+db6012d89681: Waiting
+63ebb7511fc1: Layer already exists
+c004dd57fe57: Waiting
+632f78adba17: Layer already exists
+9626bfcf3b34: Waiting
+b84ea8a524e5: Layer already exists
+b3e33b8f9583: Layer already exists
+0c8d55a45c0d: Layer already exists
+690eaffcf0e9: Layer already exists
+d0d1977db485: Layer already exists
+9626bfcf3b34: Pushed
+db6012d89681: Pushed
+c004dd57fe57: Pushed
+Digest: sha256:5d20fd4880118b74476e1835a6022361bc0b4b6c7b422163e63dbcaf52741261
+Image "daiso-backend" registered.
+Refer to this image as ":daiso-search-service.backend-search-fixes.37" in deployments.

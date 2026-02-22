@@ -169,21 +169,20 @@ async function executeSearchOnResultsPage() {
 
 function simulateProgress(completionPromise) {
     return new Promise(resolve => {
-        let progress = 0;
+        let step = 0;
         const fill = document.getElementById('progress-fill');
         const text = document.getElementById('progress-text');
         const centerText = document.getElementById('loader-center-text');
 
         const wordCycle = ['어', '디', '다', '있', '소', '어', '어디', '어디다', '어디다있', '어디다있소'];
-        let wordIdx = 0;
         let isApiDone = false;
 
         completionPromise.then(() => { isApiDone = true; }).catch(() => { isApiDone = true; });
 
         const interval = setInterval(() => {
-            if (!isApiDone) {
+            if (step < 10) {
+                const currentWord = wordCycle[step];
                 if (centerText) {
-                    const currentWord = wordCycle[wordIdx % wordCycle.length];
                     centerText.innerText = currentWord;
                     if (currentWord.length >= 3) {
                         centerText.style.fontSize = '28px';
@@ -192,29 +191,25 @@ function simulateProgress(completionPromise) {
                     } else {
                         centerText.style.fontSize = '48px';
                     }
-                    wordIdx++;
                 }
-                progress += (99 - progress) * 0.1;
-                if (progress > 99) progress = 99;
+                const progress = (step + 1) * 10;
+
+                if (fill) fill.style.strokeDashoffset = 565 - (565 * progress) / 100;
+                if (text) text.innerText = `${progress}%`;
+
+                step++;
+
+                if (step === 10 && isApiDone) {
+                    clearInterval(interval);
+                    setTimeout(resolve, 100);
+                }
             } else {
-                progress = 100;
-                clearInterval(interval);
-                if (fill) fill.style.strokeDashoffset = 0;
-                if (text) text.innerText = `100%`;
-
-                // Force the final word to be the full phrase
-                if (centerText) {
-                    centerText.innerText = '어디다있소';
-                    centerText.style.fontSize = '28px';
+                if (isApiDone) {
+                    clearInterval(interval);
+                    setTimeout(resolve, 100);
                 }
-
-                setTimeout(resolve, 100); // 100ms quick finish
-                return;
             }
-
-            if (fill) fill.style.strokeDashoffset = 565 - (565 * progress) / 100;
-            if (text) text.innerText = `${Math.floor(progress)}%`;
-        }, 150);
+        }, 300); // 300ms per step = 3 seconds total animation
     });
 }
 
