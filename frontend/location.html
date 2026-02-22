@@ -19,7 +19,7 @@
         <a href="index.html" class="header-logo">
             <div class="logo-icon"><span>Daiso</span></div>
             <div class="logo-text">
-                어디<span class="red">다</span>있소
+                어디<span class="red">다</span><span class="mix-iss">있</span><span class="red">소</span>
             </div>
         </a>
 
@@ -55,6 +55,21 @@
 
         <!-- HOME VIEW (default) -->
         <div id="view-home">
+            <!-- Voice Search -->
+            <section class="voice-section" style="margin-top: 5vh; margin-bottom: 5vh;">
+                <button class="mic-button" id="mic-btn" onclick="toggleVoice()">
+                    <div class="mic-ripple"></div>
+                    <div class="mic-ripple"></div>
+                    <div class="mic-ripple"></div>
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 1a4 4 0 00-4 4v6a4 4 0 008 0V5a4 4 0 00-4-4z" />
+                        <path d="M19 10v1a7 7 0 01-14 0v-1M12 18.5v3M8 21.5h8" fill="none" stroke="white"
+                            stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+                <p class="voice-label">어떤 상품의 위치를 알고 싶으세요?</p>
+            </section>
+
             <!-- Carousel / Banner -->
             <section class="carousel-section">
                 <div class="carousel-track" id="carousel-track">
@@ -120,21 +135,6 @@
                     <div class="dot active" onclick="goToSlide(0)"></div>
                     <div class="dot" onclick="goToSlide(1)"></div>
                 </div>
-            </section>
-
-            <!-- Voice Search -->
-            <section class="voice-section">
-                <button class="mic-button" id="mic-btn" onclick="toggleVoice()">
-                    <div class="mic-ripple"></div>
-                    <div class="mic-ripple"></div>
-                    <div class="mic-ripple"></div>
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 1a4 4 0 00-4 4v6a4 4 0 008 0V5a4 4 0 00-4-4z" />
-                        <path d="M19 10v1a7 7 0 01-14 0v-1M12 18.5v3M8 21.5h8" fill="none" stroke="white"
-                            stroke-width="2" stroke-linecap="round" />
-                    </svg>
-                </button>
-                <p class="voice-label">어떤 상품의 위치를 알고 싶으세요?</p>
             </section>
 
             <!-- Search Bar (text fallback - removed duplicate search bar inside the view to prefer top header) -->
@@ -204,19 +204,20 @@
 
     <!-- BOTTOM TAB BAR -->
     <nav class="tab-bar">
-        <button class="tab-item" data-tab="home" onclick="switchTab('home')">
+        <button class="tab-item" data-tab="home" onclick="location.href='index.html'">
             <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
             홈
         </button>
-        <button class="tab-item" data-tab="category" onclick="switchTab('category')">
+        <button class="tab-item" data-tab="category" onclick="location.href='map.html'">
             <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                <path
+                    d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z" />
             </svg>
-            카테고리 지도
+            매장 배치도
         </button>
-        <button class="tab-item active" data-tab="location" onclick="switchTab('location')">
+        <button class="tab-item active" data-tab="location" onclick="location.href='location.html'">
             <svg viewBox="0 0 24 24" fill="currentColor">
                 <path
                     d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
