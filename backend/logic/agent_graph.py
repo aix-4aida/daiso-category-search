@@ -47,7 +47,7 @@ async def search_node(state: GraphState):
     slots = state["slots"]
     item = slots.get("item") or ""
     query_rewrite = slots.get("query_rewrite") or ""
-    query = item or query_rewrite
+    query = query_rewrite or item  # Prefer query_rewrite (richer context) over bare item
     print(f"--- [Node: Search] Hybrid Querying (Top-10) ---")
     print(f"    NLU slots.item='{item}', query_rewrite='{query_rewrite}'")
     print(f"    Final query: '{query}'")
