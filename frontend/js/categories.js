@@ -82,7 +82,7 @@ function renderFloorMap(floorId, sections) {
         <div class="category-map-wrap">
             <img src="images/map_${floorId}.png" class="cat-map-img"
                  onerror="this.src='https://placehold.co/430x510?text=${floor}'">
-            <svg class="cat-map-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <svg class="cat-map-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
                 ${sections.map(s => renderSectionSVG(s)).join('')}
             </svg>
         </div>
