@@ -132,7 +132,7 @@ async function executeSearchOnResultsPage() {
     const loadingView = document.getElementById('view-loading');
 
     // Start fetching data immediately
-    const fetchPromise = fetch('http://localhost:8000/search/text', {
+    const fetchPromise = fetch('/search/text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: text })
