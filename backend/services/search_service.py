@@ -25,6 +25,33 @@ IVHL_AVAILABLE = True
 print("✅ Search adapters imported successfully (ChromaDB Integrated)")
 
 # ============================================================
+# Korean Synonym / Alternate Spelling Map
+# ============================================================
+SYNONYM_MAP = {
+    "알코올": ["알콜", "알코올"],
+    "알콜": ["알코올", "알콜"],
+    "솜": ["스왑", "솜"],
+    "핸드폰": ["휴대폰", "스마트폰"],
+    "휴대폰": ["핸드폰", "스마트폰"],
+    "볼펜": ["볼 펜", "펜"],
+    "가위": ["시저"],
+    "물티슈": ["물 티슈", "웨트 티슈"],
+    "이어폰": ["이어 폰", "이어셋"],
+    "충전기": ["충전 기", "차저"],
+}
+
+def expand_query_with_synonyms(query: str) -> list:
+    """Expand a query into multiple variants using synonym map."""
+    variants = [query]
+    for word, synonyms in SYNONYM_MAP.items():
+        if word in query:
+            for syn in synonyms:
+                variant = query.replace(word, syn)
+                if variant != query and variant not in variants:
+                    variants.append(variant)
+    return variants
+
+# ============================================================
 # Configuration
 # ============================================================
 BACKEND_DB_PATH = PROJECT_ROOT / "backend" / "database" / "products.db"
@@ -142,12 +169,25 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
     if not bm25_engine:
         return []
     
-    # 1. BM25 — fetch same volume as Vector for fair RRF fusion
     top_k_fetch = top_k * 5
-    sparse_results = bm25_engine.query(query, top_k=top_k_fetch)
     
+    # 1. BM25 with synonym expansion
+    query_variants = expand_query_with_synonyms(query)
+    print(f"    [Synonyms] Variants: {query_variants}")
     
-    # Debug: show BM25 top results
+    all_sparse = []
+    seen_ids = set()
+    for variant in query_variants:
+        results = bm25_engine.query(variant, top_k=top_k_fetch)
+        for r in results:
+            if r.doc_id not in seen_ids:
+                all_sparse.append(r)
+                seen_ids.add(r.doc_id)
+    
+    # Sort by score descending, take top
+    all_sparse.sort(key=lambda x: x.score, reverse=True)
+    sparse_results = all_sparse[:top_k_fetch]
+    
     bm25_top = [(sr.doc_id, f"{sr.score:.2f}") for sr in sparse_results[:3]]
     print(f"    [BM25] Top 3: {bm25_top}")
     
@@ -159,9 +199,9 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
             try:
                 dense_results = vector_retriever.query(query_emb, top_k=top_k_fetch)
                 
-                # Filter out near-zero scores (stale/corrupted vector index)
-                valid_dense = [d for d in dense_results if d.score > 0.1]
-                print(f"    [Vector] Total={len(dense_results)}, Valid(score>0.1)={len(valid_dense)}")
+                # Filter out low scores
+                valid_dense = [d for d in dense_results if d.score > 0.3]
+                print(f"    [Vector] Total={len(dense_results)}, Valid(score>0.3)={len(valid_dense)}")
                 
                 if valid_dense:
                     if fusion_method == "rrf":
@@ -171,13 +211,15 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
                     fused_top = [(fr.doc_id, f"{fr.score:.4f}") for fr in fused_results[:3]]
                     print(f"    [Fusion] Top 3: {fused_top}")
                 else:
-                    print(f"    [Vector] All scores near-zero → BM25-only mode")
+                    print(f"    [Vector] All scores below 0.3 → BM25-only mode")
             except Exception as e:
                 print(f"⚠️ Vector search failed: {e}")
     
-    # 3. Output - Robust collection (ignore zombie IDs)
+    # 3. Output - only include results with meaningful scores
     results = []
     for sd in fused_results:
+        if sd.score <= 0.0:
+            continue
         doc = docs_map.get(sd.doc_id)
         if doc:
             results.append({
@@ -190,5 +232,19 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
             })
             if len(results) >= top_k:
                 break
+    
+    # 4. Score gap filter: drop outliers with score < 20% of top score
+    if results:
+        top_score = results[0]["score"]
+        threshold = top_score * 0.2
+        filtered = [r for r in results if r["score"] >= threshold]
+        dropped = len(results) - len(filtered)
+        if dropped > 0:
+            print(f"    [ScoreGap] Dropped {dropped} outliers (threshold={threshold:.4f}, top={top_score:.4f})")
+            for r in results:
+                if r["score"] < threshold:
+                    print(f"      ❌ Dropped: {r['name']} (score={r['score']:.4f})")
+        results = filtered
+    
     return results
 

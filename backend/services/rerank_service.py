@@ -19,7 +19,7 @@ model = genai.GenerativeModel(
 def rerank_products(user_query: str, candidates: list) -> dict:
     """
     Reranks candidates using Gemini 2.0 Flash.
-    Returns the TOP 3 best matching product IDs.
+    Returns up to 5 best matching product IDs.
     """
     if not candidates:
         return {"top_ids": [], "reason": "No candidates provided."}
@@ -36,13 +36,16 @@ def rerank_products(user_query: str, candidates: list) -> dict:
     # Construct Prompt
     prompt = f"""
 You are an expert AI Search Agent for Daiso (a variety store).
-Your goal is to rank the TOP 3 best matching products from a list of candidates based on a user's query.
+Your goal is to select ALL genuinely matching products (up to 5) from a list of candidates based on a user's query.
+Return product IDs in order of relevance. Include every candidate that is relevant to the user's query.
 
-[Principles]
-1.  **Intent First**: Understand the user's core need (e.g., "frying net" -> Kitchen, not Laundry).
-2.  **Context Aware**: Prefer standard/popular items for broad queries.
-3.  **Strict Filtering**: Only include items that reasonably match the intent.
-4.  **Null Safety**: If a candidate is irrelevant, omit it from the top list.
+[Ranking Rules]
+1.  **Direct Match First**: The product whose name IS the queried item must ALWAYS rank #1, above accessories, parts, or novelty items.
+    - Example: "키보드" → "USB 유선 키보드" MUST rank #1 above "키보드 초콜릿 만들기 세트".
+    - Example: "커튼" → "암막 커튼 140X240cm" MUST rank #1 above "커튼 타이" or "커튼 집게".
+2.  **Accessory Demotion**: Items that are accessories, parts (타이, 집게, 핀, 봉, 레일, 링), or novelty/DIY versions of the product should be ranked AFTER the actual product.
+3.  **Intent First**: Understand the user's core need (e.g., "frying net" -> Kitchen, not Laundry).
+4.  **1-5 Results**: Return between 1 and 5 IDs. Include ALL candidates that genuinely match the query. Do NOT include completely unrelated items, but DO include all relevant ones (e.g., if user searches "커튼" and there are 5 curtain products, return all 5).
 
 [Task]
 User Query: "{user_query}"
@@ -52,8 +55,8 @@ Candidates:
 
 Output JSON:
 {{
-    "top_ids": ["1", "2", "3"],
-    "reason": "Brief Korean explanation of why these were chosen."
+    "top_ids": ["best_id", "second_id", "...up to 5 IDs"],
+    "reason": "Brief Korean explanation of why these were chosen and in this order."
 }}
 """
 

@@ -30,28 +30,6 @@ qdrant_data/
 outputs/
 nlu_debug.log
 
-# Deployment & Test Files
-deploy_*.json
-deployments*.json
-*service_status*.json
-test_deploy_status*.json
-backend_logs*.txt
-frontend_logs*.txt
-backend_error_log.json
-*sys_log.txt
-check_*.py
-inspect_*.py
-test_*.py
-verify_*.py
-*results*.txt
-repro_search.py
-debug_search.py
-score_*.txt
-test_*.txt
+# Deployment, Test & Debug files (all moved to _test/)
+_test/
 
-# Ignore explicit API log/deploy files
-lightsail_*.json
-check_*.json
-current_*.json
-recent_images.json
-backend_logs*.json
