@@ -19,7 +19,7 @@ model = genai.GenerativeModel(
 def rerank_products(user_query: str, candidates: list) -> dict:
     """
     Reranks candidates using Gemini 2.0 Flash.
-    Returns up to 5 best matching product IDs.
+    Returns the TOP 3 best matching product IDs.
     """
     if not candidates:
         return {"top_ids": [], "reason": "No candidates provided."}
@@ -36,8 +36,8 @@ def rerank_products(user_query: str, candidates: list) -> dict:
     # Construct Prompt
     prompt = f"""
 You are an expert AI Search Agent for Daiso (a variety store).
-Your goal is to select ALL genuinely matching products (up to 5) from a list of candidates based on a user's query.
-Return product IDs in order of relevance. Include every candidate that is relevant to the user's query.
+Your goal is to rank the TOP 3 best matching products from a list of candidates based on a user's query.
+You MUST always return exactly 3 product IDs in order of relevance.
 
 [Ranking Rules]
 1.  **Direct Match First**: The product whose name IS the queried item must ALWAYS rank #1, above accessories, parts, or novelty items.
@@ -45,7 +45,7 @@ Return product IDs in order of relevance. Include every candidate that is releva
     - Example: "커튼" → "암막 커튼 140X240cm" MUST rank #1 above "커튼 타이" or "커튼 집게".
 2.  **Accessory Demotion**: Items that are accessories, parts (타이, 집게, 핀, 봉, 레일, 링), or novelty/DIY versions of the product should be ranked AFTER the actual product.
 3.  **Intent First**: Understand the user's core need (e.g., "frying net" -> Kitchen, not Laundry).
-4.  **1-5 Results**: Return between 1 and 5 IDs. Include ALL candidates that genuinely match the query. Do NOT include completely unrelated items, but DO include all relevant ones (e.g., if user searches "커튼" and there are 5 curtain products, return all 5).
+4.  **2-3 Results**: Return 2 or 3 IDs. If only 2 candidates genuinely match the query, return just 2. Do NOT pad with completely unrelated items just to reach 3.
 
 [Task]
 User Query: "{user_query}"
@@ -55,7 +55,7 @@ Candidates:
 
 Output JSON:
 {{
-    "top_ids": ["best_id", "second_id", "...up to 5 IDs"],
+    "top_ids": ["best_id", "second_id", "third_id"],
     "reason": "Brief Korean explanation of why these were chosen and in this order."
 }}
 """

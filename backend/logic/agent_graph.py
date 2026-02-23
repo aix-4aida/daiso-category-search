@@ -71,14 +71,14 @@ async def search_node(state: GraphState):
     return {"search_candidates": candidates}
 
 async def rerank_node(state: GraphState):
-    """Node 2.5: LLM Reranking (Top-10 -> Top-5)"""
+    """Node 2.5: LLM Reranking (Top-10 -> Top-3)"""
     candidates = state["search_candidates"]
     if not candidates:
         return {"search_candidates": []}
     
     # Pass up to 7 candidates to the reranker for better selection
     candidates_for_rerank = candidates[:7]
-    print(f"--- [Node: Rerank] Ranking Top-{len(candidates_for_rerank)} to Top-5 ---")
+    print(f"--- [Node: Rerank] Ranking Top-{len(candidates_for_rerank)} to Top-3 ---")
     print(f"    Input query: '{state['input_text']}'")
     print(f"    Candidates: {[c.get('name','?') for c in candidates_for_rerank]}")
     from backend.services.rerank_service import rerank_products
@@ -94,21 +94,21 @@ async def rerank_node(state: GraphState):
         reranked = []
         cand_map = {str(c['id']): c for c in candidates_for_rerank}
         
-        for rid in top_ids[:5]: 
+        for rid in top_ids[:3]: 
             clean_id = str(rid).replace("ID", "").replace("id", "").strip()
             if clean_id in cand_map:
                 reranked.append(cand_map[clean_id])
         
         # Fallback if rerank failed to find IDs
         if not reranked and candidates_for_rerank:
-            print(f"    ⚠️ Rerank returned no matching IDs, using raw top 5")
-            reranked = candidates_for_rerank[:5]
+            print(f"    ⚠️ Rerank returned no matching IDs, using raw top 3")
+            reranked = candidates_for_rerank[:3]
                 
         print(f"    -> Reranked to {len(reranked)} results: {[r.get('name','?') for r in reranked]}")
         return {"search_candidates": reranked}
     except Exception as e:
-        print(f"⚠️ Rerank failed: {e}. Using raw top 5.")
-        return {"search_candidates": candidates[:5]}
+        print(f"⚠️ Rerank failed: {e}. Using raw top 3.")
+        return {"search_candidates": candidates[:3]}
 
 async def ambiguity_check_node(state: GraphState):
     """Node 3: Check Context/Ambiguity"""
