@@ -45,7 +45,7 @@ You MUST always return exactly 3 product IDs in order of relevance.
     - Example: "커튼" → "암막 커튼 140X240cm" MUST rank #1 above "커튼 타이" or "커튼 집게".
 2.  **Accessory Demotion**: Items that are accessories, parts (타이, 집게, 핀, 봉, 레일, 링), or novelty/DIY versions of the product should be ranked AFTER the actual product.
 3.  **Intent First**: Understand the user's core need (e.g., "frying net" -> Kitchen, not Laundry).
-4.  **Always 3 Results**: Even if some are accessories, still include them ranked below the direct match. Do NOT omit candidates unless they are completely unrelated.
+4.  **2-3 Results**: Return 2 or 3 IDs. If only 2 candidates genuinely match the query, return just 2. Do NOT pad with completely unrelated items just to reach 3.
 
 [Task]
 User Query: "{user_query}"

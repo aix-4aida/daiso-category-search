@@ -8,69 +8,79 @@
 const GRAPH = {
     B1: {
         nodes: {
-            'b1-entrance': { x: 33, y: 94 },
-            // Corridor waypoints  
-            'b1-w01': { x: 33, y: 85 },  // 입구 위 (디지털 옆)
-            'b1-w02': { x: 25, y: 85 },  // 포장 앞
-            'b1-w03': { x: 55, y: 85 },  // 디지털-식품 사이
-            'b1-w04': { x: 25, y: 68 },  // 포장-문구 사이
-            'b1-w05': { x: 25, y: 55 },  // 문구 앞
-            'b1-w06': { x: 55, y: 68 },  // 파티유아동-인테리어 사이
-            'b1-w07': { x: 55, y: 55 },  // 파티유아동 위
-            'b1-w08': { x: 28, y: 48 },  // 문구-캐릭터 사이
-            'b1-w09': { x: 28, y: 36 },  // 캐릭터-건강 사이
-            'b1-w10': { x: 55, y: 48 },  // 캐릭터-패션 사이
-            'b1-w11': { x: 55, y: 36 },  // 건강-화장품 사이
-            'b1-w12': { x: 28, y: 14 },  // 시즌 위쪽
-            'b1-w13': { x: 55, y: 14 },  // 시즌-화장품 사이
-            'b1-w14': { x: 60, y: 85 },  // 식품 옆
-            'b1-w15': { x: 60, y: 58 },  // 인테리어소품 옆
-            'b1-w16': { x: 60, y: 36 },  // 패션 옆
-            'b1-w17': { x: 60, y: 14 },  // 화장품 옆
-            // Section center nodes (for path endpoints)
-            'b1-sec-season': { x: 40, y: 24 },  // 시즌
-            'b1-sec-beauty': { x: 78, y: 18 },  // 화장품
-            'b1-sec-health': { x: 42, y: 38 },  // 건강기능식품
-            'b1-sec-character': { x: 42, y: 50 },  // 캐릭터
-            'b1-sec-fashion': { x: 78, y: 48 },  // 패션
-            'b1-sec-stationery': { x: 14, y: 58 },  // 문구
-            'b1-sec-party': { x: 42, y: 62 },  // 파티유아동
-            'b1-sec-packaging': { x: 10, y: 78 },  // 포장
-            'b1-sec-digital': { x: 40, y: 82 },  // 디지털
-            'b1-sec-interior': { x: 78, y: 68 },  // 인테리어소품
-            'b1-sec-snacks': { x: 78, y: 86 },  // 식품
+            'b1-entrance': { x: 32, y: 94 },
+            // === CORRIDOR waypoints (white walkway areas only) ===
+            // Bottom horizontal corridor (below 디지털, above 입구)
+            'b1-w01': { x: 32, y: 84 },  // 입구→디지털 사이 복도
+            'b1-w02': { x: 14, y: 84 },  // 포장 앞 복도
+            'b1-w03': { x: 50, y: 84 },  // 디지털→식품 사이 복도
+            'b1-w14': { x: 65, y: 84 },  // 식품 앞 복도
+            // Left vertical corridor (포장-문구 좌측)
+            'b1-w04': { x: 14, y: 70 },  // 포장-문구 사이 복도
+            'b1-w05': { x: 14, y: 55 },  // 문구 위 복도
+            // Center horizontal corridors
+            'b1-w06': { x: 50, y: 70 },  // 파티유아동-인테리어 사이 복도
+            'b1-w07': { x: 50, y: 55 },  // 파티유아동 위 복도
+            'b1-w08': { x: 32, y: 55 },  // 문구-캐릭터 사이 중앙
+            // Center vertical corridor (캐릭터-건강-시즌 좌측)
+            'b1-w09': { x: 32, y: 42 },  // 캐릭터-건강 사이 복도
+            'b1-w10': { x: 50, y: 42 },  // 캐릭터 우측-패션 좌측 복도
+            'b1-w11': { x: 50, y: 28 },  // 건강-화장품 사이 복도
+            'b1-w12': { x: 32, y: 20 },  // 시즌 위 복도
+            'b1-w13': { x: 50, y: 20 },  // 시즌-화장품 사이 복도
+            // Right vertical corridor (화장품-패션-인테리어-식품 좌측)
+            'b1-w15': { x: 65, y: 66 },  // 인테리어 앞 복도
+            'b1-w16': { x: 65, y: 42 },  // 패션 앞 복도
+            'b1-w17': { x: 65, y: 20 },  // 화장품 앞 복도
+            // === Section CORRIDOR-EDGE nodes (nearest corridor point to each section) ===
+            'b1-sec-season': { x: 38, y: 20 },  // 시즌: 상단 복도에서 접근
+            'b1-sec-beauty': { x: 65, y: 14 },  // 화장품: 우측복도 상단에서 접근
+            'b1-sec-health': { x: 38, y: 35 },  // 건강기능식품: 중앙복도에서 접근
+            'b1-sec-character': { x: 38, y: 48 },  // 캐릭터: 중앙복도에서 접근
+            'b1-sec-fashion': { x: 65, y: 50 },  // 패션: 우측복도에서 접근
+            'b1-sec-stationery': { x: 14, y: 62 },  // 문구: 좌측복도에서 접근
+            'b1-sec-party': { x: 38, y: 62 },  // 파티유아동: 중앙복도에서 접근
+            'b1-sec-packaging': { x: 14, y: 77 },  // 포장: 좌측복도에서 접근
+            'b1-sec-digital': { x: 38, y: 84 },  // 디지털: 하단복도에서 접근
+            'b1-sec-interior': { x: 65, y: 58 },  // 인테리어: 우측복도에서 접근
+            'b1-sec-snacks': { x: 65, y: 78 },  // 식품: 우측복도에서 접근
         },
         edges: [
-            // Main corridor connections
+            // -- Bottom corridor --
             ['b1-entrance', 'b1-w01'],
             ['b1-w01', 'b1-w02'], ['b1-w01', 'b1-w03'],
+            ['b1-w03', 'b1-w14'],
+            // -- Left corridor (vertical) --
             ['b1-w02', 'b1-w04'],
-            ['b1-w04', 'b1-w05'], ['b1-w04', 'b1-w06'],
-            ['b1-w03', 'b1-w14'], ['b1-w03', 'b1-w06'],
-            ['b1-w05', 'b1-w08'],
-            ['b1-w06', 'b1-w07'], ['b1-w06', 'b1-w15'],
+            ['b1-w04', 'b1-w05'],
+            // -- Center horizontals --
+            ['b1-w05', 'b1-w08'], ['b1-w08', 'b1-w07'],
+            ['b1-w04', 'b1-w06'], ['b1-w06', 'b1-w15'],
             ['b1-w07', 'b1-w10'],
-            ['b1-w08', 'b1-w09'], ['b1-w08', 'b1-w10'],
-            ['b1-w09', 'b1-w11'], ['b1-w09', 'b1-w12'],
+            ['b1-w03', 'b1-w06'],
+            // -- Center verticals --
+            ['b1-w08', 'b1-w09'],
+            ['b1-w09', 'b1-w12'],
             ['b1-w10', 'b1-w11'], ['b1-w10', 'b1-w16'],
             ['b1-w11', 'b1-w13'],
             ['b1-w12', 'b1-w13'],
             ['b1-w13', 'b1-w17'],
+            // -- Right corridor (vertical) --
             ['b1-w14', 'b1-w15'],
             ['b1-w15', 'b1-w16'],
             ['b1-w16', 'b1-w17'],
-            // Section entry connections (corridor → section center)
+            // -- Section entry: corridor → section edge --
             ['b1-w12', 'b1-sec-season'], ['b1-w13', 'b1-sec-season'],
-            ['b1-w17', 'b1-sec-beauty'], ['b1-w16', 'b1-sec-beauty'], ['b1-w13', 'b1-sec-beauty'],
+            ['b1-w17', 'b1-sec-beauty'], ['b1-w13', 'b1-sec-beauty'],
             ['b1-w09', 'b1-sec-health'], ['b1-w11', 'b1-sec-health'],
-            ['b1-w08', 'b1-sec-character'], ['b1-w10', 'b1-sec-character'],
-            ['b1-w16', 'b1-sec-fashion'], ['b1-w15', 'b1-sec-fashion'], ['b1-w10', 'b1-sec-fashion'],
+            ['b1-w08', 'b1-sec-character'], ['b1-w09', 'b1-sec-character'],
+            ['b1-w16', 'b1-sec-fashion'], ['b1-w10', 'b1-sec-fashion'],
             ['b1-w05', 'b1-sec-stationery'], ['b1-w04', 'b1-sec-stationery'],
-            ['b1-w07', 'b1-sec-party'], ['b1-w06', 'b1-sec-party'], ['b1-w08', 'b1-sec-party'],
+            ['b1-w07', 'b1-sec-party'], ['b1-w08', 'b1-sec-party'],
             ['b1-w02', 'b1-sec-packaging'], ['b1-w04', 'b1-sec-packaging'],
             ['b1-w01', 'b1-sec-digital'], ['b1-w03', 'b1-sec-digital'],
-            ['b1-w15', 'b1-sec-interior'], ['b1-w06', 'b1-sec-interior'], ['b1-w16', 'b1-sec-interior'],
-            ['b1-w14', 'b1-sec-snacks'], ['b1-w03', 'b1-sec-snacks'], ['b1-w15', 'b1-sec-snacks'],
+            ['b1-w15', 'b1-sec-interior'], ['b1-w06', 'b1-sec-interior'],
+            ['b1-w14', 'b1-sec-snacks'], ['b1-w03', 'b1-sec-snacks'],
         ],
         // Section code prefix → node ID
         sectionMap: {
@@ -351,8 +361,8 @@ function renderMarkerSVG(floor, startNodeId, targetNodeId, productName, sectionL
                 <animate attributeName="r" from="3" to="7" dur="2s" repeatCount="indefinite" />
                 <animate attributeName="fill-opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
             </circle>
-            <rect x="${start.x - 10}" y="${start.y + 4}" width="20" height="6" rx="2" fill="white" stroke="#E50000" stroke-width="0.4" filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.15))"/>
-            <text x="${start.x}" y="${start.y + 8.5}" font-size="3.2" text-anchor="middle" fill="#E50000" font-weight="bold" font-family="'Noto Sans KR', sans-serif">현재 위치</text>
+            <rect x="${start.x - 10}" y="${start.y - 12}" width="20" height="6" rx="2" fill="white" stroke="#E50000" stroke-width="0.4" filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.15))"/>
+            <text x="${start.x}" y="${start.y - 7.5}" font-size="3.2" text-anchor="middle" fill="#E50000" font-weight="bold" font-family="'Noto Sans KR', sans-serif">현재 위치</text>
         </g>
 
         <!-- Target Marker (Product Location) -->

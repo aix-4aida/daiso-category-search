@@ -232,5 +232,19 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
             })
             if len(results) >= top_k:
                 break
+    
+    # 4. Score gap filter: drop outliers with score < 30% of top score
+    if results:
+        top_score = results[0]["score"]
+        threshold = top_score * 0.3
+        filtered = [r for r in results if r["score"] >= threshold]
+        dropped = len(results) - len(filtered)
+        if dropped > 0:
+            print(f"    [ScoreGap] Dropped {dropped} outliers (threshold={threshold:.4f}, top={top_score:.4f})")
+            for r in results:
+                if r["score"] < threshold:
+                    print(f"      ❌ Dropped: {r['name']} (score={r['score']:.4f})")
+        results = filtered
+    
     return results
 

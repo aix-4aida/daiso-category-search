@@ -84,9 +84,8 @@ function generateQR(product) {
 
     // Using qrcodejs (loaded in index.html)
     // Generate QR code for mobile transplant
-    const floor = product.location?.floor || 'B1';
     const section = product.location?.section || 'N01';
-    const shelfParam = `${floor}-${section}`;
+    const shelfParam = section;
 
     // Use window.location.origin to support local, tunnel, or production environments
     const nameParam = product.name ? product.name.substring(0, 15) : '';
