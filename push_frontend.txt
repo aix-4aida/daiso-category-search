@@ -1,35 +1,25 @@
-b986c44b86c1: Waiting
+5e7756927bef: Waiting
 3e2c181db1b0: Waiting
-6d397a54a185: Waiting
-5ff7156c690f: Waiting
-589002ba0eae: Waiting
+6b7b6c7061b7: Waiting
 399d0898a94e: Waiting
 955a8478f9ac: Waiting
-5e7756927bef: Waiting
-6b7b6c7061b7: Waiting
-bca5d04786e1: Waiting
-589002ba0eae: Waiting
-399d0898a94e: Waiting
-955a8478f9ac: Waiting
-5e7756927bef: Waiting
-6b7b6c7061b7: Waiting
-bca5d04786e1: Waiting
-b986c44b86c1: Waiting
-3e2c181db1b0: Waiting
 6d397a54a185: Waiting
-5ff7156c690f: Waiting
+efe199514e33: Waiting
+589002ba0eae: Waiting
+bca5d04786e1: Waiting
+33aebf96aae6: Waiting
+33aebf96aae6: Waiting
+5e7756927bef: Layer already exists
 3e2c181db1b0: Layer already exists
-6d397a54a185: Layer already exists
-5ff7156c690f: Waiting
-589002ba0eae: Layer already exists
+6b7b6c7061b7: Layer already exists
 399d0898a94e: Layer already exists
 955a8478f9ac: Layer already exists
-5e7756927bef: Layer already exists
-6b7b6c7061b7: Layer already exists
+6d397a54a185: Layer already exists
+efe199514e33: Waiting
+589002ba0eae: Layer already exists
 bca5d04786e1: Layer already exists
-b986c44b86c1: Waiting
-b986c44b86c1: Pushed
-5ff7156c690f: Pushed
-Digest: sha256:d53fc62704f3d4e8b29a55e09894ee4b5ed0909ee90e0c36b410c177244bce67
+33aebf96aae6: Pushed
+efe199514e33: Pushed
+Digest: sha256:c5bcad72e7ee141db5b8e2e2fc250f19d207a76782074cfaa53cdeb9cfa18755
 Image "daiso-frontend" registered.
-Refer to this image as ":daiso-search-service.frontend-ui-fixes-3.38" in deployments.
+Refer to this image as ":daiso-search-service.frontend-map-nav.45" in deployments.
