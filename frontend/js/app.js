@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSpeech();
     initCarousel();
 
-    if (window.location.pathname.includes('results.html')) {
+    if (window.location.pathname.includes('results.html') || window.location.pathname.includes('results')) {
         executeSearchOnResultsPage();
     }
 });
@@ -132,7 +132,7 @@ async function executeSearchOnResultsPage() {
     const loadingView = document.getElementById('view-loading');
 
     // Start fetching data immediately
-    const fetchPromise = fetch('/api/search/text', {
+    const fetchPromise = fetch('http://localhost:8000/search/text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: text })
