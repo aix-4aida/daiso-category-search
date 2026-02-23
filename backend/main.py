@@ -1,10 +1,23 @@
 
 # backend/main.py
 import sys
+import types
 from pathlib import Path
 
 # Add project root to sys.path to ensure imports work correctly
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+_project_root = str(Path(__file__).resolve().parent.parent)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
+# ── Fix: backend/api.py(구버전)와 backend/api/ 패키지 이름 충돌 해결 ──
+# backend/api.py 파일이 존재하면 Python이 api/ 디렉토리를 패키지로 인식하지 못하므로
+# sys.modules에 backend.api를 패키지로 강제 등록
+_api_pkg_dir = Path(__file__).resolve().parent / "api"
+if _api_pkg_dir.is_dir():
+    _pkg = types.ModuleType("backend.api")
+    _pkg.__path__ = [str(_api_pkg_dir)]
+    _pkg.__package__ = "backend.api"
+    sys.modules["backend.api"] = _pkg
 
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
