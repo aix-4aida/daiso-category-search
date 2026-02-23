@@ -292,8 +292,8 @@ function renderResultMap(product) {
             </div>
             
             <div class="map-legend-overlay">
-                <div class="legend-item"><span class="dot blue"></span> 추천 경로</div>
-                <div class="legend-item"><span class="dot red"></span> 상품 위치</div>
+                <div class="legend-item"><span class="dot red"></span> 추천 경로</div>
+                <div class="legend-item"><span class="dot red" style="opacity:0.5"></span> 상품 위치</div>
             </div>
 
             <div class="map-image-container">
@@ -346,25 +346,28 @@ function renderMarkerSVG(floor, startNodeId, targetNodeId, productName, sectionL
     return `
         <!-- Start Marker (Current Position) -->
         <g class="start-marker">
-            <circle cx="${start.x}" cy="${start.y}" r="2" fill="#2962FF" stroke="white" stroke-width="0.5" />
-            <circle cx="${start.x}" cy="${start.y}" r="4" fill="#2962FF" fill-opacity="0.2">
-                <animate attributeName="r" from="2" to="6" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="fill-opacity" from="0.6" to="0" dur="2s" repeatCount="indefinite" />
+            <circle cx="${start.x}" cy="${start.y}" r="2.5" fill="#E50000" stroke="white" stroke-width="0.8" />
+            <circle cx="${start.x}" cy="${start.y}" r="5" fill="#E50000" fill-opacity="0.15">
+                <animate attributeName="r" from="3" to="7" dur="2s" repeatCount="indefinite" />
+                <animate attributeName="fill-opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
             </circle>
-            <rect x="${start.x - 10}" y="${start.y - 12}" width="20" height="6" rx="1.5" fill="white" stroke="#2962FF" stroke-width="0.3" filter="drop-shadow(0px 1px 1px rgba(0,0,0,0.2))"/>
-            <text x="${start.x}" y="${start.y - 8}" font-size="3.5" text-anchor="middle" fill="black" font-weight="bold" font-family="sans-serif">현재 위치</text>
+            <rect x="${start.x - 10}" y="${start.y + 4}" width="20" height="6" rx="2" fill="white" stroke="#E50000" stroke-width="0.4" filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.15))"/>
+            <text x="${start.x}" y="${start.y + 8.5}" font-size="3.2" text-anchor="middle" fill="#E50000" font-weight="bold" font-family="'Noto Sans KR', sans-serif">현재 위치</text>
         </g>
 
         <!-- Target Marker (Product Location) -->
         <g class="target-marker">
-            <circle cx="${target.x}" cy="${target.y}" r="3" fill="#E50000" fill-opacity="0.3">
-                <animate attributeName="r" from="3" to="10" dur="1.5s" repeatCount="indefinite" />
-                <animate attributeName="fill-opacity" from="0.3" to="0" dur="1.5s" repeatCount="indefinite" />
+            <!-- Soft pulse ring -->
+            <circle cx="${target.x}" cy="${target.y}" r="4" fill="#E50000" fill-opacity="0.12">
+                <animate attributeName="r" from="4" to="10" dur="1.8s" repeatCount="indefinite" />
+                <animate attributeName="fill-opacity" from="0.2" to="0" dur="1.8s" repeatCount="indefinite" />
             </circle>
-            <path d="M${target.x} ${target.y} L${target.x - 4} ${target.y - 12} A4.5 4.5 0 1 1 ${target.x + 4} ${target.y - 12} Z" fill="#E50000" stroke="white" stroke-width="0.5" />
-            <circle cx="${target.x}" cy="${target.y - 12}" r="2" fill="white" />
-            <rect x="${target.x - 18}" y="${target.y - 24}" width="36" height="7" rx="1.5" fill="white" stroke="#E50000" stroke-width="0.3" filter="drop-shadow(0px 1px 1px rgba(0,0,0,0.2))"/>
-            <text x="${target.x}" y="${target.y - 19.5}" font-size="3.5" text-anchor="middle" fill="black" font-weight="bold" font-family="sans-serif">${displayTitle}</text>
+            <!-- Clean circular marker -->
+            <circle cx="${target.x}" cy="${target.y}" r="4" fill="#E50000" stroke="white" stroke-width="1.2" filter="drop-shadow(0px 1px 3px rgba(229,0,0,0.4))" />
+            <circle cx="${target.x}" cy="${target.y}" r="1.5" fill="white" />
+            <!-- Label badge -->
+            <rect x="${target.x - 15}" y="${target.y - 12}" width="30" height="6" rx="3" fill="#E50000" filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.2))"/>
+            <text x="${target.x}" y="${target.y - 8}" font-size="3" text-anchor="middle" fill="white" font-weight="bold" font-family="'Noto Sans KR', sans-serif">${displayTitle}</text>
         </g>
     `;
 }

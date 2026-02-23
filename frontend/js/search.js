@@ -30,7 +30,7 @@ function renderResults(products, query) {
         const category = p.meta?.category_middle || p.meta?.category_major || '일반';
         const floor = p.location?.floor || 'B1';
         const section = p.location?.section || 'N01';
-        const shelfLabel = p.location?.shelf_label || '일반매대';
+        const shelfLabel = (p.location?.shelf_label || '일반매대').split('/')[0];
 
         const imgHTML = p.image_url
             ? `<img src="${p.image_url}" class="result-img-real" onerror="this.src='https://placehold.co/100x100?text=No+Image'">`
@@ -42,7 +42,7 @@ function renderResults(products, query) {
             <div class="result-info">
                 ${index !== 0 ? `<div class="card-tag">${category}</div>` : ''}
                 <h3 class="result-title">${p.name}</h3>
-                <div class="result-location">위치: <strong>${section}</strong> (${shelfLabel})</div>
+                <div class="result-location" style="white-space:nowrap;">위치: <strong>${section}</strong> (${shelfLabel})</div>
                 <div class="result-price">${price}</div>
             </div>
             ${index !== 0 ? `
