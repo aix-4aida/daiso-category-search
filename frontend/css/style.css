@@ -998,6 +998,80 @@ img {
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Category map image + SVG overlay container */
+.category-map-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 863 / 1024;
+}
+
+.cat-map-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 8px;
+}
+
+.cat-map-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.section-label {
+  transition: opacity 0.3s ease;
+}
+
+/* Category sidebar with filter buttons */
+.category-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  min-width: 120px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.cat-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: white;
+  border: 1.5px solid var(--color-border);
+  border-radius: 25px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cat-filter-btn:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.cat-filter-btn.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.cat-filter-icon {
+  font-size: 16px;
+}
+
+.cat-filter-name {
+  font-size: 13px;
+}
+
 /* ── Image-based Map Styles ── */
 .map-image-container {
   position: relative;

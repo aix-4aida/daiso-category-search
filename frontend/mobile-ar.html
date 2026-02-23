@@ -8,6 +8,18 @@
     <link rel="icon" type="image/svg+xml" href="images/logo.svg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css">
     <style>
+        :root {
+            --color-primary: #E50000;
+            --color-primary-light: #FFEBEB;
+            --color-bg: #FFFFFF;
+            --color-bg-light: #F5F5F5;
+            --color-text: #333333;
+            --color-text-light: #888888;
+            --color-border: #E0E0E0;
+            --color-map-path: #2962FF;
+            --color-map-pin: #E50000;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,145 +27,435 @@
         }
 
         body {
-            font-family: 'SUIT Variable', sans-serif;
-            background: #f5f5f5;
+            font-family: 'SUIT Variable', 'Noto Sans KR', sans-serif;
+            background: var(--color-bg-light);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            color: var(--color-text);
         }
 
+        /* Header */
         .header {
-            width: 100%;
-            background: white;
-            padding: 16px 20px;
+            background: var(--color-bg);
+            padding: 12px 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            gap: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .header img {
-            height: 28px;
+        .header .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            color: var(--color-text);
         }
 
-        .header h1 {
+        .header .logo-text {
             font-size: 18px;
-            color: #E50000;
             font-weight: 700;
         }
 
+        .header .logo-text .red {
+            color: var(--color-primary);
+        }
+
+        .header .menu-btn {
+            margin-left: auto;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--color-text-light);
+        }
+
+        /* Content */
         .content {
             flex: 1;
-            width: 100%;
+            display: flex;
+            flex-direction: column;
             max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Map Section */
+        .map-section {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 863 / 1024;
+            background: var(--color-bg);
+        }
+
+        .map-section img {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .map-overlay-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Product Card (bottom overlay) */
+        .product-card {
+            background: var(--color-bg);
+            border-radius: 16px 16px 0 0;
             padding: 20px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
 
-        .info-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        .product-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .product-thumb {
+            width: 60px;
+            height: 60px;
+            background: var(--color-bg-light);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .product-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-meta {
+            flex: 1;
         }
 
         .product-name {
-            font-size: 20px;
-            font-weight: 700;
-            color: #222;
-            margin-bottom: 8px;
-        }
-
-        .location-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #FEE;
-            color: #E50000;
-            font-weight: 600;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 15px;
-        }
-
-        .location-badge::before {
-            content: '📍';
-        }
-
-        .map-container {
-            background: white;
-            border-radius: 16px;
-            padding: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-
-        .map-container img {
-            width: 100%;
-            border-radius: 12px;
-        }
-
-        .direction-text {
-            text-align: center;
-            font-size: 14px;
-            color: #888;
-            padding: 8px 0;
-        }
-
-        .cta-btn {
-            display: block;
-            width: 100%;
-            padding: 16px;
-            background: #E50000;
-            color: white;
-            border: none;
-            border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+
+        .product-location {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--color-primary);
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .product-stats {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        .stat {
             text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--color-text-light);
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--color-border);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-map {
+            flex: 1;
+            padding: 14px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+
+        .btn-ar {
+            flex: 1;
+            padding: 14px;
+            background: white;
+            color: var(--color-primary);
+            border: 1.5px solid var(--color-primary);
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+
+        .btn-ar:active {
+            background: var(--color-primary-light);
+        }
+
+        .btn-map:active {
+            opacity: 0.85;
         }
     </style>
 </head>
 
 <body>
+    <!-- Header -->
     <div class="header">
-        <img src="images/logo.svg" alt="Daiso">
-        <h1>어디다있소</h1>
+        <div class="back-btn" onclick="history.back()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round">
+                <path d="M15 18l-6-6 6-6" />
+            </svg>
+        </div>
+        <div class="logo-text">
+            어디<span class="red">다</span>있<span class="red">소</span>
+        </div>
+        <div class="menu-btn">☰</div>
     </div>
 
+    <!-- Map -->
     <div class="content">
-        <div class="info-card">
-            <div class="product-name" id="product-name">상품 위치 안내</div>
-            <div class="location-badge" id="location-badge">위치 확인 중...</div>
+        <div class="map-section">
+            <img id="map-img" src="images/map_b1.png" alt="B1 매장 지도">
+            <svg id="route-svg" class="map-overlay-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <!-- Route + markers rendered by JS -->
+            </svg>
         </div>
 
-        <div class="map-container">
-            <img id="map-img" src="images/map_b1.png" alt="매장 지도">
-            <p class="direction-text">키오스크에서 더 자세한 경로를 확인하세요</p>
+        <!-- Product Card -->
+        <div class="product-card">
+            <div class="product-info">
+                <div class="product-thumb">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                    </svg>
+                </div>
+                <div class="product-meta">
+                    <div class="product-name" id="product-name">상품명</div>
+                    <div class="product-location" id="product-location">B1-A01</div>
+                </div>
+                <div class="product-stats">
+                    <div class="stat">
+                        <div class="stat-value" id="stat-distance">12m</div>
+                        <div class="stat-label">거리</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat">
+                        <div class="stat-value" id="stat-time">30초</div>
+                        <div class="stat-label">소요</div>
+                    </div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-map" onclick="scrollToMap()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z" />
+                    </svg>
+                    지도 보기
+                </button>
+                <button class="btn-ar" onclick="showARNotice()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+                    </svg>
+                    AR 네비
+                </button>
+            </div>
         </div>
-
-        <a class="cta-btn" href="/">🏠 어디다있소 홈으로</a>
     </div>
 
     <script>
+        // === Parse URL params ===
         const params = new URLSearchParams(window.location.search);
-        const shelf = params.get('shelf') || '';
-        const name = params.get('name') || '';
+        const shelf = params.get('shelf') || 'B1-A01';
+        const name = params.get('name') || '상품';
 
-        if (name) {
-            document.getElementById('product-name').textContent = name;
-        }
-        if (shelf) {
-            document.getElementById('location-badge').textContent = shelf;
-        }
+        // Set product info
+        document.getElementById('product-name').textContent = name;
+        document.getElementById('product-location').textContent = shelf;
 
-        // Show B2 map if shelf starts with B2
-        if (shelf.startsWith('B2')) {
+        // Determine floor
+        const floor = shelf.startsWith('B2') ? 'B2' : 'B1';
+        if (floor === 'B2') {
             document.getElementById('map-img').src = 'images/map_b2.png';
+        }
+
+        // === Waypoint graph (simplified for mobile) ===
+        const GRAPH = {
+            B1: {
+                nodes: {
+                    'entrance': { x: 36, y: 90 },
+                    'w01': { x: 36, y: 82 }, 'w02': { x: 13, y: 82 }, 'w03': { x: 51, y: 82 }, 'w14': { x: 70, y: 82 },
+                    'w04': { x: 13, y: 65 }, 'w05': { x: 13, y: 50 },
+                    'w06': { x: 51, y: 65 }, 'w07': { x: 51, y: 50 }, 'w08': { x: 36, y: 50 },
+                    'w09': { x: 36, y: 42 }, 'w10': { x: 51, y: 42 }, 'w11': { x: 51, y: 32 },
+                    'w12': { x: 36, y: 22 }, 'w13': { x: 51, y: 22 },
+                    'w15': { x: 70, y: 55 }, 'w16': { x: 70, y: 42 }, 'w17': { x: 70, y: 22 },
+                    'sec-A': { x: 42, y: 27 }, 'sec-B': { x: 42, y: 37 },
+                    'sec-C': { x: 76, y: 25 }, 'sec-D': { x: 42, y: 37 },
+                    'sec-E': { x: 42, y: 46 }, 'sec-F': { x: 76, y: 46 },
+                    'sec-G': { x: 42, y: 56 }, 'sec-H': { x: 76, y: 62 },
+                    'sec-I': { x: 45, y: 74 }, 'sec-J': { x: 15, y: 54 },
+                    'sec-K': { x: 76, y: 78 }, 'sec-L': { x: 13, y: 71 },
+                },
+                edges: [
+                    ['entrance', 'w01'], ['w01', 'w02'], ['w01', 'w03'], ['w03', 'w14'],
+                    ['w02', 'w04'], ['w04', 'w05'],
+                    ['w03', 'w06'], ['w06', 'w07'], ['w07', 'w08'], ['w08', 'w05'],
+                    ['w08', 'w09'], ['w09', 'w10'], ['w10', 'w07'],
+                    ['w10', 'w11'], ['w11', 'w13'], ['w09', 'w12'], ['w12', 'w13'],
+                    ['w14', 'w15'], ['w15', 'w16'], ['w16', 'w10'], ['w16', 'w17'], ['w17', 'w13'],
+                    ['w12', 'sec-A'], ['w11', 'sec-B'], ['w17', 'sec-C'],
+                    ['w09', 'sec-D'], ['w09', 'sec-E'], ['w16', 'sec-F'],
+                    ['w08', 'sec-J'], ['w07', 'sec-G'],
+                    ['w04', 'sec-L'], ['w03', 'sec-I'],
+                    ['w15', 'sec-H'], ['w14', 'sec-K'],
+                ],
+                sectionMap: {
+                    'B1-A': 'sec-A', 'B1-B': 'sec-B', 'B1-C': 'sec-C', 'B1-D': 'sec-D',
+                    'B1-E': 'sec-E', 'B1-F': 'sec-J', 'B1-G': 'sec-G', 'B1-H': 'sec-H',
+                    'B1-I': 'sec-I', 'B1-J': 'sec-J', 'B1-K': 'sec-K', 'B1-L': 'sec-L',
+                }
+            }
+        };
+
+        // BFS pathfinding
+        function bfs(edges, start, end) {
+            const adj = {};
+            edges.forEach(([a, b]) => { (adj[a] ||= []).push(b); (adj[b] ||= []).push(a); });
+            const queue = [[start]];
+            const visited = new Set([start]);
+            while (queue.length) {
+                const path = queue.shift();
+                const node = path[path.length - 1];
+                if (node === end) return path;
+                for (const n of (adj[node] || [])) {
+                    if (!visited.has(n)) { visited.add(n); queue.push([...path, n]); }
+                }
+            }
+            return [start]; // fallback
+        }
+
+        // Find target node
+        function getTarget(shelf) {
+            if (!shelf || shelf.length < 4) return 'sec-A';
+            const prefix = shelf.substring(0, 4);
+            const data = GRAPH[floor];
+            if (data && data.sectionMap[prefix]) return data.sectionMap[prefix];
+            return 'sec-A';
+        }
+
+        // Render route on map
+        const data = GRAPH[floor];
+        if (data) {
+            const targetId = getTarget(shelf);
+            const path = bfs(data.edges, 'entrance', targetId);
+            const entranceNode = data.nodes['entrance'];
+            const targetNode = data.nodes[targetId];
+
+            // Calculate distance (approximate: each hop ≈ 3m)
+            const distance = (path.length - 1) * 3;
+            const time = Math.max(10, Math.round(distance * 2.5));
+            document.getElementById('stat-distance').textContent = distance + 'm';
+            document.getElementById('stat-time').textContent = time + '초';
+
+            // Build SVG
+            let svg = '';
+
+            // Dotted route path
+            let points = '';
+            path.forEach(id => {
+                const n = data.nodes[id];
+                if (n) points += `${n.x},${n.y} `;
+            });
+            svg += `<polyline points="${points.trim()}"
+                fill="none" stroke="${getComputedStyle(document.documentElement).getPropertyValue('--color-map-path').trim() || '#2962FF'}"
+                stroke-width="1.8" stroke-dasharray="3,3" stroke-linecap="round" opacity="0.8">
+                <animate attributeName="stroke-dashoffset" from="12" to="0" dur="1.5s" repeatCount="indefinite"/>
+            </polyline>`;
+
+            // Current position (blue dot with pulse)
+            if (entranceNode) {
+                svg += `
+                <circle cx="${entranceNode.x}" cy="${entranceNode.y}" r="4" fill="#2962FF" fill-opacity="0.15">
+                    <animate attributeName="r" from="3" to="8" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="fill-opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="${entranceNode.x}" cy="${entranceNode.y}" r="2.2" fill="#2962FF" stroke="white" stroke-width="0.8"/>
+                <text x="${entranceNode.x + 6}" y="${entranceNode.y + 1}" font-size="3" fill="#2962FF" font-weight="bold" font-family="'SUIT Variable',sans-serif">현재위치</text>`;
+            }
+
+            // Target pin (red)
+            if (targetNode) {
+                svg += `
+                <circle cx="${targetNode.x}" cy="${targetNode.y}" r="4" fill="#E50000" fill-opacity="0.12">
+                    <animate attributeName="r" from="4" to="9" dur="1.8s" repeatCount="indefinite"/>
+                    <animate attributeName="fill-opacity" from="0.2" to="0" dur="1.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="${targetNode.x}" cy="${targetNode.y}" r="3" fill="#E50000" stroke="white" stroke-width="0.8"/>
+                <circle cx="${targetNode.x}" cy="${targetNode.y}" r="1" fill="white"/>
+                <rect x="${targetNode.x - 8}" y="${targetNode.y - 10}" width="16" height="5" rx="2" fill="#E50000"/>
+                <text x="${targetNode.x}" y="${targetNode.y - 6.5}" font-size="2.5" text-anchor="middle" fill="white" font-weight="bold" font-family="'SUIT Variable',sans-serif">${shelf}</text>`;
+            }
+
+            document.getElementById('route-svg').innerHTML = svg;
+        }
+
+        // Actions
+        function scrollToMap() {
+            document.querySelector('.map-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showARNotice() {
+            alert('AR 네비게이션은 매장 내 키오스크에서 이용 가능합니다.\n\n키오스크에서 상품을 검색한 후 AR 네비 기능을 사용해주세요.');
         }
     </script>
 </body>
