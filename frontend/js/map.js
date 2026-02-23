@@ -8,42 +8,43 @@
 const GRAPH = {
     B1: {
         nodes: {
-            'b1-entrance': { x: 42, y: 92 },  // 입구 ENTRANCE ONLY 위치
-            // === CORRIDOR waypoints (white walkway areas only) ===
-            // Bottom horizontal corridor (below 디지털, above 입구)
-            'b1-w01': { x: 42, y: 84 },  // 입구 바로 위 복도
-            'b1-w02': { x: 18, y: 84 },  // 포장 앞 복도
-            'b1-w03': { x: 55, y: 84 },  // 디지털→식품 사이 복도
-            'b1-w14': { x: 68, y: 84 },  // 식품 앞 복도
+            // 입구 ENTRANCE ONLY — pixel(310,920) → 36%, 90%
+            'b1-entrance': { x: 36, y: 90 },
+            // === CORRIDOR waypoints (white walkway between sections) ===
+            // Bottom horizontal corridor (포장/디지털 아래, 입구 위)
+            'b1-w01': { x: 36, y: 82 },   // 입구 바로 위 복도
+            'b1-w02': { x: 13, y: 82 },   // 포장 아래 복도
+            'b1-w03': { x: 51, y: 82 },   // 디지털 아래 복도
+            'b1-w14': { x: 70, y: 82 },   // 식품 아래 복도
             // Left vertical corridor (포장-문구 좌측)
-            'b1-w04': { x: 14, y: 70 },  // 포장-문구 사이 복도
-            'b1-w05': { x: 14, y: 55 },  // 문구 위 복도
+            'b1-w04': { x: 13, y: 65 },   // 포장-문구 사이
+            'b1-w05': { x: 13, y: 50 },   // 문구 위
             // Center horizontal corridors
-            'b1-w06': { x: 55, y: 70 },  // 파티유아동-인테리어 사이 복도
-            'b1-w07': { x: 55, y: 55 },  // 파티유아동 위 복도
-            'b1-w08': { x: 42, y: 55 },  // 문구-캐릭터 사이 중앙
-            // Center vertical corridor (캐릭터-건강-시즌 좌측)
-            'b1-w09': { x: 42, y: 42 },  // 캐릭터-건강 사이 복도
-            'b1-w10': { x: 55, y: 42 },  // 캐릭터 우측-패션 좌측 복도
-            'b1-w11': { x: 55, y: 28 },  // 건강-화장품 사이 복도
-            'b1-w12': { x: 42, y: 20 },  // 시즌 위 복도
-            'b1-w13': { x: 55, y: 20 },  // 시즌-화장품 사이 복도
+            'b1-w06': { x: 51, y: 65 },   // 파티유아동-인테리어 사이
+            'b1-w07': { x: 51, y: 50 },   // 파티유아동 위
+            'b1-w08': { x: 36, y: 50 },   // 문구-캐릭터 사이
+            // Center vertical corridor (시즌-건강-캐릭터 좌측)
+            'b1-w09': { x: 36, y: 42 },   // 캐릭터-건강 사이
+            'b1-w10': { x: 51, y: 42 },   // 캐릭터 우측
+            'b1-w11': { x: 51, y: 32 },   // 건강-화장품 사이
+            'b1-w12': { x: 36, y: 22 },   // 시즌 위
+            'b1-w13': { x: 51, y: 22 },   // 시즌-화장품 사이
             // Right vertical corridor (화장품-패션-인테리어-식품 좌측)
-            'b1-w15': { x: 68, y: 66 },  // 인테리어 앞 복도
-            'b1-w16': { x: 68, y: 42 },  // 패션 앞 복도
-            'b1-w17': { x: 68, y: 20 },  // 화장품 앞 복도
-            // === Section CORRIDOR-EDGE nodes (nearest corridor point to each section) ===
-            'b1-sec-season': { x: 45, y: 20 },  // 시즌: 상단 복도에서 접근
-            'b1-sec-beauty': { x: 68, y: 14 },  // 화장품: 우측복도 상단에서 접근
-            'b1-sec-health': { x: 45, y: 35 },  // 건강기능식품: 중앙복도에서 접근
-            'b1-sec-character': { x: 45, y: 48 },  // 캐릭터: 중앙복도에서 접근
-            'b1-sec-fashion': { x: 68, y: 50 },  // 패션: 우측복도에서 접근
-            'b1-sec-stationery': { x: 18, y: 62 },  // 문구: 좌측복도에서 접근
-            'b1-sec-party': { x: 45, y: 62 },  // 파티유아동: 중앙복도에서 접근
-            'b1-sec-packaging': { x: 18, y: 77 },  // 포장: 좌측복도에서 접근
-            'b1-sec-digital': { x: 45, y: 84 },  // 디지털: 하단복도에서 접근
-            'b1-sec-interior': { x: 68, y: 58 },  // 인테리어: 우측복도에서 접근
-            'b1-sec-snacks': { x: 68, y: 78 },  // 식품: 우측복도에서 접근
+            'b1-w15': { x: 70, y: 55 },   // 인테리어 위
+            'b1-w16': { x: 70, y: 42 },   // 패션 앞
+            'b1-w17': { x: 70, y: 22 },   // 화장품 앞
+            // === Section CORRIDOR-EDGE nodes ===
+            'b1-sec-season': { x: 42, y: 27 },  // 시즌
+            'b1-sec-beauty': { x: 76, y: 25 },  // 화장품
+            'b1-sec-health': { x: 42, y: 37 },  // 건강기능식품
+            'b1-sec-character': { x: 42, y: 46 },  // 캐릭터
+            'b1-sec-fashion': { x: 76, y: 46 },  // 패션
+            'b1-sec-stationery': { x: 15, y: 54 },  // 문구
+            'b1-sec-party': { x: 42, y: 56 },  // 파티유아동
+            'b1-sec-packaging': { x: 13, y: 71 },  // 포장
+            'b1-sec-digital': { x: 45, y: 74 },  // 디지털
+            'b1-sec-interior': { x: 76, y: 62 },  // 인테리어
+            'b1-sec-snacks': { x: 76, y: 78 },  // 식품
         },
         edges: [
             // -- Bottom corridor --
