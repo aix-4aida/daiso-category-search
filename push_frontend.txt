@@ -1,25 +1,58 @@
-6b7b6c7061b7: Waiting
-589002ba0eae: Waiting
-5e7756927bef: Waiting
+5b6a00c0e2fd: Waiting
 399d0898a94e: Waiting
-6d397a54a185: Waiting
-bca5d04786e1: Waiting
-3e2c181db1b0: Waiting
-9cc74e2c7700: Waiting
 955a8478f9ac: Waiting
-1a51cef9a3d8: Waiting
-bca5d04786e1: Layer already exists
+9af943c612c2: Waiting
+589002ba0eae: Waiting
+6d397a54a185: Waiting
+3e2c181db1b0: Waiting
+bca5d04786e1: Waiting
+6b7b6c7061b7: Waiting
+5e7756927bef: Waiting
+5b6a00c0e2fd: Waiting
+399d0898a94e: Waiting
+955a8478f9ac: Waiting
+9af943c612c2: Waiting
+589002ba0eae: Waiting
+6d397a54a185: Waiting
+3e2c181db1b0: Waiting
+bca5d04786e1: Waiting
+6b7b6c7061b7: Waiting
+5e7756927bef: Waiting
+6d397a54a185: Waiting
+3e2c181db1b0: Waiting
+bca5d04786e1: Waiting
+6b7b6c7061b7: Waiting
+5e7756927bef: Waiting
+5b6a00c0e2fd: Waiting
+399d0898a94e: Waiting
+955a8478f9ac: Waiting
+9af943c612c2: Waiting
+589002ba0eae: Waiting
 3e2c181db1b0: Layer already exists
-9cc74e2c7700: Waiting
+bca5d04786e1: Waiting
+6b7b6c7061b7: Waiting
+5e7756927bef: Waiting
+5b6a00c0e2fd: Waiting
+399d0898a94e: Waiting
+955a8478f9ac: Waiting
+9af943c612c2: Waiting
+589002ba0eae: Waiting
+6d397a54a185: Waiting
+399d0898a94e: Waiting
 955a8478f9ac: Layer already exists
-1a51cef9a3d8: Waiting
-6b7b6c7061b7: Layer already exists
+9af943c612c2: Waiting
 589002ba0eae: Layer already exists
-5e7756927bef: Layer already exists
-399d0898a94e: Layer already exists
 6d397a54a185: Layer already exists
-1a51cef9a3d8: Pushed
-9cc74e2c7700: Pushed
-Digest: sha256:c496f85663929a4453ba8690f8a068972e9b26e904d7f12f24d2aededfbfdfdd
+bca5d04786e1: Layer already exists
+6b7b6c7061b7: Layer already exists
+5e7756927bef: Layer already exists
+5b6a00c0e2fd: Waiting
+399d0898a94e: Layer already exists
+9af943c612c2: Waiting
+5b6a00c0e2fd: Waiting
+5b6a00c0e2fd: Waiting
+9af943c612c2: Pushed
+5b6a00c0e2fd: Pushed
+Digest: sha256:ce333c5588dbf32550feffcac0b1e4507715ebf64d8d4a41d640a84319e64d97
 Image "daiso-frontend" registered.
-Refer to this image as ":daiso-search-service.frontend-cache-fix.46" in deployments.
+Refer to this image as ":daiso-search-service.frontend-ui-polish.47" in deployments.
