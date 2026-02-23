@@ -1,134 +1,199 @@
 /**
  * map.js
  * Waypoint-based AISLE-ONLY pathfinding & Marker labeling.
+ * Updated to use new section codes (B1-A01, B2-N03, etc.)
  */
 
-// Step 1: Waypoint graph data (Provided by user)
-// Step 1: Waypoint graph data (Synced with map-pathfinding.md)
+// Waypoint graph data aligned with actual floor plan coordinates
 const GRAPH = {
     B1: {
         nodes: {
-            'b1-entrance': { x: 50, y: 95 },
-            'b1-n01': { x: 50, y: 82 },
-            'b1-n02': { x: 22, y: 78 },
-            'b1-n03': { x: 78, y: 78 },
-            'b1-n04': { x: 10, y: 60 },
-            'b1-n05': { x: 35, y: 60 },
-            'b1-n06': { x: 65, y: 60 },
-            'b1-n07': { x: 90, y: 60 },
-            'b1-n08': { x: 20, y: 35 },
-            'b1-n09': { x: 50, y: 35 },
-            'b1-n10': { x: 80, y: 35 },
-            'b1-n11': { x: 50, y: 10 }
+            'b1-entrance': { x: 33, y: 94 },
+            // Corridor waypoints  
+            'b1-w01': { x: 33, y: 85 },  // 입구 위 (디지털 옆)
+            'b1-w02': { x: 25, y: 85 },  // 포장 앞
+            'b1-w03': { x: 55, y: 85 },  // 디지털-식품 사이
+            'b1-w04': { x: 25, y: 68 },  // 포장-문구 사이
+            'b1-w05': { x: 25, y: 55 },  // 문구 앞
+            'b1-w06': { x: 55, y: 68 },  // 파티유아동-인테리어 사이
+            'b1-w07': { x: 55, y: 55 },  // 파티유아동 위
+            'b1-w08': { x: 28, y: 48 },  // 문구-캐릭터 사이
+            'b1-w09': { x: 28, y: 36 },  // 캐릭터-건강 사이
+            'b1-w10': { x: 55, y: 48 },  // 캐릭터-패션 사이
+            'b1-w11': { x: 55, y: 36 },  // 건강-화장품 사이
+            'b1-w12': { x: 28, y: 14 },  // 시즌 위쪽
+            'b1-w13': { x: 55, y: 14 },  // 시즌-화장품 사이
+            'b1-w14': { x: 60, y: 85 },  // 식품 옆
+            'b1-w15': { x: 60, y: 58 },  // 인테리어소품 옆
+            'b1-w16': { x: 60, y: 36 },  // 패션 옆
+            'b1-w17': { x: 60, y: 14 },  // 화장품 옆
+            // Section center nodes (for path endpoints)
+            'b1-sec-season': { x: 40, y: 24 },  // 시즌
+            'b1-sec-beauty': { x: 78, y: 18 },  // 화장품
+            'b1-sec-health': { x: 42, y: 38 },  // 건강기능식품
+            'b1-sec-character': { x: 42, y: 50 },  // 캐릭터
+            'b1-sec-fashion': { x: 78, y: 48 },  // 패션
+            'b1-sec-stationery': { x: 14, y: 58 },  // 문구
+            'b1-sec-party': { x: 42, y: 62 },  // 파티유아동
+            'b1-sec-packaging': { x: 10, y: 78 },  // 포장
+            'b1-sec-digital': { x: 40, y: 82 },  // 디지털
+            'b1-sec-interior': { x: 78, y: 68 },  // 인테리어소품
+            'b1-sec-snacks': { x: 78, y: 86 },  // 식품
         },
         edges: [
-            ['b1-entrance', 'b1-n01'],
-            ['b1-n01', 'b1-n02'], ['b1-n01', 'b1-n03'], ['b1-n01', 'b1-n05'],
-            ['b1-n02', 'b1-n04'], ['b1-n02', 'b1-n05'],
-            ['b1-n03', 'b1-n06'], ['b1-n03', 'b1-n07'],
-            ['b1-n04', 'b1-n05'], ['b1-n04', 'b1-n08'],
-            ['b1-n05', 'b1-n06'], ['b1-n05', 'b1-n09'],
-            ['b1-n06', 'b1-n07'], ['b1-n06', 'b1-n09'],
-            ['b1-n07', 'b1-n10'],
-            ['b1-n08', 'b1-n09'], ['b1-n08', 'b1-n11'],
-            ['b1-n09', 'b1-n10'], ['b1-n09', 'b1-n11'],
-            ['b1-n10', 'b1-n11']
+            // Main corridor connections
+            ['b1-entrance', 'b1-w01'],
+            ['b1-w01', 'b1-w02'], ['b1-w01', 'b1-w03'],
+            ['b1-w02', 'b1-w04'],
+            ['b1-w04', 'b1-w05'], ['b1-w04', 'b1-w06'],
+            ['b1-w03', 'b1-w14'], ['b1-w03', 'b1-w06'],
+            ['b1-w05', 'b1-w08'],
+            ['b1-w06', 'b1-w07'], ['b1-w06', 'b1-w15'],
+            ['b1-w07', 'b1-w10'],
+            ['b1-w08', 'b1-w09'], ['b1-w08', 'b1-w10'],
+            ['b1-w09', 'b1-w11'], ['b1-w09', 'b1-w12'],
+            ['b1-w10', 'b1-w11'], ['b1-w10', 'b1-w16'],
+            ['b1-w11', 'b1-w13'],
+            ['b1-w12', 'b1-w13'],
+            ['b1-w13', 'b1-w17'],
+            ['b1-w14', 'b1-w15'],
+            ['b1-w15', 'b1-w16'],
+            ['b1-w16', 'b1-w17'],
+            // Section entry connections (corridor → section center)
+            ['b1-w12', 'b1-sec-season'], ['b1-w13', 'b1-sec-season'],
+            ['b1-w17', 'b1-sec-beauty'], ['b1-w16', 'b1-sec-beauty'], ['b1-w13', 'b1-sec-beauty'],
+            ['b1-w09', 'b1-sec-health'], ['b1-w11', 'b1-sec-health'],
+            ['b1-w08', 'b1-sec-character'], ['b1-w10', 'b1-sec-character'],
+            ['b1-w16', 'b1-sec-fashion'], ['b1-w15', 'b1-sec-fashion'], ['b1-w10', 'b1-sec-fashion'],
+            ['b1-w05', 'b1-sec-stationery'], ['b1-w04', 'b1-sec-stationery'],
+            ['b1-w07', 'b1-sec-party'], ['b1-w06', 'b1-sec-party'], ['b1-w08', 'b1-sec-party'],
+            ['b1-w02', 'b1-sec-packaging'], ['b1-w04', 'b1-sec-packaging'],
+            ['b1-w01', 'b1-sec-digital'], ['b1-w03', 'b1-sec-digital'],
+            ['b1-w15', 'b1-sec-interior'], ['b1-w06', 'b1-sec-interior'], ['b1-w16', 'b1-sec-interior'],
+            ['b1-w14', 'b1-sec-snacks'], ['b1-w03', 'b1-sec-snacks'], ['b1-w15', 'b1-sec-snacks'],
         ],
-        categoryMap: {
-            // Priority 1: Category Middle (Specific)
-            '메이크업': 'b1-n02', '스킨케어': 'b1-n02', '남성케어': 'b1-n02', '헤어케어': 'b1-n02',
-            '위생용품': 'b1-n08', '구강케어': 'b1-n08', '의약외품': 'b1-n08',
-            '과자': 'b1-n04', '간식': 'b1-n04', '식품': 'b1-n04', '가공식품': 'b1-n04',
-            '필기구': 'b1-n03', '노트': 'b1-n03', '사무용품': 'b1-n03', '미술용품': 'b1-n03',
-            '파티용품': 'b1-n10', '포장용품': 'b1-n03',
-            '휴대폰용품': 'b1-n07', '컴퓨터용품': 'b1-n07', '디지털': 'b1-n07',
-            '양말': 'b1-n05', '속옷': 'b1-n05', '의류': 'b1-n06', '모자': 'b1-n06',
-            '방향제': 'b1-n06', '인테리어소품': 'b1-n06',
-
-            // Priority 2: Category Major (Broad)
-            '뷰티': 'b1-n02', '화장품': 'b1-n02',
-            '건강': 'b1-n08', '의료': 'b1-n08',
-            '식품': 'b1-n04',
-            '문구': 'b1-n03', '팬시': 'b1-n03', '완구': 'b1-n03',
-            '전자': 'b1-n07',
-            '패션': 'b1-n06', '잡화': 'b1-n06',
-            '인테리어': 'b1-n06',
-            '시즌': 'b1-n10',
-
-            // Manual/Fallback
-            '청소': 'b1-n05', '세탁': 'b1-n05', '욕실': 'b1-n05',
-            '위생': 'b1-n08',
-            '기타': 'b1-n01'
+        // Section code prefix → node ID
+        sectionMap: {
+            'B1-A': 'b1-sec-season',
+            'B1-B': 'b1-sec-beauty',
+            'B1-C': 'b1-sec-health',
+            'B1-D': 'b1-sec-character',
+            'B1-E': 'b1-sec-fashion',
+            'B1-F': 'b1-sec-stationery',
+            'B1-G': 'b1-sec-party',
+            'B1-H': 'b1-sec-packaging',
+            'B1-I': 'b1-sec-digital',
+            'B1-J': 'b1-sec-interior',
+            'B1-K': 'b1-sec-snacks',
         }
     },
     B2: {
         nodes: {
-            'b2-entrance': { x: 50, y: 95 },
-            'b2-n01': { x: 50, y: 85 },
-            'b2-n02': { x: 25, y: 85 },
-            'b2-n03': { x: 75, y: 85 },
-            'b2-n04': { x: 10, y: 80 },
-            'b2-n05': { x: 25, y: 70 },
-            'b2-n06': { x: 50, y: 70 },
-            'b2-n07': { x: 75, y: 70 },
-            'b2-n08': { x: 15, y: 58 },
-            'b2-n09': { x: 35, y: 55 },
-            'b2-n10': { x: 50, y: 55 },
-            'b2-n11': { x: 65, y: 55 },
-            'b2-n12': { x: 88, y: 55 },
-            'b2-n13': { x: 15, y: 40 },
-            'b2-n14': { x: 35, y: 38 },
-            'b2-n15': { x: 50, y: 38 },
-            'b2-n16': { x: 65, y: 38 },
-            'b2-n17': { x: 85, y: 38 },
-            'b2-n18': { x: 20, y: 20 },
-            'b2-n19': { x: 50, y: 20 },
-            'b2-n20': { x: 78, y: 20 },
-            'b2-n21': { x: 50, y: 8 }
+            'b2-entrance': { x: 28, y: 96 },
+            // Corridor waypoints
+            'b2-w01': { x: 28, y: 78 },  // 여행 옆
+            'b2-w02': { x: 55, y: 78 },  // 원예 옆
+            'b2-w03': { x: 14, y: 58 },  // 스포츠 위
+            'b2-w04': { x: 28, y: 58 },  // 반려동물 위
+            'b2-w05': { x: 42, y: 58 },  // 수예 위
+            'b2-w06': { x: 55, y: 58 },  // 캠핑 위
+            'b2-w07': { x: 63, y: 58 },  // 캠핑-주방 사이
+            'b2-w08': { x: 28, y: 48 },  // 공구 옆
+            'b2-w09': { x: 55, y: 48 },  // 공구-내추럴 사이
+            'b2-w10': { x: 63, y: 48 },  // 내추럴 옆
+            'b2-w11': { x: 28, y: 34 },  // 일본수입 위
+            'b2-w12': { x: 55, y: 34 },  // 홈패브릭-내추럴
+            'b2-w13': { x: 63, y: 34 },  // 수납 옆
+            'b2-w14': { x: 28, y: 20 },  // 욕실 위
+            'b2-w15': { x: 55, y: 20 },  // 일본수입-수납
+            'b2-w16': { x: 63, y: 20 },  // 수납 위
+            'b2-w17': { x: 28, y: 3 },   // 욕실 최상단
+            'b2-w18': { x: 55, y: 3 },   // 청소 위
+            'b2-w19': { x: 72, y: 3 },   // 세탁 옆
+            'b2-w20': { x: 90, y: 3 },   // 득템
+            'b2-w21': { x: 63, y: 78 },  // 주방 아래
+            'b2-w22': { x: 63, y: 14 },  // 득템 옆
+            // Section center nodes
+            'b2-sec-bath': { x: 38, y: 10 },
+            'b2-sec-cleaning': { x: 58, y: 10 },
+            'b2-sec-laundry': { x: 82, y: 7 },
+            'b2-sec-goodplace': { x: 85, y: 17 },
+            'b2-sec-japanese': { x: 42, y: 26 },
+            'b2-sec-storage': { x: 78, y: 28 },
+            'b2-sec-fabric': { x: 42, y: 40 },
+            'b2-sec-natural': { x: 78, y: 42 },
+            'b2-sec-tools': { x: 42, y: 53 },
+            'b2-sec-sports': { x: 8, y: 67 },
+            'b2-sec-pets': { x: 26, y: 67 },
+            'b2-sec-handcraft': { x: 40, y: 67 },
+            'b2-sec-camping': { x: 55, y: 67 },
+            'b2-sec-kitchen': { x: 80, y: 67 },
+            'b2-sec-travel': { x: 28, y: 85 },
+            'b2-sec-gardening': { x: 52, y: 87 },
         },
         edges: [
-            ['b2-entrance', 'b2-n01'],
-            ['b2-n01', 'b2-n02'], ['b2-n01', 'b2-n03'], ['b2-n01', 'b2-n06'],
-            ['b2-n02', 'b2-n04'], ['b2-n02', 'b2-n05'],
-            ['b2-n03', 'b2-n07'],
-            ['b2-n04', 'b2-n08'],
-            ['b2-n05', 'b2-n06'], ['b2-n05', 'b2-n08'], ['b2-n05', 'b2-n09'],
-            ['b2-n06', 'b2-n07'], ['b2-n06', 'b2-n10'],
-            ['b2-n07', 'b2-n11'], ['b2-n07', 'b2-n12'],
-            ['b2-n08', 'b2-n09'], ['b2-n08', 'b2-n13'],
-            ['b2-n09', 'b2-n10'], ['b2-n09', 'b2-n14'],
-            ['b2-n10', 'b2-n11'], ['b2-n10', 'b2-n15'],
-            ['b2-n11', 'b2-n12'], ['b2-n11', 'b2-n16'],
-            ['b2-n12', 'b2-n17'],
-            ['b2-n13', 'b2-n14'], ['b2-n13', 'b2-n18'],
-            ['b2-n14', 'b2-n15'], ['b2-n14', 'b2-n18'],
-            ['b2-n15', 'b2-n16'], ['b2-n15', 'b2-n19'],
-            ['b2-n16', 'b2-n17'], ['b2-n16', 'b2-n20'],
-            ['b2-n17', 'b2-n20'],
-            ['b2-n18', 'b2-n19'], ['b2-n18', 'b2-n21'],
-            ['b2-n19', 'b2-n20'], ['b2-n19', 'b2-n21'],
-            ['b2-n20', 'b2-n21']
+            ['b2-entrance', 'b2-w01'],
+            ['b2-w01', 'b2-w02'], ['b2-w01', 'b2-w04'],
+            ['b2-w02', 'b2-w06'], ['b2-w02', 'b2-w21'],
+            ['b2-w03', 'b2-w04'],
+            ['b2-w04', 'b2-w05'], ['b2-w04', 'b2-w08'],
+            ['b2-w05', 'b2-w06'],
+            ['b2-w06', 'b2-w07'],
+            ['b2-w07', 'b2-w21'], ['b2-w07', 'b2-w10'],
+            ['b2-w08', 'b2-w09'], ['b2-w08', 'b2-w11'],
+            ['b2-w09', 'b2-w10'],
+            ['b2-w10', 'b2-w13'], ['b2-w10', 'b2-w21'],
+            ['b2-w11', 'b2-w12'], ['b2-w11', 'b2-w14'],
+            ['b2-w12', 'b2-w13'],
+            ['b2-w13', 'b2-w16'], ['b2-w13', 'b2-w22'],
+            ['b2-w14', 'b2-w15'], ['b2-w14', 'b2-w17'],
+            ['b2-w15', 'b2-w16'],
+            ['b2-w16', 'b2-w22'],
+            ['b2-w17', 'b2-w18'],
+            ['b2-w18', 'b2-w19'],
+            ['b2-w19', 'b2-w20'],
+            ['b2-w20', 'b2-w22'],
+            ['b2-w21', 'b2-w22'],
+            // Section entry connections
+            ['b2-w14', 'b2-sec-bath'], ['b2-w17', 'b2-sec-bath'],
+            ['b2-w15', 'b2-sec-cleaning'], ['b2-w18', 'b2-sec-cleaning'],
+            ['b2-w19', 'b2-sec-laundry'], ['b2-w20', 'b2-sec-laundry'],
+            ['b2-w20', 'b2-sec-goodplace'], ['b2-w22', 'b2-sec-goodplace'],
+            ['b2-w11', 'b2-sec-japanese'], ['b2-w14', 'b2-sec-japanese'],
+            ['b2-w13', 'b2-sec-storage'], ['b2-w16', 'b2-sec-storage'],
+            ['b2-w11', 'b2-sec-fabric'], ['b2-w12', 'b2-sec-fabric'], ['b2-w08', 'b2-sec-fabric'],
+            ['b2-w10', 'b2-sec-natural'], ['b2-w13', 'b2-sec-natural'], ['b2-w12', 'b2-sec-natural'],
+            ['b2-w08', 'b2-sec-tools'], ['b2-w09', 'b2-sec-tools'],
+            ['b2-w03', 'b2-sec-sports'], ['b2-w04', 'b2-sec-sports'],
+            ['b2-w04', 'b2-sec-pets'], ['b2-w03', 'b2-sec-pets'],
+            ['b2-w05', 'b2-sec-handcraft'], ['b2-w04', 'b2-sec-handcraft'],
+            ['b2-w06', 'b2-sec-camping'], ['b2-w05', 'b2-sec-camping'],
+            ['b2-w07', 'b2-sec-kitchen'], ['b2-w21', 'b2-sec-kitchen'], ['b2-w10', 'b2-sec-kitchen'],
+            ['b2-w01', 'b2-sec-travel'], ['b2-w02', 'b2-sec-travel'],
+            ['b2-w02', 'b2-sec-gardening'], ['b2-w01', 'b2-sec-gardening'],
         ],
-        categoryMap: {
-            '욕실용품': 'b2-n04', '청소용품': 'b2-n05', '세탁용품': 'b2-n08',
-            '주방용품': 'b2-n07', '조리도구': 'b2-n07', '식기': 'b2-n07',
-            '밀폐용기': 'b2-n07', '수납용품': 'b2-n11',
-            '홈패브릭': 'b2-n11', '커튼': 'b2-n11', '침구': 'b2-n11',
-            '공구': 'b2-n14', '자동차용품': 'b2-n12', '자전거용품': 'b2-n12',
-            '캠핑용품': 'b2-n12', '여행용품': 'b2-n20',
-            '원예용품': 'b2-n18', '반려동물용품': 'b2-n19', '애완용품': 'b2-n19',
-            '수예': 'b2-n16', '취미': 'b2-n14',
-
-            // Major and Fallback
-            '욕실': 'b2-n04', '청소': 'b2-n05', '세탁': 'b2-n08',
-            '주방': 'b2-n07', '수납': 'b2-n11',
-            '공구': 'b2-n14', '자동차': 'b2-n12', '캠핑': 'b2-n12',
-            '원예': 'b2-n18', '반려동물': 'b2-n19', '취미': 'b2-n14'
+        sectionMap: {
+            'B2-A': 'b2-sec-bath',
+            'B2-B': 'b2-sec-cleaning',
+            'B2-C': 'b2-sec-laundry',
+            'B2-D': 'b2-sec-goodplace',
+            'B2-E': 'b2-sec-japanese',
+            'B2-F': 'b2-sec-storage',
+            'B2-G': 'b2-sec-fabric',
+            'B2-H': 'b2-sec-natural',
+            'B2-I': 'b2-sec-tools',
+            'B2-J': 'b2-sec-sports',
+            'B2-K': 'b2-sec-pets',
+            'B2-L': 'b2-sec-handcraft',
+            'B2-M': 'b2-sec-camping',
+            'B2-N': 'b2-sec-kitchen',
+            'B2-O': 'b2-sec-travel',
+            'B2-P': 'b2-sec-gardening',
         }
     }
 };
 
-// Step 2: BFS implementation
+// BFS shortest path
 function buildAdjList(floorData) {
     const adj = {};
     Object.keys(floorData.nodes).forEach(n => adj[n] = []);
@@ -141,15 +206,13 @@ function buildAdjList(floorData) {
 }
 
 function bfs(adj, start, end) {
-    if (!start || !end) return [];
+    if (!start || !end || start === end) return [start];
     const queue = [[start]];
     const visited = new Set([start]);
-
     while (queue.length > 0) {
         const path = queue.shift();
         const node = path[path.length - 1];
         if (node === end) return path;
-
         for (const neighbor of (adj[node] || [])) {
             if (!visited.has(neighbor)) {
                 visited.add(neighbor);
@@ -157,38 +220,50 @@ function bfs(adj, start, end) {
             }
         }
     }
-    // Return empty if no path found (prevents straight line)
     return [];
 }
 
-// Step 3: Determine arrival node (Category Priority)
+// Get target node from product's section code
 function getArrivalNodeId(floor, product) {
     const data = GRAPH[floor];
-    if (!data) return `${floor.toLowerCase()}-entrance`; // Fail-safe
+    if (!data) return `${floor.toLowerCase()}-entrance`;
 
+    // Use the new section code (e.g. "B1-B03")
+    const section = (product.location?.section || "").toUpperCase();
+
+    if (section && section.length >= 4) {
+        // Extract prefix: "B1-B03" → "B1-B"
+        const prefix = section.substring(0, 4);
+        const nodeId = data.sectionMap[prefix];
+        if (nodeId) {
+            console.log(`[Map] Section ${section} → prefix ${prefix} → node ${nodeId}`);
+            return nodeId;
+        }
+    }
+
+    // Fallback: try category-based mapping
     const major = product.meta?.category_major || "";
-    const middle = product.meta?.category_middle || "";
-
-    // 1. Try Category Middle (Best match)
-    const middleNode = data.categoryMap[middle];
-    if (middleNode) {
-        console.log(`[Map] Mapped Middle Check: ${middle} -> ${middleNode}`);
-        return middleNode;
+    const categoryFallback = {
+        '시즌/시리즈': 'b1-sec-season', '뷰티/위생': 'b1-sec-beauty',
+        '문구/팬시': 'b1-sec-stationery', '식품': 'b1-sec-snacks',
+        '패션/잡화': 'b1-sec-fashion', '공구/디지털': 'b1-sec-digital',
+        '유아/완구': 'b1-sec-party',
+        '청소/욕실': 'b2-sec-bath', '주방용품': 'b2-sec-kitchen',
+        '반려동물': 'b2-sec-pets', '수납/정리': 'b2-sec-storage',
+        '스포츠/레저/취미': 'b2-sec-sports', '인테리어/원예': 'b2-sec-natural',
+        '국민득템': 'b2-sec-goodplace',
+    };
+    const fallbackNode = categoryFallback[major];
+    if (fallbackNode && data.nodes[fallbackNode]) {
+        console.log(`[Map] Fallback: ${major} → ${fallbackNode}`);
+        return fallbackNode;
     }
 
-    // 2. Try Category Major (Fallback 1)
-    const majorNode = data.categoryMap[major];
-    if (majorNode) {
-        console.log(`[Map] Mapped Major Check: ${major} -> ${majorNode}`);
-        return majorNode;
-    }
-
-    // 3. Fallback to N01 (Fallback 2)
-    console.warn(`[Map] No mapping for [${middle} / ${major}]. Defaulting to N01.`);
-    return `${floor.toLowerCase()}-n01`;
+    console.warn(`[Map] No mapping for section=${section}, major=${major}. Defaulting to entrance.`);
+    return `${floor.toLowerCase()}-entrance`;
 }
 
-// Step 4: Render Map & Marker
+// Render Map & Path
 function renderResultMap(product) {
     const panel = document.getElementById('map-panel');
     const floor = (product.location?.floor || "B1").toUpperCase();
@@ -205,10 +280,10 @@ function renderResultMap(product) {
     const adj = buildAdjList(floorData);
     const path = bfs(adj, startNodeId, endNodeId);
 
-    // If BFS failed, path is empty. Show fallback message or just markers.
-    const isPathFound = path.length > 0;
-    const distance = isPathFound ? (path.length - 1) * 5 : 0;
+    const isPathFound = path.length > 1;
+    const distance = isPathFound ? (path.length - 1) * 3 : 0;
     const distanceText = isPathFound ? `약 <strong>${distance}m</strong>` : "경로 탐색 불가";
+    const sectionLabel = product.location?.shelf_label || product.meta?.category_major || "";
 
     panel.innerHTML = `
         <div class="result-map-wrapper">
@@ -225,7 +300,7 @@ function renderResultMap(product) {
                 <img src="images/map_${floor.toLowerCase()}.png" class="map-base-img" onerror="this.src='https://placehold.co/600x400?text=Map+${floor}'">
                 <svg class="map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
                     ${isPathFound ? drawRouteSVG(floor, path) : ''}
-                    ${renderMarkerSVG(floor, endNodeId, product.name)}
+                    ${renderMarkerSVG(floor, startNodeId, endNodeId, product.name, sectionLabel)}
                 </svg>
             </div>
             <div class="map-footer" style="margin-top:12px; font-size:14px; color:#666; text-align:center;">
@@ -246,23 +321,27 @@ function drawRouteSVG(floor, path) {
     return `
     <polyline points="${points.trim()}" 
         fill="none" 
-        stroke="#2962FF" 
-        stroke-width="3" 
-        stroke-dasharray="8,4" 
+        stroke="#E50000" 
+        stroke-width="2" 
+        stroke-dasharray="4,3" 
         stroke-linecap="round" 
-        stroke-linejoin="round" />
-  `;
+        stroke-linejoin="round"
+        opacity="0.85">
+        <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1s" repeatCount="indefinite" />
+    </polyline>
+    `;
 }
 
-function renderMarkerSVG(floor, targetNodeId, productName) {
+function renderMarkerSVG(floor, startNodeId, targetNodeId, productName, sectionLabel) {
     const floorData = GRAPH[floor];
     const target = floorData.nodes[targetNodeId];
-    const start = floorData.nodes[`${floor.toLowerCase()}-entrance`];
+    const start = floorData.nodes[startNodeId];
 
-    if (!target) return ""; // Should not happen if logic is correct
+    if (!target || !start) return "";
 
-    // Truncate product name (max 10 chars)
-    const displayTitle = productName.length > 10 ? productName.substring(0, 10) + "..." : productName;
+    const displayTitle = (sectionLabel || productName || "").length > 10
+        ? (sectionLabel || productName).substring(0, 10) + "..."
+        : (sectionLabel || productName);
 
     return `
         <!-- Start Marker (Current Position) -->
@@ -272,26 +351,20 @@ function renderMarkerSVG(floor, targetNodeId, productName) {
                 <animate attributeName="r" from="2" to="6" dur="2s" repeatCount="indefinite" />
                 <animate attributeName="fill-opacity" from="0.6" to="0" dur="2s" repeatCount="indefinite" />
             </circle>
-            <!-- Label for Start -->
             <rect x="${start.x - 10}" y="${start.y - 12}" width="20" height="6" rx="1.5" fill="white" stroke="#2962FF" stroke-width="0.3" filter="drop-shadow(0px 1px 1px rgba(0,0,0,0.2))"/>
             <text x="${start.x}" y="${start.y - 8}" font-size="3.5" text-anchor="middle" fill="black" font-weight="bold" font-family="sans-serif">현재 위치</text>
         </g>
 
         <!-- Target Marker (Product Location) -->
         <g class="target-marker">
-            <!-- Ping animation for target -->
             <circle cx="${target.x}" cy="${target.y}" r="3" fill="#E50000" fill-opacity="0.3">
                 <animate attributeName="r" from="3" to="10" dur="1.5s" repeatCount="indefinite" />
                 <animate attributeName="fill-opacity" from="0.3" to="0" dur="1.5s" repeatCount="indefinite" />
             </circle>
-            
-            <!-- Pin Icon -->
             <path d="M${target.x} ${target.y} L${target.x - 4} ${target.y - 12} A4.5 4.5 0 1 1 ${target.x + 4} ${target.y - 12} Z" fill="#E50000" stroke="white" stroke-width="0.5" />
             <circle cx="${target.x}" cy="${target.y - 12}" r="2" fill="white" />
-
-            <!-- Label for Target -->
             <rect x="${target.x - 18}" y="${target.y - 24}" width="36" height="7" rx="1.5" fill="white" stroke="#E50000" stroke-width="0.3" filter="drop-shadow(0px 1px 1px rgba(0,0,0,0.2))"/>
-            <text x="${target.x}" y="${target.y - 19.5}" font-size="4" text-anchor="middle" fill="black" font-weight="bold" font-family="sans-serif">${displayTitle}</text>
+            <text x="${target.x}" y="${target.y - 19.5}" font-size="3.5" text-anchor="middle" fill="black" font-weight="bold" font-family="sans-serif">${displayTitle}</text>
         </g>
     `;
 }
