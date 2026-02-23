@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-02-24
+
+### Added
+- **NLU Natural Language Search**: Enhanced NLU prompt to handle situation/description/problem-solving queries (8 scenarios).
+  - "욕실 바닥이 미끄러운데 뭐 깔면?" → 욕실매트
+  - "벽에 못 안 박고 액자 걸고 싶어" → 접착후크/액자걸이
+  - "투명하고 동그란 거 화장품 담는 거" → 화장품 정리함
+  - "냉장고에서 냄새 나는데?" → 냉장고 탈취제
+  - Broad category expansion (e.g., "컴퓨터 용품" → USB, 마우스, 키보드)
+- **TDD Test Suite**: 8 natural language search scenario tests (`_test/test_search_scenarios.py`).
+- **Homepage Card**: Added `ssakstick_banner.png` for 싹스틱 card (was using wipes_banner).
+- **Category Map Page**: SVG section labels with category filter sidebar (B1/B2 floors).
+- **Mobile QR Page PoC**: SVG map overlay with route, product card, action buttons.
+
+### Fixed
+- **Search Query Priority**: Changed `query = item or query_rewrite` → `query_rewrite or item` for richer contextual search.
+- **API URL**: Replaced hardcoded `localhost:8000` with relative `/search/text` in `app.js` (was breaking Edge browser).
+- **Mobile Handoff Page**: Fixed logo color ('있' now red), AR navi text (PoC, not kiosk), map rendering (`object-fit: contain`).
+- **Cache Busting**: Updated all HTML cache busters to v=51.
+- **Map SVG Alignment**: Fixed CSS aspect-ratio and B1 waypoint coordinates for accurate marker placement.
+- **Score Gap Filter**: Relaxed from 30% to 20% threshold for more inclusive search results.
+
+### Changed
+- **Reranker Prompt**: Improved ranking rules with direct match priority and accessory demotion.
+- **Category SVG**: Changed `preserveAspectRatio` from `none` to `xMidYMid meet`.
+
+
 ## [0.3.1] - 2026-02-22
 
 ### Fixed
