@@ -1,0 +1,25 @@
+3e2c181db1b0: Waiting
+399d0898a94e: Waiting
+955a8478f9ac: Waiting
+bca5d04786e1: Waiting
+7d57006a1880: Waiting
+6b7b6c7061b7: Waiting
+6d397a54a185: Waiting
+5e7756927bef: Waiting
+f6e02bee7f6a: Waiting
+589002ba0eae: Waiting
+7d57006a1880: Waiting
+6b7b6c7061b7: Layer already exists
+6d397a54a185: Layer already exists
+5e7756927bef: Layer already exists
+f6e02bee7f6a: Waiting
+589002ba0eae: Layer already exists
+3e2c181db1b0: Layer already exists
+399d0898a94e: Layer already exists
+955a8478f9ac: Layer already exists
+bca5d04786e1: Layer already exists
+7d57006a1880: Pushed
+f6e02bee7f6a: Pushed
+Digest: sha256:4d9bac78f007c8028574ba76615101a5d2b1ec8dcec91f8a4fe65e099ffca752
+Image "daiso-frontend" registered.
+Refer to this image as ":daiso-search-service.frontend-map-align.53" in deployments.

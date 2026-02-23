@@ -40,7 +40,7 @@ async def nlu_node(state: GraphState):
     }
 
 async def search_node(state: GraphState):
-    """Node 2: Search DB (Hybrid Top-5)"""
+    """Node 2: Search DB (Hybrid Top-10)"""
     if state["intent"] != Intent.PRODUCT_LOCATION:
         return {"search_candidates": []}
         
@@ -48,13 +48,13 @@ async def search_node(state: GraphState):
     item = slots.get("item") or ""
     query_rewrite = slots.get("query_rewrite") or ""
     query = item or query_rewrite
-    print(f"--- [Node: Search] Hybrid Querying (Top-5) ---")
+    print(f"--- [Node: Search] Hybrid Querying (Top-10) ---")
     print(f"    NLU slots.item='{item}', query_rewrite='{query_rewrite}'")
     print(f"    Final query: '{query}'")
     
     candidates = []
     if query:
-        candidates = search_products(query, top_k=5)
+        candidates = search_products(query, top_k=10)
     
     if not candidates and query:
          print(f"    -> 0 results. attempting keyword inference...")
@@ -71,18 +71,20 @@ async def search_node(state: GraphState):
     return {"search_candidates": candidates}
 
 async def rerank_node(state: GraphState):
-    """Node 2.5: LLM Reranking (Top-5 -> Top-3)"""
+    """Node 2.5: LLM Reranking (Top-10 -> Top-3)"""
     candidates = state["search_candidates"]
     if not candidates:
         return {"search_candidates": []}
     
-    print(f"--- [Node: Rerank] Ranking Top-{len(candidates)} to Top-3 ---")
+    # Pass up to 7 candidates to the reranker for better selection
+    candidates_for_rerank = candidates[:7]
+    print(f"--- [Node: Rerank] Ranking Top-{len(candidates_for_rerank)} to Top-3 ---")
     print(f"    Input query: '{state['input_text']}'")
-    print(f"    Candidates: {[c.get('name','?') for c in candidates]}")
+    print(f"    Candidates: {[c.get('name','?') for c in candidates_for_rerank]}")
     from backend.services.rerank_service import rerank_products
     
     try:
-        rerank_result = rerank_products(state["input_text"], candidates)
+        rerank_result = rerank_products(state["input_text"], candidates_for_rerank)
         top_ids = rerank_result.get("top_ids", [])
         reason = rerank_result.get("reason", "")
         print(f"    LLM selected IDs: {top_ids}")
@@ -90,7 +92,7 @@ async def rerank_node(state: GraphState):
         
         # Sort and filter candidates based on LLM's top_ids
         reranked = []
-        cand_map = {str(c['id']): c for c in candidates}
+        cand_map = {str(c['id']): c for c in candidates_for_rerank}
         
         for rid in top_ids[:3]: 
             clean_id = str(rid).replace("ID", "").replace("id", "").strip()
@@ -98,9 +100,9 @@ async def rerank_node(state: GraphState):
                 reranked.append(cand_map[clean_id])
         
         # Fallback if rerank failed to find IDs
-        if not reranked and candidates:
+        if not reranked and candidates_for_rerank:
             print(f"    ⚠️ Rerank returned no matching IDs, using raw top 3")
-            reranked = candidates[:3]
+            reranked = candidates_for_rerank[:3]
                 
         print(f"    -> Reranked to {len(reranked)} results: {[r.get('name','?') for r in reranked]}")
         return {"search_candidates": reranked}
