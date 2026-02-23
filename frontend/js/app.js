@@ -214,10 +214,37 @@ function simulateProgress(completionPromise) {
 }
 
 // --- 4. UI Helpers ---
-// --- 4. UI Helpers ---
+async function loadRandomBanner() {
+    const container = document.querySelector('.banner-products');
+    if (!container) return; // Only run on pages that have the banner products grid
+    try {
+        const res = await fetch('/api/search/random?limit=4');
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        if (data.status === 'success' && data.products && data.products.length > 0) {
+            container.innerHTML = data.products.map(p => `
+                <div class="product-thumb" onclick="location.href='results.html?q=' + encodeURIComponent('${p.full_title}')">
+                    <div style="width:100%;height:100px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;text-align:center;padding:4px;word-break:keep-all;cursor:pointer;">
+                        ${p.title}
+                    </div>
+                    <div class="price-tag">
+                        <span class="category" style="font-size:10px;">${p.category}</span>
+                        <span class="price" style="font-size:11px;">${p.price}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (err) {
+        console.error('Failed to load random products:', err);
+    }
+}
+
 function initCarousel() {
     const track = document.getElementById('carousel-track');
     const dots = document.querySelectorAll('.carousel-dots .dot');
+
+    // Fetch random products for banner if container exists
+    loadRandomBanner();
 
     // Only initialize if carousel exists on the page
     if (!track || dots.length === 0) return;

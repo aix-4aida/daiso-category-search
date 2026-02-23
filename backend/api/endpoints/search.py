@@ -90,3 +90,31 @@ async def search_text(request: TextSearchRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/random")
+async def get_random_products(limit: int = 4):
+    """
+    Fetch random products from the database for the carousel banner.
+    """
+    import sqlite3
+    try:
+        db_path = Path(__file__).parent.parent.parent / "database" / "products.db"
+        conn = sqlite3.connect(str(db_path))
+        cur = conn.cursor()
+        cur.execute("SELECT title, price, category FROM products ORDER BY RANDOM() LIMIT ?", (limit,))
+        items = cur.fetchall()
+        
+        products = []
+        for title, price, category in items:
+            short_title = title if len(title) <= 12 else title[:11] + "..."
+            cat_short = category.split(">")[-1].strip() if ">" in category else category
+            if len(cat_short) > 6: cat_short = cat_short[:5] + ".."
+            products.append({
+                "title": short_title,
+                "full_title": title,
+                "price": f"{price:,}원",
+                "category": cat_short
+            })
+        return {"status": "success", "products": products}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
