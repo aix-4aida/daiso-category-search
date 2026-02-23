@@ -145,6 +145,24 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
     # 1. BM25 — fetch same volume as Vector for fair RRF fusion
     top_k_fetch = top_k * 5
     sparse_results = bm25_engine.query(query, top_k=top_k_fetch)
+    sparse_results = [sr for sr in sparse_results if sr.score > 0]
+    
+    # [NEW] Top1 점수 대비 10% 미만인 결과는 연관성 없음으로 판단하여 제거
+    # (바이그램 토큰 1개만 우연히 매칭된 무관한 상품을 걸러냄)
+    if sparse_results:
+        top1_score = sparse_results[0].score
+        threshold = top1_score * 0.10
+        before_count = len(sparse_results)
+        sparse_results = [sr for sr in sparse_results if sr.score >= threshold]
+        filtered_count = before_count - len(sparse_results)
+        if filtered_count > 0:
+            print(f"    [BM25 Filter] Top1={top1_score:.2f}, 10% threshold={threshold:.2f} → {filtered_count}개 저연관 결과 제거")
+    
+    # [NEW] 단일 엔진(Fallback) 모드에서도 점수가 출력되도록 raw score 보존
+    for sr in sparse_results:
+        if sr.extra is None:
+            sr.extra = {}
+        sr.extra["bm25_score"] = f"{sr.score:.4f}"
     
     
     # Debug: show BM25 top results
@@ -180,15 +198,43 @@ def search_products(query: str, top_k: int = 3, use_hybrid: bool = True, fusion_
     for sd in fused_results:
         doc = docs_map.get(sd.doc_id)
         if doc:
+            meta = doc.meta.copy() if hasattr(doc, 'meta') and doc.meta else {}
+            if sd.extra:
+                meta.update(sd.extra)
+            meta["hybrid_score"] = f"{sd.score:.4f}"
+            
+            # Frontend 등에서 직관적으로 확인할 수 있도록 desc 텍스트 앞에 점수 정보 추가
+            score_str = f"[Hybrid: {sd.score:.4f}"
+            if "bm25_score" in sd.extra:
+                score_str += f" | BM25: {sd.extra['bm25_score']}"
+            if "vector_score" in sd.extra:
+                score_str += f" | Vector: {sd.extra['vector_score']}"
+            score_str += "] "
+            
+            desc_text = str(doc.text) if hasattr(doc, 'text') and doc.text else ""
+            desc = score_str + desc_text
+
             results.append({
                 "id": doc.doc_id,
                 "name": doc.title,
-                "desc": doc.text,
-                "price": doc.meta.get("price", 0),
-                "meta": doc.meta,
+                "desc": desc,
+                "price": doc.meta.get("price", 0) if hasattr(doc, 'meta') else 0,
+                "meta": meta,
                 "score": sd.score
             })
             if len(results) >= top_k:
                 break
+                
+    # 결과 반환 직전 텍스트 파일에 실시간 기록 추가
+    try:
+        import json
+        output_path = PROJECT_ROOT / "search_scores.txt"
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        import traceback
+        print(f"⚠️ Failed to write search scores to file in search_service: {e}")
+        traceback.print_exc()
+        
     return results
 

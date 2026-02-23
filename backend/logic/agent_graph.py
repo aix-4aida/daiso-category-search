@@ -5,7 +5,8 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from backend.logic.nlu import analyze_text, generate_tail_question, infer_product_keywords
-from backend.database.database import search_products, get_related_products_for_context
+from backend.database.database import get_related_products_for_context
+from backend.services.search_service import search_products
 from backend.logic.schemas import NLUResponse, Intent, NLUSlots
 
 # --- 1. Graph State Definition ---

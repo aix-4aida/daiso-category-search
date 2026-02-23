@@ -76,6 +76,7 @@ class LocalBM25:
             scores[i] = s
 
         idx_sorted = sorted(range(len(self.docs)), key=lambda i: scores[i], reverse=True)
+        idx_sorted = [i for i in idx_sorted if scores[i] > 0]
         idx_sorted = idx_sorted[: min(top_k, len(idx_sorted))]
 
         out: List[ScoredDoc] = []
@@ -117,11 +118,22 @@ class ElasticBM25Retriever:
         return h
 
     def check_connection(self) -> bool:
-        """Check if ElasticSearch is reachable."""
+        """Check if ElasticSearch is reachable and the index exists."""
         try:
             url = self.base_url.rstrip("/")
+            # 1. Check basic connectivity
             r = requests.get(url, timeout=self.timeout_s)
-            return r.status_code == 200
+            if r.status_code != 200:
+                return False
+                
+            # 2. Check if index exists explicitly
+            idx_url = f"{url}/{self.index}"
+            r_idx = requests.head(idx_url, headers=self._headers(), timeout=self.timeout_s)
+            if r_idx.status_code != 200:
+                print(f"⚠️ ElasticSearch reachable, but index '{self.index}' not found. Falling back.")
+                return False
+                
+            return True
         except Exception:
             return False
 

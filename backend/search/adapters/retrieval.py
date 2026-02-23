@@ -88,7 +88,7 @@ class QdrantVectorRetriever:
                 doc_id = str(h.get("id") or "")
                 score = float(h.get("score") or 0.0)
                 if doc_id:
-                    out.append(ScoredDoc(doc_id=doc_id, score=score, source="dense"))
+                    out.append(ScoredDoc(doc_id=doc_id, score=score, source="dense", extra={"vector_score": f"{score:.4f}"}))
             return out
         except Exception as e:
             print(f"❌ Qdrant query error: {e}")
@@ -131,6 +131,6 @@ class ChromaVectorRetriever:
                 # ScoredDoc usually expects similarity (higher is better). 
                 # For simplicity, we just pass distance if not clarified, but usually similarity = 1 - distance
                 score = 1.0 - dist if dist <= 1.0 else 0.0
-                out.append(ScoredDoc(doc_id=doc_id, score=score, source="dense"))
+                out.append(ScoredDoc(doc_id=doc_id, score=score, source="dense", extra={"vector_score": f"{score:.4f}"}))
         
         return out

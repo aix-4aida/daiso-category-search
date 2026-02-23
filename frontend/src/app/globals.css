@@ -393,6 +393,9 @@
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .store-map-header {
@@ -436,6 +439,12 @@
 
 .store-map-svg-wrapper {
     padding: 8px 16px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .store-map-svg {
@@ -461,7 +470,8 @@
     display: flex;
     gap: 20px;
     padding: 20px;
-    min-height: calc(100vh - 140px);
+    height: calc(100dvh - 56px - 64px);
+    overflow: hidden;
 }
 
 .results-left-panel {
@@ -475,6 +485,10 @@
 .results-center-panel {
     flex: 1;
     min-width: 0;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .results-right-panel {

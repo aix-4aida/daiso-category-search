@@ -257,90 +257,18 @@ export default function StoreMap({
                 </div>
             </div>
 
-            {/* SVG Map */}
+            {/* Floor Map Image */}
             <div className="store-map-svg-wrapper">
-                <svg viewBox="0 0 100 100" className="store-map-svg">
-                    {/* Background grid */}
-                    <rect x="0" y="0" width="100" height="100" fill="#f8f9fa" rx="4" />
-
-                    {/* Draw all edges lightly */}
-                    {floorData.edges.map(([a, b], i) => {
-                        const na = floorData.nodes[a];
-                        const nb = floorData.nodes[b];
-                        if (!na || !nb) return null;
-                        return (
-                            <line
-                                key={i}
-                                x1={na.x} y1={na.y}
-                                x2={nb.x} y2={nb.y}
-                                stroke="#e0e0e0"
-                                strokeWidth="0.5"
-                            />
-                        );
-                    })}
-
-                    {/* Draw all nodes as small circles */}
-                    {Object.entries(floorData.nodes).map(([id, pos]) => (
-                        <circle
-                            key={id}
-                            cx={pos.x} cy={pos.y}
-                            r="1.5"
-                            fill={id.includes("entrance") ? "#2962FF" : "#ccc"}
-                        />
-                    ))}
-
-                    {/* Route path */}
-                    {routePoints && (
-                        <polyline
-                            points={routePoints}
-                            fill="none"
-                            stroke="#2962FF"
-                            strokeWidth="2.5"
-                            strokeDasharray="6,3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    )}
-
-                    {/* Start marker */}
-                    {startNode && (
-                        <g>
-                            <circle cx={startNode.x} cy={startNode.y} r="3" fill="#2962FF" stroke="white" strokeWidth="0.8" />
-                            <circle cx={startNode.x} cy={startNode.y} r="5" fill="#2962FF" fillOpacity="0.2">
-                                <animate attributeName="r" from="3" to="8" dur="2s" repeatCount="indefinite" />
-                                <animate attributeName="fillOpacity" from="0.5" to="0" dur="2s" repeatCount="indefinite" />
-                            </circle>
-                            <rect x={startNode.x - 12} y={startNode.y - 14} width="24" height="7" rx="2" fill="white" stroke="#2962FF" strokeWidth="0.4" />
-                            <text x={startNode.x} y={startNode.y - 9} fontSize="4" textAnchor="middle" fill="#333" fontWeight="bold" fontFamily="sans-serif">
-                                현재 위치
-                            </text>
-                        </g>
-                    )}
-
-                    {/* End marker */}
-                    {endNode && (
-                        <g>
-                            {/* Pulse */}
-                            <circle cx={endNode.x} cy={endNode.y} r="4" fill="#E50000" fillOpacity="0.3">
-                                <animate attributeName="r" from="4" to="12" dur="1.5s" repeatCount="indefinite" />
-                                <animate attributeName="fillOpacity" from="0.3" to="0" dur="1.5s" repeatCount="indefinite" />
-                            </circle>
-                            {/* Pin */}
-                            <path
-                                d={`M${endNode.x} ${endNode.y} L${endNode.x - 4} ${endNode.y - 12} A4.5 4.5 0 1 1 ${endNode.x + 4} ${endNode.y - 12} Z`}
-                                fill="#E50000"
-                                stroke="white"
-                                strokeWidth="0.5"
-                            />
-                            <circle cx={endNode.x} cy={endNode.y - 12} r="2" fill="white" />
-                            {/* Label */}
-                            <rect x={endNode.x - 18} y={endNode.y - 24} width="36" height="7" rx="2" fill="white" stroke="#E50000" strokeWidth="0.4" />
-                            <text x={endNode.x} y={endNode.y - 19.5} fontSize="3.5" textAnchor="middle" fill="#333" fontWeight="bold" fontFamily="sans-serif">
-                                {displayTitle}
-                            </text>
-                        </g>
-                    )}
-                </svg>
+                <img
+                    src={floor === "B2" ? "/images/map_b2.jpg" : "/images/map_b1.jpg"}
+                    alt={`${floor} 층 매장 지도`}
+                    style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        borderRadius: 8,
+                    }}
+                />
             </div>
 
             {/* Footer */}

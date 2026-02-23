@@ -1,69 +1,67 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { searchProducts } from "@/lib/api";
-import {
-    setQuery,
-    setSearchResponse,
-    setLoading,
-    setError,
-    getSearchState,
-} from "@/store/searchStore";
 import BottomTabBar from "@/components/BottomTabBar";
 
-const CATEGORIES = [
-    { label: "뷰티/위생", icon: "💄" },
-    { label: "주방용품", icon: "🍳" },
-    { label: "청소/욕실", icon: "🧹" },
-    { label: "수납/정리", icon: "📦" },
-    { label: "문구/팬시", icon: "✏️" },
-    { label: "인테리어/원예", icon: "🌿" },
-    { label: "공구/디지털", icon: "🔧" },
-    { label: "식품", icon: "🍪" },
-    { label: "스포츠/레저/취미", icon: "⚽" },
-    { label: "패션/잡화", icon: "👜" },
-    { label: "반려동물", icon: "🐾" },
-    { label: "유아/완구", icon: "🧸" },
-] as const;
+// 카테고리 이름 → 아이콘 매핑 (DB에서 가져온 이름 기반)
+const CATEGORY_ICONS: Record<string, string> = {
+    "뷰티/위생": "💄",
+    "주방용품": "🍳",
+    "청소/욕실": "🧹",
+    "수납/정리": "📦",
+    "문구/팬시": "✏️",
+    "인테리어/원예": "🌿",
+    "공구/디지털": "🔧",
+    "식품": "🍪",
+    "스포츠/레저/취미": "⚽",
+    "패션/잡화": "👜",
+    "반려동물": "🐾",
+    "유아/완구": "🧸",
+    "국민득템": "🏆",
+    "상품권": "🎫",
+    "홈패브릭": "🛋️",
+    "세탁/청소": "🧼",
+    "캠핑/차량관리": "🏕️",
+    "여행": "✈️",
+    "수예/공예": "🧶",
+};
+
+const API_BASE: string = process.env.NEXT_PUBLIC_API_URL || "/api";
+
+interface CategoryItem {
+    name: string;
+    count: number;
+}
 
 export default function CategoryPage() {
     const router = useRouter();
     const [isSearching, setIsSearching] = useState(false);
+    const [categories, setCategories] = useState<CategoryItem[]>([]);
+    const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
-    const handleCategoryClick = useCallback(
-        async (category: string) => {
-            if (isSearching) return;
-
-            const searchQuery = `${category} 상품 찾아줘`;
-            setIsSearching(true);
-            setQuery(searchQuery, "text");
-            setLoading(true);
-
+    // DB에서 카테고리 목록 가져오기
+    useEffect(() => {
+        async function fetchCategories() {
             try {
-                const state = getSearchState();
-                const response = await searchProducts({
-                    query: searchQuery,
-                    input_type: "text",
-                    session_id: state.sessionId,
-                    history: state.history,
-                    clarification_count: state.clarificationCount,
-                });
-
-                setSearchResponse(response);
-
-                if (!response.is_in_scope || response.error || response.top3.length === 0) {
-                    router.push(`/kioskmode/not-found-result?q=${encodeURIComponent(searchQuery)}`);
-                } else {
-                    router.push(`/kioskmode/results?q=${encodeURIComponent(searchQuery)}`);
+                const res = await fetch(`${API_BASE}/search/categories`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setCategories(data.categories || []);
                 }
             } catch (err) {
-                const errorMsg = err instanceof Error ? err.message : "검색 중 오류가 발생했습니다.";
-                setError(errorMsg);
-                router.push(`/kioskmode/not-found-result?q=${encodeURIComponent(searchQuery)}`);
+                console.error("Failed to fetch categories:", err);
             } finally {
-                setIsSearching(false);
+                setIsLoadingCategories(false);
             }
+        }
+        fetchCategories();
+    }, []);
+
+    const handleCategoryClick = useCallback(
+        (categoryName: string) => {
+            if (isSearching) return;
+            router.push(`/kioskmode/category/products?name=${encodeURIComponent(categoryName)}`);
         },
         [router, isSearching]
     );
@@ -87,27 +85,35 @@ export default function CategoryPage() {
 
             {/* Category Grid */}
             <div className="flex-1 px-5 py-5 pb-24">
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
-                    {CATEGORIES.map((cat) => (
-                        <button
-                            key={cat.label}
-                            onClick={() => handleCategoryClick(cat.label)}
-                            disabled={isSearching}
-                            className={`flex flex-col items-center justify-center gap-2 bg-white rounded-2xl shadow-sm p-4 cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 ${
-                                isSearching
+                {isLoadingCategories ? (
+                    <div className="flex items-center justify-center py-20">
+                        <div className="w-10 h-10 border-4 border-red-400 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
+                        {categories.map((cat) => (
+                            <button
+                                key={cat.name}
+                                onClick={() => handleCategoryClick(cat.name)}
+                                disabled={isSearching}
+                                className={`flex flex-col items-center justify-center gap-2 bg-white rounded-2xl shadow-sm p-4 cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 ${isSearching
                                     ? "opacity-50 cursor-not-allowed"
                                     : "hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
-                            }`}
-                        >
-                            <span className="text-3xl" role="img" aria-hidden="true">
-                                {cat.icon}
-                            </span>
-                            <span className="text-xs sm:text-sm font-medium text-gray-700 text-center leading-tight">
-                                {cat.label}
-                            </span>
-                        </button>
-                    ))}
-                </div>
+                                    }`}
+                            >
+                                <span className="text-3xl" role="img" aria-hidden="true">
+                                    {CATEGORY_ICONS[cat.name] || "📁"}
+                                </span>
+                                <span className="text-xs sm:text-sm font-medium text-gray-700 text-center leading-tight">
+                                    {cat.name}
+                                </span>
+                                <span className="text-[10px] text-gray-400">
+                                    {cat.count}개
+                                </span>
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <BottomTabBar />
