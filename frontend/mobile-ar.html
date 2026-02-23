@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>어디다있소 - 매장 안내</title>
+    <link rel="icon" type="image/svg+xml" href="images/logo.svg">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SUIT Variable', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            background: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .header img {
+            height: 28px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            color: #E50000;
+            font-weight: 700;
+        }
+
+        .content {
+            flex: 1;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .product-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 8px;
+        }
+
+        .location-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #FEE;
+            color: #E50000;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 15px;
+        }
+
+        .location-badge::before {
+            content: '📍';
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .map-container img {
+            width: 100%;
+            border-radius: 12px;
+        }
+
+        .direction-text {
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            padding: 8px 0;
+        }
+
+        .cta-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: #E50000;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <img src="images/logo.svg" alt="Daiso">
+        <h1>어디다있소</h1>
+    </div>
+
+    <div class="content">
+        <div class="info-card">
+            <div class="product-name" id="product-name">상품 위치 안내</div>
+            <div class="location-badge" id="location-badge">위치 확인 중...</div>
+        </div>
+
+        <div class="map-container">
+            <img id="map-img" src="images/map_b1.png" alt="매장 지도">
+            <p class="direction-text">키오스크에서 더 자세한 경로를 확인하세요</p>
+        </div>
+
+        <a class="cta-btn" href="/">🏠 어디다있소 홈으로</a>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const shelf = params.get('shelf') || '';
+        const name = params.get('name') || '';
+
+        if (name) {
+            document.getElementById('product-name').textContent = name;
+        }
+        if (shelf) {
+            document.getElementById('location-badge').textContent = shelf;
+        }
+
+        // Show B2 map if shelf starts with B2
+        if (shelf.startsWith('B2')) {
+            document.getElementById('map-img').src = 'images/map_b2.png';
+        }
+    </script>
+</body>
+
+</html>
