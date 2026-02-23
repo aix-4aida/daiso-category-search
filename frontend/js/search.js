@@ -42,7 +42,7 @@ function renderResults(products, query) {
             <div class="result-info">
                 ${index !== 0 ? `<div class="card-tag">${category}</div>` : ''}
                 <h3 class="result-title">${p.name}</h3>
-                <div class="result-location">위치: <strong>${floor}-${section}</strong> (${shelfLabel})</div>
+                <div class="result-location">위치: <strong>${section}</strong> (${shelfLabel})</div>
                 <div class="result-price">${price}</div>
             </div>
             ${index !== 0 ? `
