@@ -332,7 +332,7 @@ function drawRouteSVG(floor, path) {
     return `
     <polyline points="${points.trim()}" 
         fill="none" 
-        stroke="#E50000" 
+        stroke="#2962FF" 
         stroke-width="2" 
         stroke-dasharray="4,3" 
         stroke-linecap="round" 
@@ -357,13 +357,13 @@ function renderMarkerSVG(floor, startNodeId, targetNodeId, productName, sectionL
     return `
         <!-- Start Marker (Current Position) -->
         <g class="start-marker">
-            <circle cx="${start.x}" cy="${start.y}" r="2.5" fill="#E50000" stroke="white" stroke-width="0.8" />
-            <circle cx="${start.x}" cy="${start.y}" r="5" fill="#E50000" fill-opacity="0.15">
+            <circle cx="${start.x}" cy="${start.y}" r="2.5" fill="#2962FF" stroke="white" stroke-width="0.8" />
+            <circle cx="${start.x}" cy="${start.y}" r="5" fill="#2962FF" fill-opacity="0.15">
                 <animate attributeName="r" from="3" to="7" dur="2s" repeatCount="indefinite" />
                 <animate attributeName="fill-opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
             </circle>
-            <rect x="${start.x - 10}" y="${start.y - 12}" width="20" height="6" rx="2" fill="white" stroke="#E50000" stroke-width="0.4" filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.15))"/>
-            <text x="${start.x}" y="${start.y - 7.5}" font-size="3.2" text-anchor="middle" fill="#E50000" font-weight="bold" font-family="'Noto Sans KR', sans-serif">현재 위치</text>
+            <rect x="${start.x - 10}" y="${start.y - 12}" width="20" height="6" rx="2" fill="white" stroke="#2962FF" stroke-width="0.4" filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.15))"/>
+            <text x="${start.x}" y="${start.y - 7.5}" font-size="3.2" text-anchor="middle" fill="#2962FF" font-weight="bold" font-family="'Noto Sans KR', sans-serif">현재 위치</text>
         </g>
 
         <!-- Target Marker (Product Location) -->

@@ -523,7 +523,7 @@
         }
 
         function showARNotice() {
-            alert('AR 네비게이션은 매장 내 키오스크 또는 모바일에서 이용 가능합니다.\n\n상품을 검색한 후 AR 네비 기능을 사용해주세요.');
+            window.location.href = `ar-navi.html?shelf=${encodeURIComponent(shelf)}&name=${encodeURIComponent(name)}`;
         }
     </script>
 </body>

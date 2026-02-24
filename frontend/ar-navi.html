@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>어디다있소 - AR 네비</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css">
+    <style>
+        :root {
+            --color-primary: #E50000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SUIT Variable', sans-serif;
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* Camera feed */
+        #camera-feed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        /* Overlay UI */
+        .ar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .ar-overlay * {
+            pointer-events: auto;
+        }
+
+        /* Top info card */
+        .ar-top-card {
+            margin: 12px;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ar-product-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--color-primary);
+        }
+
+        .ar-product-location {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .ar-product-location .badge {
+            display: inline-block;
+            background: var(--color-primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 12px;
+            margin-right: 6px;
+        }
+
+        /* Center compass */
+        .ar-compass-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .compass-ring {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .compass-arrow {
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 70px solid #FFD600;
+            position: absolute;
+            transform-origin: center bottom;
+            filter: drop-shadow(0 2px 8px rgba(255, 214, 0, 0.5));
+            transition: transform 0.3s ease;
+        }
+
+        .compass-dot {
+            width: 14px;
+            height: 14px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            position: absolute;
+            z-index: 2;
+        }
+
+        .ar-direction-text {
+            position: absolute;
+            bottom: -40px;
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            width: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Bottom buttons */
+        .ar-bottom {
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .ar-btn {
+            padding: 14px 28px;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+            border: none;
+        }
+
+        .ar-btn-camera {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .ar-btn-map {
+            background: rgba(80, 80, 80, 0.8);
+            color: white;
+        }
+
+        /* Permission screen */
+        .permission-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .permission-screen h2 {
+            font-size: 22px;
+        }
+
+        .permission-screen p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+
+        .permission-btn {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Camera Feed -->
+    <video id="camera-feed" autoplay playsinline></video>
+
+    <!-- Permission Screen -->
+    <div class="permission-screen" id="permission-screen">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#E50000" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+        </svg>
+        <h2>AR 네비게이션</h2>
+        <p>카메라와 방향센서를 사용하여<br>매장 내 상품 위치를 안내합니다.</p>
+        <button class="permission-btn" onclick="startAR()">카메라 시작</button>
+        <p style="font-size:12px; margin-top:8px; color:rgba(255,255,255,0.4);">
+            PoC 단계 — 실제 매장 위치와 다를 수 있습니다
+        </p>
+    </div>
+
+    <!-- AR Overlay -->
+    <div class="ar-overlay hidden" id="ar-overlay">
+        <div class="ar-top-card">
+            <div class="ar-product-name" id="ar-name">상품명</div>
+            <div class="ar-product-location">
+                <span class="badge" id="ar-floor">B1</span>
+                <span id="ar-section">Section</span>
+            </div>
+        </div>
+
+        <div class="ar-compass-area">
+            <div class="compass-ring">
+                <div class="compass-arrow" id="compass-arrow"></div>
+                <div class="compass-dot"></div>
+            </div>
+            <div class="ar-direction-text" id="direction-text">방향을 탐색 중...</div>
+        </div>
+
+        <div class="ar-bottom">
+            <button class="ar-btn ar-btn-camera" id="btn-ar" onclick="toggleAR()">
+                📸 AR
+            </button>
+            <button class="ar-btn ar-btn-map" onclick="goToMap()">
+                🗺 지도
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL params
+        const params = new URLSearchParams(window.location.search);
+        const shelf = params.get('shelf') || 'B1-A01';
+        const name = params.get('name') || '상품';
+        const floor = shelf.startsWith('B2') ? 'B2' : 'B1';
+
+        // Section directions (compass bearing from entrance, in degrees)
+        const SECTION_BEARINGS = {
+            B1: {
+                'A': { angle: 0, name: '시즌/Season' }, 'B': { angle: 340, name: '화장품/Beauty' },
+                'C': { angle: 10, name: '건강기능식품' }, 'D': { angle: 30, name: '캐릭터/Character' },
+                'E': { angle: 320, name: '패션/Fashion' }, 'F': { angle: 60, name: '문구/Stationery' },
+                'G': { angle: 40, name: '파티·유아동' }, 'H': { angle: 280, name: '인테리어소품' },
+                'I': { angle: 90, name: '디지털/Digital' }, 'J': { angle: 60, name: '문구/Stationery' },
+                'K': { angle: 260, name: '식품/Snacks' }, 'L': { angle: 120, name: '포장/Packaging' },
+            },
+            B2: {
+                'A': { angle: 0, name: '욕실/Bath' }, 'B': { angle: 340, name: '청소/Cleaning' },
+                'C': { angle: 310, name: '세탁/Laundry' }, 'D': { angle: 300, name: '득템/Good Place' },
+                'E': { angle: 20, name: '일본수입' }, 'F': { angle: 280, name: '수납/Storage' },
+                'G': { angle: 30, name: '홈패브릭' }, 'H': { angle: 270, name: '내추럴코너' },
+                'I': { angle: 50, name: '공구/Tools' }, 'J': { angle: 90, name: '스포츠/Sports' },
+                'K': { angle: 70, name: '반려동물/Pets' }, 'L': { angle: 50, name: '수예/Handcraft' },
+                'M': { angle: 350, name: '캠핑·차량' }, 'N': { angle: 260, name: '주방/Kitchen' },
+                'O': { angle: 140, name: '여행/Travel' }, 'P': { angle: 200, name: '원예/Gardening' },
+            }
+        };
+
+        // Get section info
+        const sectionLetter = shelf.length >= 5 ? shelf.charAt(3) : 'A';
+        const sectionInfo = (SECTION_BEARINGS[floor] || {})[sectionLetter] || { angle: 0, name: shelf };
+        const targetBearing = sectionInfo.angle;
+
+        // Set UI
+        document.getElementById('ar-name').textContent = name;
+        document.getElementById('ar-floor').textContent = floor;
+        document.getElementById('ar-section').textContent = `${sectionInfo.name} (${shelf})`;
+
+        let compassHeading = 0;
+        let arActive = true;
+
+        async function startAR() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' },
+                    audio: false
+                });
+                document.getElementById('camera-feed').srcObject = stream;
+                document.getElementById('permission-screen').classList.add('hidden');
+                document.getElementById('ar-overlay').classList.remove('hidden');
+
+                // Try device orientation
+                if (typeof DeviceOrientationEvent !== 'undefined' &&
+                    typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    // iOS 13+
+                    const perm = await DeviceOrientationEvent.requestPermission();
+                    if (perm === 'granted') {
+                        window.addEventListener('deviceorientation', handleOrientation, true);
+                    }
+                } else {
+                    window.addEventListener('deviceorientation', handleOrientation, true);
+                }
+
+                // Fallback: simulate compass if no sensor
+                startSimulation();
+
+            } catch (err) {
+                alert('카메라 접근이 거부되었습니다.\n\n브라우저 설정에서 카메라 권한을 허용해주세요.');
+            }
+        }
+
+        function handleOrientation(event) {
+            if (event.alpha !== null) {
+                compassHeading = event.alpha;
+                updateCompass();
+                clearInterval(simInterval);
+            }
+        }
+
+        let simInterval;
+        function startSimulation() {
+            // Simulate slow compass drift for demo if no real sensor
+            let simAngle = 0;
+            simInterval = setInterval(() => {
+                simAngle = (simAngle + 0.5) % 360;
+                compassHeading = simAngle;
+                updateCompass();
+            }, 50);
+        }
+
+        function updateCompass() {
+            const relAngle = targetBearing - compassHeading;
+            const arrow = document.getElementById('compass-arrow');
+            arrow.style.transform = `rotate(${relAngle}deg) translateY(-20px)`;
+
+            const absDiff = Math.abs(((relAngle + 180) % 360) - 180);
+            const dirText = document.getElementById('direction-text');
+
+            if (absDiff < 20) {
+                dirText.textContent = `✅ 앞쪽으로 직진! (${Math.round(absDiff)}°)`;
+            } else if (absDiff < 90) {
+                const lr = relAngle > 0 && relAngle < 180 ? '오른쪽' : '왼쪽';
+                dirText.textContent = `이동: ${floor}층 ${sectionInfo.name} 방향 (${Math.round(absDiff)}°)`;
+            } else {
+                dirText.textContent = `이동: ${floor}층 ${sectionInfo.name} 안내 (${Math.round(absDiff)}°)`;
+            }
+        }
+
+        function toggleAR() {
+            arActive = !arActive;
+            const btn = document.getElementById('btn-ar');
+            if (arActive) {
+                document.getElementById('camera-feed').style.display = 'block';
+                btn.innerHTML = '📸 AR';
+            } else {
+                document.getElementById('camera-feed').style.display = 'none';
+                btn.innerHTML = '📸 AR (OFF)';
+            }
+        }
+
+        function goToMap() {
+            window.location.href = `mobile-ar.html?shelf=${encodeURIComponent(shelf)}&name=${encodeURIComponent(name)}`;
+        }
+    </script>
+</body>
+
+</html>
