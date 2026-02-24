@@ -1921,3 +1921,90 @@ img {
 .carousel-dots .dot.active {
   background: white;
 }
+
+/* =============================================
+   UNIFIED MAP STYLES
+   ============================================= */
+.floor-map {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+}
+
+/* Base styles for the SVG within floor-map or map containers */
+.floor-map svg,
+.category-map-wrap svg,
+.map-image-container svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  /* Maintain aspect ratio natively via viewBox */
+}
+
+/* Ensure sub-containers expand to fill available space */
+.category-map-wrap,
+.map-image-container,
+.store-map-container {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 !important;
+}
+
+/* =============================================
+   CATEGORY PIN ANIMATIONS
+   ============================================= */
+.pin-path {
+  animation: pin-pulse 2s infinite ease-in-out;
+  /* SVG coordinate transformation: origin is local (0,0) which is the tip */
+  transform-origin: 0 0;
+}
+
+@keyframes pin-pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pin-ripple {
+  animation: ripple-svg 2s infinite ease-out;
+  transform-origin: 0 0;
+  opacity: 0;
+}
+
+.pin-ripple:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.pin-ripple:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes ripple-svg {
+  0% {
+    r: 0;
+    opacity: 1;
+    stroke-width: 2;
+  }
+
+  100% {
+    r: 25;
+    opacity: 0;
+    stroke-width: 0.5;
+  }
+}

@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // B1 section data with pixel-accurate positions (% of 863x1024 image)
 const B1_SECTIONS = [
-    { code: 'B01', name: '시즌', en: 'Season', x: 53, y: 29, color: '#FFCDD2', cat: '시즌' },
+    { code: 'B01', name: '시즌', en: 'Season', x: 53, y: 33, color: '#FFCDD2', cat: '시즌' },
     { code: 'C01', name: '화장품', en: 'Beauty', x: 83, y: 30, color: '#F8BBD0', cat: '뷰티' },
     { code: 'D01', name: '건강기능식품', en: 'Health', x: 54.4, y: 46, color: '#C8E6C9', cat: '건강' },
     { code: 'E01', name: '캐릭터', en: 'Character', x: 55, y: 59, color: '#FFF9C4', cat: '캐릭터' },
@@ -18,19 +18,19 @@ const B1_SECTIONS = [
     { code: 'A02', name: '문구', en: 'Stationery', x: 23, y: 67, color: '#BBDEFB', cat: '문구' },
     { code: 'G01', name: '파티·유아동', en: 'Party/Kids', x: 49, y: 70, color: '#FFE0B2', cat: '파티' },
     { code: 'I01', name: '포장', en: 'Packaging', x: 17, y: 90, color: '#CFD8DC', cat: '포장' },
-    { code: 'J01', name: '디지털', en: 'Digital', x: 53, y: 90, color: '#B3E5FC', cat: '디지털' },
-    { code: 'H01', name: '인테리어소품', en: 'Interior Prop', x: 83, y: 81, color: '#C8E6C9', cat: '인테리어' },
-    { code: 'K01', name: '식품', en: 'Snacks', x: 83, y: 97, color: '#FFCCBC', cat: '식품' },
+    { code: 'J01', name: '디지털', en: 'Digital', x: 53, y: 86, color: '#B3E5FC', cat: '디지털' },
+    { code: 'H01', name: '인테리어소품', en: 'Interior Prop', x: 83, y: 79, color: '#C8E6C9', cat: '인테리어' },
+    { code: 'K01', name: '식품', en: 'Snacks', x: 83, y: 92, color: '#FFCCBC', cat: '식품' },
 ];
 
 // B2 section data
 const B2_SECTIONS = [
-    { code: 'BA01', name: '욕실', en: 'Bath', x: 53, y: 4, color: '#B2EBF2', cat: '욕실' },
-    { code: 'CL01', name: '청소', en: 'Cleaning', x: 69, y: 4, color: '#DCEDC8', cat: '청소' },
-    { code: 'LA01', name: '세탁', en: 'Laundry', x: 86, y: 0, color: '#E1BEE7', cat: '세탁' },
-    { code: 'GP01', name: '득템', en: 'Good Place', x: 88, y: 13, color: '#FFF176', cat: '득템' },
-    { code: 'JA01', name: '일본수입', en: 'Japanese', x: 54, y: 26, color: '#FFCDD2', cat: '일본수입' },
-    { code: 'ST01', name: '수납', en: 'Storage', x: 83, y: 26, color: '#CFD8DC', cat: '수납' },
+    { code: 'BA01', name: '욕실', en: 'Bath', x: 53, y: 13, color: '#B2EBF2', cat: '욕실' },
+    { code: 'CL01', name: '청소', en: 'Cleaning', x: 69, y: 13, color: '#DCEDC8', cat: '청소' },
+    { code: 'LA01', name: '세탁', en: 'Laundry', x: 86, y: 8, color: '#E1BEE7', cat: '세탁' },
+    { code: 'GP01', name: '득템', en: 'Good Place', x: 88, y: 20, color: '#FFF176', cat: '득템' },
+    { code: 'JA01', name: '일본수입', en: 'Japanese', x: 54, y: 28, color: '#FFCDD2', cat: '일본수입' },
+    { code: 'ST01', name: '수납', en: 'Storage', x: 83, y: 29, color: '#CFD8DC', cat: '수납' },
     { code: 'HF01', name: '홈패브릭', en: 'Home Fabric', x: 54, y: 40, color: '#D7CCC8', cat: '홈패브릭' },
     { code: 'NC01', name: '내추럴코너', en: 'Natural', x: 83, y: 40, color: '#AED581', cat: '자연' },
     { code: 'TO01', name: '공구', en: 'Tools', x: 54, y: 52, color: '#90A4AE', cat: '공구' },
@@ -39,8 +39,8 @@ const B2_SECTIONS = [
     { code: 'PE01', name: '반려동물', en: 'Pets', x: 28, y: 72, color: '#FFAB91', cat: '애견' },
     { code: 'HC01', name: '수예', en: 'Handcraft', x: 40, y: 72, color: '#CE93D8', cat: '수예' },
     { code: 'CA01', name: '캠핑', en: 'Camping', x: 54, y: 69, color: '#66BB6A', cat: '캠핑' },
-    { code: 'TR01', name: '여행', en: 'Travel', x: 41, y: 92, color: '#4FC3F7', cat: '여행' },
-    { code: 'GA01', name: '원예', en: 'Gardening', x: 62, y: 96, color: '#81C784', cat: '원예' },
+    { code: 'TR01', name: '여행', en: 'Travel', x: 41, y: 86, color: '#4FC3F7', cat: '여행' },
+    { code: 'GA01', name: '원예', en: 'Gardening', x: 62, y: 92, color: '#81C784', cat: '원예' },
 ];
 
 // Category icon mapping (from GitHub reference page.tsx)
@@ -96,10 +96,14 @@ function renderFloorMap(floorId, sections) {
     const floor = floorId.toUpperCase();
     container.innerHTML = `
         <div class="category-map-wrap">
-            <img src="images/map_${floorId}.png" class="cat-map-img"
-                 onerror="this.src='https://placehold.co/430x510?text=${floor}'">
-            <svg class="cat-map-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-                ${sections.map(s => renderSectionSVG(s)).join('')}
+            <svg class="cat-map-svg" viewBox="0 0 863 1024">
+                <!-- 배경 지도 이미지를 SVG 내부로 통합 -->
+                <image href="images/map_${floorId}.png" x="0" y="0" width="863" height="1024"></image>
+                
+                <!-- 기존 0-100 좌표계를 863x1024 시스템으로 변환 -->
+                <g transform="scale(8.63, 10.24)">
+                    ${sections.map(s => renderSectionSVG(s)).join('')}
+                </g>
             </svg>
         </div>
     `;
@@ -122,11 +126,17 @@ function renderSectionSVG(sec) {
         </g>
     `;
 
-    // New pin icon group (initially hidden with display: none)
+    // New pin icon group (initially hidden)
     const pinIcon = `
         <g class="map-pin-group" data-cat="${sec.cat}" data-code="${sec.code}" 
            transform="translate(${sec.x}, ${sec.y}) scale(0.4)" style="display: none;">
-            <path fill="#FF0000" d="M0 -20C-3.87 -20 -7 -16.87 -7 -13c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5z"/>
+            <!-- Ripple layers -->
+            <circle class="pin-ripple" cx="0" cy="0" r="0" fill="none" stroke="#FF0000" stroke-width="2" />
+            <circle class="pin-ripple" cx="0" cy="0" r="0" fill="none" stroke="#FF0000" stroke-width="2" />
+            <circle class="pin-ripple" cx="0" cy="0" r="0" fill="none" stroke="#FF0000" stroke-width="2" />
+            
+            <path class="pin-path" fill="#FF0000" d="M0 -20C-3.87 -20 -7 -16.87 -7 -13c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5z"
+                  style="transform-origin: 0px 0px;"/>
         </g>
     `;
 

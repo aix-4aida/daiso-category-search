@@ -308,10 +308,15 @@ function renderResultMap(product) {
             </div>
 
             <div class="map-image-container">
-                <img src="images/map_${floor.toLowerCase()}.png" class="map-base-img" onerror="this.src='https://placehold.co/600x400?text=Map+${floor}'">
-                <svg class="map-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    ${isPathFound ? drawRouteSVG(floor, path) : ''}
-                    ${renderMarkerSVG(floor, startNodeId, endNodeId, product.name, sectionLabel)}
+                <svg class="map-overlay" viewBox="0 0 863 1024">
+                    <!-- 배경 지도 이미지를 SVG 내부로 통합 -->
+                    <image href="images/map_${floor.toLowerCase()}.png" x="0" y="0" width="863" height="1024"></image>
+                    
+                    <!-- 기존 0-100 좌표계를 863x1024 시스템으로 변환 -->
+                    <g transform="scale(8.63, 10.24)">
+                        ${isPathFound ? drawRouteSVG(floor, path) : ''}
+                        ${renderMarkerSVG(floor, startNodeId, endNodeId, product.name, sectionLabel)}
+                    </g>
                 </svg>
             </div>
             <div class="map-footer" style="margin-top:12px; font-size:14px; color:#666; text-align:center;">

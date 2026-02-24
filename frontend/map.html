@@ -61,19 +61,24 @@
             style="display: flex; height: calc(100vh - 180px); padding: 0 20px; box-sizing: border-box;">
             <div class="store-map-container"
                 style="flex: 1; position: relative; background: #fff; border-radius: 12px; box-shadow: var(--shadow-card); display: flex; align-items: center; justify-content: center; overflow: hidden; margin-right: 20px;">
-                <img id="store-map-img" src="images/map_b1.png" alt="B1 Map"
-                    style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <svg id="store-map-svg" viewBox="0 0 863 1024" style="width: 100%; height: 100%;">
+                    <!-- 배경 지도 이미지 -->
+                    <image id="store-map-img-svg" href="images/map_b1.png" x="0" y="0" width="863" height="1024">
+                    </image>
 
-                <!-- 현위치 마커 -->
-                <div id="current-location-marker"
-                    style="position: absolute; bottom: 12%; left: 30%; display: flex; flex-direction: column; align-items: center; z-index: 10;">
-                    <div
-                        style="background: var(--color-primary); color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px; position:relative; top:-5px;">
-                        현위치</div>
-                    <div
-                        style="width: 14px; height: 14px; background: var(--color-primary); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 4px rgba(229,0,0,0.2);">
-                    </div>
-                </div>
+                    <!-- 현위치 마커 (863x1024 좌표계로 변환) -->
+                    <!-- 원래 %: bottom 12%, left 30% -> x=30, y=88 -->
+                    <g id="current-location-marker-group" transform="translate(258.9, 901.12)">
+                        <!-- 30% of 863, 88% of 1024 -->
+                        <foreignObject x="-40" y="-45" width="80" height="40">
+                            <div xmlns="http://www.w3.org/1999/xhtml"
+                                style="background: var(--color-primary); color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px; text-align: center;">
+                                현위치
+                            </div>
+                        </foreignObject>
+                        <circle cx="0" cy="0" r="7" fill="var(--color-primary)" stroke="white" stroke-width="2" />
+                    </g>
+                </svg>
             </div>
 
             <div class="floor-toggles"
@@ -125,14 +130,15 @@
     <script src="js/idle-timer.js"></script>
     <script>
         function setFloor(floor) {
-            const img = document.getElementById('store-map-img');
-            const marker = document.getElementById('current-location-marker');
+            const img = document.getElementById('store-map-img-svg');
+            const marker = document.getElementById('current-location-marker-group');
             const b1Btn = document.getElementById('btn-floor-b1');
             const b2Btn = document.getElementById('btn-floor-b2');
 
+            // For SVG <image>, we use setAttribute('href', ...)
             if (floor === 'B1') {
-                img.src = 'images/map_b1.png';
-                marker.style.display = 'flex';
+                img.setAttribute('href', 'images/map_b1.png');
+                marker.style.display = 'block';
                 b1Btn.style.background = 'var(--color-primary)';
                 b1Btn.style.color = 'white';
                 b1Btn.style.border = 'none';
@@ -140,7 +146,7 @@
                 b2Btn.style.color = 'var(--color-primary)';
                 b2Btn.style.border = '1px solid #ddd';
             } else {
-                img.src = 'images/map_b2.png';
+                img.setAttribute('href', 'images/map_b2.png');
                 marker.style.display = 'none';
                 b2Btn.style.background = 'var(--color-primary)';
                 b2Btn.style.color = 'white';

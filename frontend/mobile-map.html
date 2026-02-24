@@ -45,17 +45,28 @@
                 </div>
                 <div class="map-image-container"
                     style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;">
-                    <img id="mobile-map-img" src="images/map_b1.png" class="map-base-img"
-                        style="max-width:100%;max-height:100%;object-fit:contain;">
+                    <svg id="mobile-map-svg" viewBox="0 0 863 1024" style="width: 100%; height: 100%;">
+                        <!-- 배경 지도 이미지 -->
+                        <image id="mobile-map-img" href="images/map_b1.png" x="0" y="0" width="863" height="1024">
+                        </image>
 
-                    <div class="map-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;">
-                        <div class="map-pin current-position" style="left:50%;top:90%;">
-                            <div class="pin-label" style="opacity:1;">입구 (현위치)</div>
-                        </div>
-                        <div class="map-pin target-pin active pulse" id="mobile-target-pin" style="left:50%;top:50%;">
-                            <div class="pin-popup">여기!</div>
-                        </div>
-                    </div>
+                        <!-- 기존 0-100 좌표계를 863x1024 시스템으로 변환 -->
+                        <g transform="scale(8.63, 10.24)">
+                            <!-- 입구 (현위치) -->
+                            <g transform="translate(50, 90)">
+                                <circle cx="0" cy="0" r="3" fill="#2962FF" stroke="white" stroke-width="0.8" />
+                                <text x="0" y="8" font-size="4" text-anchor="middle" fill="#2962FF"
+                                    font-weight="bold">입구</text>
+                            </g>
+
+                            <!-- 상품 위치 핀 -->
+                            <g id="mobile-target-pin-group" transform="translate(50, 50)">
+                                <circle cx="0" cy="0" r="4" fill="#E50000" stroke="white" stroke-width="1" />
+                                <text x="0" y="-7" font-size="4" text-anchor="middle" fill="#E50000"
+                                    font-weight="bold">여기!</text>
+                            </g>
+                        </g>
+                    </svg>
                 </div>
             </div>
             <div style="text-align:center;margin-top:16px;width:100%;">
@@ -99,20 +110,20 @@
         document.getElementById('floor-label').textContent = floor;
 
         // Load correct floor image
-        document.getElementById('mobile-map-img').src = 'images/map_' + floor.toLowerCase() + '.png';
+        document.getElementById('mobile-map-img').setAttribute('href', 'images/map_' + floor.toLowerCase() + '.png');
 
         // Dummy coordinate map for sections
         const sectionCoords = {
             'N01': { x: 20, y: 30 }, 'N02': { x: 25, y: 30 }, 'N03': { x: 30, y: 30 },
-            'C01': { x: 60, y: 40 }, 'K01': { x: 80, y: 60 }, 'B01': { x: 40, y: 50 }
+            'C01': { x: 60, y: 40 }, 'K01': { x: 80, y: 60 }, 'B01': { x: 40, y: 50 },
+            'B03': { x: 40, y: 50 } // Fallback for testing
         };
 
         const targetSection = shelf.split('-')[1];
         const coords = sectionCoords[targetSection] || { x: 50, y: 50 };
-        const pin = document.getElementById('mobile-target-pin');
-        if (pin) {
-            pin.style.left = coords.x + '%';
-            pin.style.top = coords.y + '%';
+        const pinGroup = document.getElementById('mobile-target-pin-group');
+        if (pinGroup) {
+            pinGroup.setAttribute('transform', `translate(${coords.x}, ${coords.y})`);
         }
     </script>
 </body>
