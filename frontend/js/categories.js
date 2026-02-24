@@ -10,37 +10,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // B1 section data with pixel-accurate positions (% of 863x1024 image)
 const B1_SECTIONS = [
-    { code: 'B01', name: '시즌', en: 'Season', x: 49, y: 27, color: '#FFCDD2', cat: '시즌' },
-    { code: 'C01', name: '화장품', en: 'Beauty', x: 83, y: 25, color: '#F8BBD0', cat: '뷰티' },
-    { code: 'D01', name: '건강기능식품', en: 'Health', x: 49, y: 37, color: '#C8E6C9', cat: '건강' },
-    { code: 'E01', name: '캐릭터', en: 'Character', x: 49, y: 46, color: '#FFF9C4', cat: '캐릭터' },
-    { code: 'F01', name: '패션', en: 'Fashion', x: 83, y: 46, color: '#D1C4E9', cat: '패션' },
-    { code: 'A02', name: '문구', en: 'Stationery', x: 15, y: 54, color: '#BBDEFB', cat: '문구' },
-    { code: 'G01', name: '파티·유아동', en: 'Party/Kids', x: 49, y: 56, color: '#FFE0B2', cat: '파티' },
-    { code: 'I01', name: '포장', en: 'Packaging', x: 13, y: 71, color: '#CFD8DC', cat: '포장' },
-    { code: 'J01', name: '디지털', en: 'Digital', x: 45, y: 74, color: '#B3E5FC', cat: '디지털' },
-    { code: 'H01', name: '인테리어소품', en: 'Interior Prop', x: 83, y: 62, color: '#C8E6C9', cat: '인테리어' },
-    { code: 'K01', name: '식품', en: 'Snacks', x: 83, y: 78, color: '#FFCCBC', cat: '식품' },
+    { code: 'B01', name: '시즌', en: 'Season', x: 53, y: 29, color: '#FFCDD2', cat: '시즌' },
+    { code: 'C01', name: '화장품', en: 'Beauty', x: 83, y: 30, color: '#F8BBD0', cat: '뷰티' },
+    { code: 'D01', name: '건강기능식품', en: 'Health', x: 54.4, y: 46, color: '#C8E6C9', cat: '건강' },
+    { code: 'E01', name: '캐릭터', en: 'Character', x: 55, y: 59, color: '#FFF9C4', cat: '캐릭터' },
+    { code: 'F01', name: '패션', en: 'Fashion', x: 83, y: 61, color: '#D1C4E9', cat: '패션' },
+    { code: 'A02', name: '문구', en: 'Stationery', x: 23, y: 67, color: '#BBDEFB', cat: '문구' },
+    { code: 'G01', name: '파티·유아동', en: 'Party/Kids', x: 49, y: 70, color: '#FFE0B2', cat: '파티' },
+    { code: 'I01', name: '포장', en: 'Packaging', x: 17, y: 90, color: '#CFD8DC', cat: '포장' },
+    { code: 'J01', name: '디지털', en: 'Digital', x: 53, y: 90, color: '#B3E5FC', cat: '디지털' },
+    { code: 'H01', name: '인테리어소품', en: 'Interior Prop', x: 83, y: 81, color: '#C8E6C9', cat: '인테리어' },
+    { code: 'K01', name: '식품', en: 'Snacks', x: 83, y: 97, color: '#FFCCBC', cat: '식품' },
 ];
 
 // B2 section data
 const B2_SECTIONS = [
-    { code: 'BA01', name: '욕실', en: 'Bath', x: 25, y: 18, color: '#B2EBF2', cat: '욕실' },
-    { code: 'CL01', name: '청소', en: 'Cleaning', x: 47, y: 18, color: '#DCEDC8', cat: '청소' },
-    { code: 'LA01', name: '세탁', en: 'Laundry', x: 72, y: 13, color: '#E1BEE7', cat: '수납정리' },
-    { code: 'GP01', name: '득템', en: 'Good Place', x: 72, y: 22, color: '#FFF176', cat: '득템' },
-    { code: 'JA01', name: '일본수입', en: 'Japanese', x: 25, y: 32, color: '#FFCDD2', cat: '일본수입' },
-    { code: 'ST01', name: '수납', en: 'Storage', x: 72, y: 35, color: '#CFD8DC', cat: '수납정리' },
-    { code: 'HF01', name: '홈패브릭', en: 'Home Fabric', x: 25, y: 48, color: '#D7CCC8', cat: '인테리어' },
-    { code: 'NC01', name: '내추럴코너', en: 'Natural', x: 72, y: 48, color: '#AED581', cat: '자연' },
-    { code: 'TO01', name: '공구', en: 'Tools', x: 25, y: 55, color: '#90A4AE', cat: '공구' },
-    { code: 'KI01', name: '주방', en: 'Kitchen', x: 72, y: 55, color: '#FFE082', cat: '주방' },
-    { code: 'SP01', name: '스포츠', en: 'Sports', x: 16, y: 72, color: '#80CBC4', cat: '스포츠' },
+    { code: 'BA01', name: '욕실', en: 'Bath', x: 53, y: 4, color: '#B2EBF2', cat: '욕실' },
+    { code: 'CL01', name: '청소', en: 'Cleaning', x: 69, y: 4, color: '#DCEDC8', cat: '청소' },
+    { code: 'LA01', name: '세탁', en: 'Laundry', x: 86, y: 0, color: '#E1BEE7', cat: '세탁' },
+    { code: 'GP01', name: '득템', en: 'Good Place', x: 88, y: 13, color: '#FFF176', cat: '득템' },
+    { code: 'JA01', name: '일본수입', en: 'Japanese', x: 54, y: 26, color: '#FFCDD2', cat: '일본수입' },
+    { code: 'ST01', name: '수납', en: 'Storage', x: 83, y: 26, color: '#CFD8DC', cat: '수납' },
+    { code: 'HF01', name: '홈패브릭', en: 'Home Fabric', x: 54, y: 40, color: '#D7CCC8', cat: '홈패브릭' },
+    { code: 'NC01', name: '내추럴코너', en: 'Natural', x: 83, y: 40, color: '#AED581', cat: '자연' },
+    { code: 'TO01', name: '공구', en: 'Tools', x: 54, y: 52, color: '#90A4AE', cat: '공구' },
+    { code: 'KI01', name: '주방', en: 'Kitchen', x: 82, y: 75, color: '#FFE082', cat: '주방' },
+    { code: 'SP01', name: '스포츠', en: 'Sports', x: 14, y: 78, color: '#80CBC4', cat: '스포츠' },
     { code: 'PE01', name: '반려동물', en: 'Pets', x: 28, y: 72, color: '#FFAB91', cat: '애견' },
     { code: 'HC01', name: '수예', en: 'Handcraft', x: 40, y: 72, color: '#CE93D8', cat: '수예' },
-    { code: 'CA01', name: '캠핑', en: 'Camping', x: 52, y: 72, color: '#66BB6A', cat: '캠핑' },
-    { code: 'TR01', name: '여행', en: 'Travel', x: 28, y: 88, color: '#4FC3F7', cat: '여행' },
-    { code: 'GA01', name: '원예', en: 'Gardening', x: 52, y: 88, color: '#81C784', cat: '원예' },
+    { code: 'CA01', name: '캠핑', en: 'Camping', x: 54, y: 69, color: '#66BB6A', cat: '캠핑' },
+    { code: 'TR01', name: '여행', en: 'Travel', x: 41, y: 92, color: '#4FC3F7', cat: '여행' },
+    { code: 'GA01', name: '원예', en: 'Gardening', x: 62, y: 96, color: '#81C784', cat: '원예' },
 ];
 
 // Category icon mapping (from GitHub reference page.tsx)
@@ -66,27 +66,9 @@ const CATEGORY_ICONS = {
     "수예/공예": "🧶",
 };
 
-// Category → map section filter mapping
-const CATEGORY_FILTER_MAP = {
-    "뷰티/위생": ['뷰티', '화장품'],
-    "주방용품": ['주방'],
-    "청소/욕실": ['욕실', '청소'],
-    "수납/정리": ['수납정리'],
-    "문구/팬시": ['문구'],
-    "인테리어/원예": ['인테리어', '원예', '자연'],
-    "공구/디지털": ['디지털', '공구'],
-    "식품": ['식품'],
-    "스포츠/레저/취미": ['스포츠', '캠핑', '여행'],
-    "패션/잡화": ['패션'],
-    "반려동물": ['애견'],
-    "유아/완구": ['파티', '캐릭터'],
-    "국민득템": ['득템'],
-    "홈패브릭": ['인테리어'],
-    "세탁/청소": ['청소', '욕실'],
-    "캠핑/차량관리": ['캠핑'],
-    "여행": ['여행'],
-    "수예/공예": ['수예'],
-};
+// [REMOVED] CATEGORY_FILTER_MAP is no longer used for strict 1:1 mapping.
+// Buttons now match category (cat) values exactly.
+
 
 async function initCategoryView() {
     const sidebar = document.getElementById('category-sidebar');
@@ -127,8 +109,10 @@ function renderSectionSVG(sec) {
     // Semi-transparent colored rectangle behind the text
     const w = Math.max(sec.name.length * 4.5, 14);
     const h = 8;
-    return `
-        <g class="section-label" data-cat="${sec.cat}" data-code="${sec.code}">
+
+    // Original label group (now hidden with opacity: 0)
+    const originalLabel = `
+        <g class="section-label" data-cat="${sec.cat}" data-code="${sec.code}" style="opacity: 0;">
             <rect x="${sec.x - w / 2}" y="${sec.y - h / 2}" width="${w}" height="${h}" rx="1.5"
                 fill="${sec.color}" fill-opacity="0.65" stroke="rgba(0,0,0,0.1)" stroke-width="0.3"/>
             <text x="${sec.x}" y="${sec.y - 0.5}" text-anchor="middle" font-size="2.8"
@@ -137,36 +121,39 @@ function renderSectionSVG(sec) {
                 fill="#666" font-family="'SUIT Variable',sans-serif">${sec.en}</text>
         </g>
     `;
+
+    // New pin icon group (initially hidden with display: none)
+    const pinIcon = `
+        <g class="map-pin-group" data-cat="${sec.cat}" data-code="${sec.code}" 
+           transform="translate(${sec.x}, ${sec.y}) scale(0.4)" style="display: none;">
+            <path fill="#FF0000" d="M0 -20C-3.87 -20 -7 -16.87 -7 -13c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5z"/>
+        </g>
+    `;
+
+    return originalLabel + pinIcon;
 }
 
 let currentFilter = null;
 
 function filterCategory(catName, btn) {
-    // Update active button
+    // 1. Hide all pins and deactivate all buttons
+    document.querySelectorAll('.map-pin-group').forEach(p => {
+        p.style.display = 'none';
+    });
     document.querySelectorAll('.cat-filter-btn').forEach(b => b.classList.remove('active'));
+
+    // 2. Activate clicked button
     btn.classList.add('active');
 
-    currentFilter = catName === '전체' ? null : (CATEGORY_FILTER_MAP[catName] || [catName]);
-
-    // Highlight matching sections
-    document.querySelectorAll('.section-label').forEach(g => {
-        const secCat = g.dataset.cat;
-        if (!currentFilter) {
-            // 전체: show all
-            g.style.opacity = '1';
-            g.querySelector('rect').setAttribute('fill-opacity', '0.65');
-        } else if (currentFilter.some(f => secCat.includes(f))) {
-            g.style.opacity = '1';
-            g.querySelector('rect').setAttribute('fill-opacity', '0.85');
-            g.querySelector('rect').setAttribute('stroke', '#E50000');
-            g.querySelector('rect').setAttribute('stroke-width', '0.6');
-        } else {
-            g.style.opacity = '0.25';
-            g.querySelector('rect').setAttribute('fill-opacity', '0.3');
-            g.querySelector('rect').setAttribute('stroke', 'rgba(0,0,0,0.1)');
-            g.querySelector('rect').setAttribute('stroke-width', '0.3');
-        }
-    });
+    // 3. Show matching pins (if not "전체")
+    if (catName !== '전체') {
+        document.querySelectorAll('.map-pin-group').forEach(p => {
+            if (p.dataset.cat === catName) { // Strict exact matching
+                p.style.display = 'block';
+                p.style.opacity = '1';
+            }
+        });
+    }
 }
 
 // Entrance + self-checkout markers
