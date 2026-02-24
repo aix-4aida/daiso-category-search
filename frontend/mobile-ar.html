@@ -319,10 +319,16 @@
         const params = new URLSearchParams(window.location.search);
         const shelf = params.get('shelf') || 'B1-A01';
         const name = params.get('name') || '상품';
+        const imgParam = params.get('img') || '';
 
         // Set product info
         document.getElementById('product-name').textContent = name;
         document.getElementById('product-location').textContent = shelf;
+
+        // Set product image if available
+        if (imgParam) {
+            document.querySelector('.product-thumb').innerHTML = '<img src="' + imgParam + '" alt="' + name + '" style="width:100%;height:100%;object-fit:cover;">';
+        }
 
         // Determine floor
         const floor = shelf.startsWith('B2') ? 'B2' : 'B1';
@@ -366,6 +372,66 @@
                     'B1-E': 'sec-E', 'B1-F': 'sec-J', 'B1-G': 'sec-G', 'B1-H': 'sec-H',
                     'B1-I': 'sec-I', 'B1-J': 'sec-J', 'B1-K': 'sec-K', 'B1-L': 'sec-L',
                 }
+            },
+            B2: {
+                nodes: {
+                    'entrance': { x: 28, y: 93 },
+                    'w01': { x: 28, y: 78 }, 'w02': { x: 55, y: 78 },
+                    'w03': { x: 14, y: 58 }, 'w04': { x: 28, y: 58 },
+                    'w05': { x: 42, y: 58 }, 'w06': { x: 55, y: 58 },
+                    'w07': { x: 63, y: 58 }, 'w08': { x: 28, y: 48 },
+                    'w09': { x: 55, y: 48 }, 'w10': { x: 63, y: 48 },
+                    'w11': { x: 28, y: 34 }, 'w12': { x: 55, y: 34 },
+                    'w13': { x: 63, y: 34 }, 'w14': { x: 28, y: 22 },
+                    'w15': { x: 55, y: 22 }, 'w16': { x: 63, y: 22 },
+                    'w17': { x: 28, y: 10 }, 'w18': { x: 55, y: 10 },
+                    'w19': { x: 72, y: 10 }, 'w20': { x: 85, y: 10 },
+                    'w21': { x: 63, y: 78 }, 'w22': { x: 63, y: 16 },
+                    'sec-bath': { x: 38, y: 14 }, 'sec-cleaning': { x: 58, y: 14 },
+                    'sec-laundry': { x: 78, y: 12 }, 'sec-goodplace': { x: 82, y: 20 },
+                    'sec-japanese': { x: 42, y: 28 }, 'sec-storage': { x: 75, y: 28 },
+                    'sec-fabric': { x: 42, y: 40 }, 'sec-natural': { x: 75, y: 42 },
+                    'sec-tools': { x: 42, y: 53 }, 'sec-sports': { x: 10, y: 67 },
+                    'sec-pets': { x: 26, y: 67 }, 'sec-handcraft': { x: 40, y: 67 },
+                    'sec-camping': { x: 55, y: 67 }, 'sec-kitchen': { x: 77, y: 67 },
+                    'sec-travel': { x: 28, y: 85 }, 'sec-gardening': { x: 52, y: 85 },
+                },
+                edges: [
+                    ['entrance', 'w01'], ['w01', 'w02'], ['w01', 'w04'],
+                    ['w02', 'w06'], ['w02', 'w21'],
+                    ['w03', 'w04'], ['w04', 'w05'], ['w04', 'w08'],
+                    ['w05', 'w06'], ['w06', 'w07'],
+                    ['w07', 'w21'], ['w07', 'w10'],
+                    ['w08', 'w09'], ['w08', 'w11'],
+                    ['w09', 'w10'], ['w10', 'w13'], ['w10', 'w21'],
+                    ['w11', 'w12'], ['w11', 'w14'],
+                    ['w12', 'w13'], ['w13', 'w16'], ['w13', 'w22'],
+                    ['w14', 'w15'], ['w14', 'w17'],
+                    ['w15', 'w16'], ['w15', 'w18'],
+                    ['w16', 'w22'], ['w17', 'w18'],
+                    ['w18', 'w19'], ['w19', 'w20'],
+                    ['w17', 'sec-bath'], ['w14', 'sec-bath'],
+                    ['w18', 'sec-cleaning'], ['w15', 'sec-cleaning'],
+                    ['w19', 'sec-laundry'], ['w20', 'sec-laundry'],
+                    ['w20', 'sec-goodplace'], ['w22', 'sec-goodplace'],
+                    ['w11', 'sec-japanese'], ['w14', 'sec-japanese'],
+                    ['w13', 'sec-storage'], ['w16', 'sec-storage'],
+                    ['w11', 'sec-fabric'], ['w08', 'sec-fabric'],
+                    ['w10', 'sec-natural'], ['w13', 'sec-natural'],
+                    ['w08', 'sec-tools'], ['w04', 'sec-tools'],
+                    ['w03', 'sec-sports'], ['w04', 'sec-pets'],
+                    ['w05', 'sec-handcraft'], ['w06', 'sec-camping'],
+                    ['w21', 'sec-kitchen'], ['w07', 'sec-kitchen'],
+                    ['w01', 'sec-travel'], ['w02', 'sec-gardening'],
+                ],
+                sectionMap: {
+                    'B2-A': 'sec-bath', 'B2-B': 'sec-cleaning', 'B2-C': 'sec-laundry',
+                    'B2-D': 'sec-goodplace', 'B2-E': 'sec-japanese', 'B2-F': 'sec-storage',
+                    'B2-G': 'sec-fabric', 'B2-H': 'sec-natural', 'B2-I': 'sec-tools',
+                    'B2-J': 'sec-sports', 'B2-K': 'sec-pets', 'B2-L': 'sec-handcraft',
+                    'B2-M': 'sec-camping', 'B2-N': 'sec-kitchen',
+                    'B2-O': 'sec-travel', 'B2-P': 'sec-gardening',
+                }
             }
         };
 
@@ -388,11 +454,11 @@
 
         // Find target node
         function getTarget(shelf) {
-            if (!shelf || shelf.length < 4) return 'sec-A';
+            if (!shelf || shelf.length < 4) return 'entrance';
             const prefix = shelf.substring(0, 4);
             const data = GRAPH[floor];
             if (data && data.sectionMap[prefix]) return data.sectionMap[prefix];
-            return 'sec-A';
+            return 'entrance';
         }
 
         // Render route on map
@@ -457,7 +523,7 @@
         }
 
         function showARNotice() {
-            alert('모바일 AR 네비게이션은 현재 PoC 단계입니다.\n\n카메라를 통해 매장 내 경로를 안내받을 수 있습니다.\n정식 서비스 출시 시 더 정확한 AR 안내가 제공됩니다.');
+            alert('AR 네비게이션은 매장 내 키오스크 또는 모바일에서 이용 가능합니다.\n\n상품을 검색한 후 AR 네비 기능을 사용해주세요.');
         }
     </script>
 </body>
