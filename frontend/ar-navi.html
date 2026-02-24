@@ -304,7 +304,8 @@
         document.getElementById('ar-floor').textContent = floor;
         document.getElementById('ar-section').textContent = `${sectionInfo.name} (${shelf})`;
 
-        let compassHeading = 0;
+        let compassHeading = null; // null = no sensor data yet
+        let hasSensor = false;
         let arActive = true;
 
         async function startAR() {
@@ -321,16 +322,24 @@
                 if (typeof DeviceOrientationEvent !== 'undefined' &&
                     typeof DeviceOrientationEvent.requestPermission === 'function') {
                     // iOS 13+
-                    const perm = await DeviceOrientationEvent.requestPermission();
-                    if (perm === 'granted') {
-                        window.addEventListener('deviceorientation', handleOrientation, true);
-                    }
+                    try {
+                        const perm = await DeviceOrientationEvent.requestPermission();
+                        if (perm === 'granted') {
+                            window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+                            window.addEventListener('deviceorientation', handleOrientation, true);
+                        }
+                    } catch (e) { }
                 } else {
+                    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
                     window.addEventListener('deviceorientation', handleOrientation, true);
                 }
 
-                // Fallback: simulate compass if no sensor
-                startSimulation();
+                // Wait 2 seconds for sensor, then fall back to fixed arrow
+                setTimeout(() => {
+                    if (!hasSensor) {
+                        showFixedArrow();
+                    }
+                }, 2000);
 
             } catch (err) {
                 alert('카메라 접근이 거부되었습니다.\n\n브라우저 설정에서 카메라 권한을 허용해주세요.');
@@ -338,39 +347,69 @@
         }
 
         function handleOrientation(event) {
-            if (event.alpha !== null) {
-                compassHeading = event.alpha;
+            let heading = null;
+
+            // webkitCompassHeading (iOS) = magnetic north heading
+            if (event.webkitCompassHeading != null) {
+                heading = event.webkitCompassHeading;
+            }
+            // absolute orientation (Android)
+            else if (event.absolute && event.alpha != null) {
+                heading = 360 - event.alpha;
+            }
+            // fallback: non-absolute alpha
+            else if (event.alpha != null) {
+                heading = 360 - event.alpha;
+            }
+
+            if (heading !== null) {
+                hasSensor = true;
+                compassHeading = heading;
                 updateCompass();
-                clearInterval(simInterval);
             }
         }
 
-        let simInterval;
-        function startSimulation() {
-            // Simulate slow compass drift for demo if no real sensor
-            let simAngle = 0;
-            simInterval = setInterval(() => {
-                simAngle = (simAngle + 0.5) % 360;
-                compassHeading = simAngle;
-                updateCompass();
+        // Fixed arrow mode (no sensor available)
+        function showFixedArrow() {
+            const arrow = document.getElementById('compass-arrow');
+            const dirText = document.getElementById('direction-text');
+
+            // Point arrow straight up (toward target direction)
+            arrow.style.transform = 'rotate(0deg) translateY(-20px)';
+            dirText.textContent = `📍 ${sectionInfo.name} 방향으로 이동하세요`;
+
+            // Gentle pulse to show it's active
+            let pulse = 0;
+            setInterval(() => {
+                pulse += 0.02;
+                const scale = 1 + Math.sin(pulse) * 0.05;
+                arrow.style.transform = `rotate(0deg) translateY(-20px) scale(${scale})`;
             }, 50);
         }
 
         function updateCompass() {
-            const relAngle = targetBearing - compassHeading;
+            // Calculate: how much should user turn to face target?
+            // targetBearing = compass bearing of target from entrance
+            // compassHeading = current compass heading of phone
+            // relAngle = how many degrees to turn to face target
+            const relAngle = ((targetBearing - compassHeading) % 360 + 360) % 360;
             const arrow = document.getElementById('compass-arrow');
-            arrow.style.transform = `rotate(${relAngle}deg) translateY(-20px)`;
 
-            const absDiff = Math.abs(((relAngle + 180) % 360) - 180);
+            // Convert to -180..180 for display
+            const displayAngle = relAngle > 180 ? relAngle - 360 : relAngle;
+            arrow.style.transform = `rotate(${displayAngle}deg) translateY(-20px)`;
+
+            const absDiff = Math.abs(displayAngle);
             const dirText = document.getElementById('direction-text');
 
-            if (absDiff < 20) {
-                dirText.textContent = `✅ 앞쪽으로 직진! (${Math.round(absDiff)}°)`;
-            } else if (absDiff < 90) {
-                const lr = relAngle > 0 && relAngle < 180 ? '오른쪽' : '왼쪽';
-                dirText.textContent = `이동: ${floor}층 ${sectionInfo.name} 방향 (${Math.round(absDiff)}°)`;
+            if (absDiff < 15) {
+                dirText.textContent = `✅ 이 방향으로 직진! (${Math.round(absDiff)}°)`;
+            } else if (absDiff < 45) {
+                const lr = displayAngle > 0 ? '오른쪽' : '왼쪽';
+                dirText.textContent = `↗ 약간 ${lr}으로 이동 (${Math.round(absDiff)}°)`;
             } else {
-                dirText.textContent = `이동: ${floor}층 ${sectionInfo.name} 안내 (${Math.round(absDiff)}°)`;
+                const lr = displayAngle > 0 ? '오른쪽' : '왼쪽';
+                dirText.textContent = `🔄 ${lr}으로 ${Math.round(absDiff)}° 회전`;
             }
         }
 
