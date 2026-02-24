@@ -289,6 +289,8 @@ img {
   flex: 1;
 }
 
+
+
 .product-thumb {
   background: white;
   border-radius: var(--radius-md);
@@ -957,6 +959,8 @@ img {
    ============================================= */
 .category-page {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   flex: 1;
   width: 100%;
 }
@@ -964,13 +968,17 @@ img {
 .category-map-area {
   flex: 1;
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: 20px;
   padding: 24px;
   overflow: auto;
 }
 
 .floor-map {
-  flex: 1;
+  flex: 1 1 calc(50% - 10px);
+  min-width: 0;
+  width: calc(50% - 10px);
   background: white;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -1008,6 +1016,8 @@ img {
 .cat-map-img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  object-fit: contain;
   display: block;
   border-radius: 8px;
 }
@@ -1070,6 +1080,38 @@ img {
 
 .cat-filter-name {
   font-size: 13px;
+}
+
+.cat-filter-count {
+  font-size: 10px;
+  color: var(--color-text-light);
+  margin-left: -4px;
+}
+
+.cat-filter-btn.active .cat-filter-count {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.category-map-container {
+  display: block;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  margin-top: 15px;
 }
 
 /* ── Image-based Map Styles ── */

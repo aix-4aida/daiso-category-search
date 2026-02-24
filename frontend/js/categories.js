@@ -43,35 +43,69 @@ const B2_SECTIONS = [
     { code: 'GA01', name: '원예', en: 'Gardening', x: 52, y: 88, color: '#81C784', cat: '원예' },
 ];
 
-// Category filter buttons
-const CATEGORIES = [
-    { name: '전체', icon: '🏬', filter: null },
-    { name: '뷰티', icon: '💄', filter: ['뷰티', '화장품'] },
-    { name: '주방', icon: '🍽️', filter: ['주방'] },
-    { name: '욕실', icon: '🛁', filter: ['욕실', '청소'] },
-    { name: '문구', icon: '✏️', filter: ['문구'] },
-    { name: '수납정리', icon: '🧺', filter: ['수납정리'] },
-    { name: '식품', icon: '🍪', filter: ['식품'] },
-    { name: '인테리어', icon: '🏠', filter: ['인테리어'] },
-    { name: '애견', icon: '🐕', filter: ['애견'] },
-];
+// Category icon mapping (from GitHub reference page.tsx)
+const CATEGORY_ICONS = {
+    "뷰티/위생": "💄",
+    "주방용품": "🍳",
+    "청소/욕실": "🧹",
+    "수납/정리": "📦",
+    "문구/팬시": "✏️",
+    "인테리어/원예": "🌿",
+    "공구/디지털": "🔧",
+    "식품": "🍪",
+    "스포츠/레저/취미": "⚽",
+    "패션/잡화": "👜",
+    "반려동물": "🐾",
+    "유아/완구": "🧸",
+    "국민득템": "🏆",
+    "상품권": "🎫",
+    "홈패브릭": "🛋️",
+    "세탁/청소": "🧼",
+    "캠핑/차량관리": "🏕️",
+    "여행": "✈️",
+    "수예/공예": "🧶",
+};
 
-function initCategoryView() {
+// Category → map section filter mapping
+const CATEGORY_FILTER_MAP = {
+    "뷰티/위생": ['뷰티', '화장품'],
+    "주방용품": ['주방'],
+    "청소/욕실": ['욕실', '청소'],
+    "수납/정리": ['수납정리'],
+    "문구/팬시": ['문구'],
+    "인테리어/원예": ['인테리어', '원예', '자연'],
+    "공구/디지털": ['디지털', '공구'],
+    "식품": ['식품'],
+    "스포츠/레저/취미": ['스포츠', '캠핑', '여행'],
+    "패션/잡화": ['패션'],
+    "반려동물": ['애견'],
+    "유아/완구": ['파티', '캐릭터'],
+    "국민득템": ['득템'],
+    "홈패브릭": ['인테리어'],
+    "세탁/청소": ['청소', '욕실'],
+    "캠핑/차량관리": ['캠핑'],
+    "여행": ['여행'],
+    "수예/공예": ['수예'],
+};
+
+async function initCategoryView() {
     const sidebar = document.getElementById('category-sidebar');
     if (!sidebar) return;
 
-    // Render category filter buttons
-    sidebar.innerHTML = CATEGORIES.map((cat, i) => `
-        <button class="cat-filter-btn ${i === 0 ? 'active' : ''}" onclick="filterCategory('${cat.name}', this)">
-            <span class="cat-filter-icon">${cat.icon}</span>
-            <span class="cat-filter-name">${cat.name}</span>
-        </button>
-    `).join('');
+    // Attach click listeners to the hardcoded buttons
+    const filterButtons = sidebar.querySelectorAll('.cat-filter-btn');
+    filterButtons.forEach(btn => {
+        btn.onclick = () => {
+            const catName = btn.getAttribute('data-cat') || btn.innerText.trim();
+            filterCategory(catName, btn);
+        };
+    });
 
     // Render both floor maps
     renderFloorMap('b1', B1_SECTIONS);
     renderFloorMap('b2', B2_SECTIONS);
 }
+
 
 function renderFloorMap(floorId, sections) {
     const container = document.getElementById(`map-${floorId}`);
@@ -112,8 +146,7 @@ function filterCategory(catName, btn) {
     document.querySelectorAll('.cat-filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
-    const cat = CATEGORIES.find(c => c.name === catName);
-    currentFilter = cat?.filter || null;
+    currentFilter = catName === '전체' ? null : (CATEGORY_FILTER_MAP[catName] || [catName]);
 
     // Highlight matching sections
     document.querySelectorAll('.section-label').forEach(g => {

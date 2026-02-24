@@ -218,7 +218,7 @@ async function loadRandomBanner() {
     const container = document.querySelector('.banner-products');
     if (!container) return; // Only run on pages that have the banner products grid
     try {
-        const res = await fetch('/api/search/random?limit=4');
+        const res = await fetch('/search/random?limit=4');
         if (!res.ok) throw new Error('Network response was not ok');
         const data = await res.json();
         if (data.status === 'success' && data.products && data.products.length > 0) {
