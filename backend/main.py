@@ -43,6 +43,21 @@ def root():
         "status": "running"
     }
 
+@app.get("/api/recommended")
+def get_recommended():
+    import json, os, random
+    products_path = os.path.join(os.path.dirname(__file__), "database", "products.json")
+    try:
+        with open(products_path, "r", encoding="utf-8") as f:
+            products = json.load(f)
+        # Filter: 국민득템 with valid name, price, image
+        valid = [p for p in products if p.get("name") and p.get("price") and p.get("image") and "noimage" not in p["image"]]
+        # Pick 4 random items (or fewer if not enough)
+        selected = random.sample(valid, min(4, len(valid)))
+        return {"products": selected}
+    except Exception as e:
+        return {"products": [], "error": str(e)}
+
 @app.get("/health")
 def health_check():
     from backend.services.stt_service import whisper_adapter, google_adapter
