@@ -100,7 +100,7 @@ const GRAPH = {
     },
     B2: {
         nodes: {
-            'b2-entrance': { x: 28, y: 96 },
+            'b2-entrance': { x: 28, y: 93 },
             // Corridor waypoints
             'b2-w01': { x: 28, y: 78 },  // 여행 옆
             'b2-w02': { x: 55, y: 78 },  // 원예 옆
@@ -115,32 +115,32 @@ const GRAPH = {
             'b2-w11': { x: 28, y: 34 },  // 일본수입 위
             'b2-w12': { x: 55, y: 34 },  // 홈패브릭-내추럴
             'b2-w13': { x: 63, y: 34 },  // 수납 옆
-            'b2-w14': { x: 28, y: 20 },  // 욕실 위
-            'b2-w15': { x: 55, y: 20 },  // 일본수입-수납
-            'b2-w16': { x: 63, y: 20 },  // 수납 위
-            'b2-w17': { x: 28, y: 3 },   // 욕실 최상단
-            'b2-w18': { x: 55, y: 3 },   // 청소 위
-            'b2-w19': { x: 72, y: 3 },   // 세탁 옆
-            'b2-w20': { x: 90, y: 3 },   // 득템
+            'b2-w14': { x: 28, y: 22 },  // 욕실 위
+            'b2-w15': { x: 55, y: 22 },  // 일본수입-수납
+            'b2-w16': { x: 63, y: 22 },  // 수납 위
+            'b2-w17': { x: 28, y: 10 },  // 욕실 최상단
+            'b2-w18': { x: 55, y: 10 },  // 청소 위
+            'b2-w19': { x: 72, y: 10 },  // 세탁 옆
+            'b2-w20': { x: 85, y: 10 },  // 득템
             'b2-w21': { x: 63, y: 78 },  // 주방 아래
-            'b2-w22': { x: 63, y: 14 },  // 득템 옆
+            'b2-w22': { x: 63, y: 16 },  // 득템 옆
             // Section center nodes
-            'b2-sec-bath': { x: 38, y: 10 },
-            'b2-sec-cleaning': { x: 58, y: 10 },
-            'b2-sec-laundry': { x: 82, y: 7 },
-            'b2-sec-goodplace': { x: 85, y: 17 },
-            'b2-sec-japanese': { x: 42, y: 26 },
-            'b2-sec-storage': { x: 78, y: 28 },
+            'b2-sec-bath': { x: 38, y: 14 },
+            'b2-sec-cleaning': { x: 58, y: 14 },
+            'b2-sec-laundry': { x: 78, y: 12 },
+            'b2-sec-goodplace': { x: 82, y: 20 },
+            'b2-sec-japanese': { x: 42, y: 28 },
+            'b2-sec-storage': { x: 75, y: 28 },
             'b2-sec-fabric': { x: 42, y: 40 },
-            'b2-sec-natural': { x: 78, y: 42 },
+            'b2-sec-natural': { x: 75, y: 42 },
             'b2-sec-tools': { x: 42, y: 53 },
-            'b2-sec-sports': { x: 8, y: 67 },
+            'b2-sec-sports': { x: 10, y: 67 },
             'b2-sec-pets': { x: 26, y: 67 },
             'b2-sec-handcraft': { x: 40, y: 67 },
             'b2-sec-camping': { x: 55, y: 67 },
-            'b2-sec-kitchen': { x: 80, y: 67 },
+            'b2-sec-kitchen': { x: 77, y: 67 },
             'b2-sec-travel': { x: 28, y: 85 },
-            'b2-sec-gardening': { x: 52, y: 87 },
+            'b2-sec-gardening': { x: 52, y: 85 },
         },
         edges: [
             ['b2-entrance', 'b2-w01'],
@@ -332,7 +332,7 @@ function drawRouteSVG(floor, path) {
     return `
     <polyline points="${points.trim()}" 
         fill="none" 
-        stroke="#E50000" 
+        stroke="#2962FF" 
         stroke-width="2" 
         stroke-dasharray="4,3" 
         stroke-linecap="round" 
@@ -357,13 +357,13 @@ function renderMarkerSVG(floor, startNodeId, targetNodeId, productName, sectionL
     return `
         <!-- Start Marker (Current Position) -->
         <g class="start-marker">
-            <circle cx="${start.x}" cy="${start.y}" r="2.5" fill="#E50000" stroke="white" stroke-width="0.8" />
-            <circle cx="${start.x}" cy="${start.y}" r="5" fill="#E50000" fill-opacity="0.15">
+            <circle cx="${start.x}" cy="${start.y}" r="2.5" fill="#2962FF" stroke="white" stroke-width="0.8" />
+            <circle cx="${start.x}" cy="${start.y}" r="5" fill="#2962FF" fill-opacity="0.15">
                 <animate attributeName="r" from="3" to="7" dur="2s" repeatCount="indefinite" />
                 <animate attributeName="fill-opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
             </circle>
-            <rect x="${start.x - 10}" y="${start.y - 12}" width="20" height="6" rx="2" fill="white" stroke="#E50000" stroke-width="0.4" filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.15))"/>
-            <text x="${start.x}" y="${start.y - 7.5}" font-size="3.2" text-anchor="middle" fill="#E50000" font-weight="bold" font-family="'Noto Sans KR', sans-serif">현재 위치</text>
+            <rect x="${start.x - 10}" y="${start.y - 12}" width="20" height="6" rx="2" fill="white" stroke="#2962FF" stroke-width="0.4" filter="drop-shadow(0px 1px 2px rgba(0,0,0,0.15))"/>
+            <text x="${start.x}" y="${start.y - 7.5}" font-size="3.2" text-anchor="middle" fill="#2962FF" font-weight="bold" font-family="'Noto Sans KR', sans-serif">현재 위치</text>
         </g>
 
         <!-- Target Marker (Product Location) -->
