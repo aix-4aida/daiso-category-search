@@ -292,7 +292,19 @@ function renderResultMap(product) {
     const path = bfs(adj, startNodeId, endNodeId);
 
     const isPathFound = path.length > 1;
-    const distance = isPathFound ? (path.length - 1) * 3 : 0;
+    // Calculate actual distance using coordinates (1 unit ≈ 0.3m based on ~30m store interior)
+    const SCALE_M_PER_UNIT = 0.3;
+    let distance = 0;
+    if (isPathFound) {
+        for (let i = 1; i < path.length; i++) {
+            const a = floorData.nodes[path[i - 1]];
+            const b = floorData.nodes[path[i]];
+            if (a && b) {
+                distance += Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2)) * SCALE_M_PER_UNIT;
+            }
+        }
+        distance = Math.round(distance);
+    }
     const distanceText = isPathFound ? `약 <strong>${distance}m</strong>` : "경로 탐색 불가";
     const sectionLabel = product.location?.shelf_label || product.meta?.category_major || "";
 
