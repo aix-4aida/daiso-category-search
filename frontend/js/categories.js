@@ -83,6 +83,23 @@ async function initCategoryView() {
         };
     });
 
+    // Attach input listener for real-time category filtering
+    const searchInput = document.getElementById('cat-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().replace(/\s+/g, '');
+
+            filterButtons.forEach(btn => {
+                const catValue = (btn.getAttribute('data-cat') || "").toLowerCase().replace(/\s+/g, '');
+                if (catValue.includes(searchTerm)) {
+                    btn.style.display = 'block';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        });
+    }
+
     // Render both floor maps
     renderFloorMap('b1', B1_SECTIONS);
     renderFloorMap('b2', B2_SECTIONS);
