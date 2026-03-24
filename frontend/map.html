@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/variable/woff2/SUIT-Variable.css">
     <link rel="stylesheet" href="css/style.css">
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="images/logo.svg">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNiAzNiIgd2lkdGg9IjM2IiBoZWlnaHQ9IjM2Ij4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIHJ4PSI4IiBmaWxsPSIjRTUwMDAwIiAvPgogIDx0ZXh0IHg9IjE4IiB5PSIyMi41IiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCAnU2Vnb2UgVUknLCBSb2JvdG8sIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTAiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjRkZGRkZGIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBsZXR0ZXItc3BhY2luZz0iLTAuNSI+RGFpc288L3RleHQ+Cjwvc3ZnPgo=">
 </head>
 
 <body>
@@ -19,7 +20,7 @@
         <a href="index.html" class="header-logo">
             <div class="logo-icon"><span>Daiso</span></div>
             <div class="logo-text">
-                어디<span class="red">다</span><span class="mix-iss">있</span><span class="red">소</span>
+                <img src="images/logo.png" alt="어디다있소" style="height: 46px; margin-left: 8px;">
             </div>
         </a>
 
@@ -60,19 +61,24 @@
             style="display: flex; height: calc(100vh - 180px); padding: 0 20px; box-sizing: border-box;">
             <div class="store-map-container"
                 style="flex: 1; position: relative; background: #fff; border-radius: 12px; box-shadow: var(--shadow-card); display: flex; align-items: center; justify-content: center; overflow: hidden; margin-right: 20px;">
-                <img id="store-map-img" src="images/map_b1.png" alt="B1 Map"
-                    style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                <svg id="store-map-svg" viewBox="0 0 863 1024" style="width: 100%; height: 100%;">
+                    <!-- 배경 지도 이미지 -->
+                    <image id="store-map-img-svg" href="images/map_b1.png" x="0" y="0" width="863" height="1024">
+                    </image>
 
-                <!-- 현위치 마커 -->
-                <div id="current-location-marker"
-                    style="position: absolute; bottom: 12%; left: 30%; display: flex; flex-direction: column; align-items: center; z-index: 10;">
-                    <div
-                        style="background: var(--color-primary); color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px; position:relative; top:-5px;">
-                        현위치</div>
-                    <div
-                        style="width: 14px; height: 14px; background: var(--color-primary); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 4px rgba(229,0,0,0.2);">
-                    </div>
-                </div>
+                    <!-- 현위치 마커 (863x1024 좌표계로 변환) -->
+                    <!-- 원래 %: bottom 12%, left 30% -> x=30, y=88 -->
+                    <g id="current-location-marker-group" transform="translate(258.9, 901.12)">
+                        <!-- 30% of 863, 88% of 1024 -->
+                        <foreignObject x="-40" y="-45" width="80" height="40">
+                            <div xmlns="http://www.w3.org/1999/xhtml"
+                                style="background: var(--color-primary); color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 14px; text-align: center;">
+                                현위치
+                            </div>
+                        </foreignObject>
+                        <circle cx="0" cy="0" r="7" fill="var(--color-primary)" stroke="white" stroke-width="2" />
+                    </g>
+                </svg>
             </div>
 
             <div class="floor-toggles"
@@ -117,21 +123,22 @@
     </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="js/app.js?v=15"></script>
-    <script src="js/search.js?v=15"></script>
-    <script src="js/map.js?v=15"></script>
-    <script src="js/categories.js?v=15"></script>
+    <script src="js/app.js?v=51"></script>
+    <script src="js/search.js?v=51"></script>
+    <script src="js/map.js?v=51"></script>
+    <script src="js/categories.js?v=51"></script>
     <script src="js/idle-timer.js"></script>
     <script>
         function setFloor(floor) {
-            const img = document.getElementById('store-map-img');
-            const marker = document.getElementById('current-location-marker');
+            const img = document.getElementById('store-map-img-svg');
+            const marker = document.getElementById('current-location-marker-group');
             const b1Btn = document.getElementById('btn-floor-b1');
             const b2Btn = document.getElementById('btn-floor-b2');
 
+            // For SVG <image>, we use setAttribute('href', ...)
             if (floor === 'B1') {
-                img.src = 'images/map_b1.png';
-                marker.style.display = 'flex';
+                img.setAttribute('href', 'images/map_b1.png');
+                marker.style.display = 'block';
                 b1Btn.style.background = 'var(--color-primary)';
                 b1Btn.style.color = 'white';
                 b1Btn.style.border = 'none';
@@ -139,7 +146,7 @@
                 b2Btn.style.color = 'var(--color-primary)';
                 b2Btn.style.border = '1px solid #ddd';
             } else {
-                img.src = 'images/map_b2.png';
+                img.setAttribute('href', 'images/map_b2.png');
                 marker.style.display = 'none';
                 b2Btn.style.background = 'var(--color-primary)';
                 b2Btn.style.color = 'white';

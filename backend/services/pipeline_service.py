@@ -16,20 +16,22 @@ def format_products(products):
     """Unified formatting for products to be sent to frontend"""
     formatted = []
     for p in products:
+        # Location data is inside the 'meta' dict from search_service.py
+        meta = get_val(p, "meta", {}) or {}
         formatted.append({
             "id": get_val(p, "id"),
             "name": get_val(p, "name", "알 수 없는 상품"),
-            "price": get_val(p, "price", 0),
-            "formatted_price": f"{get_val(p, 'price', 0):,}원",
+            "price": get_val(p, "price", 0) or meta.get("price", 0),
+            "formatted_price": f"{get_val(p, 'price', 0) or meta.get('price', 0):,}원",
             "location": {
-                "floor": get_val(p, "floor", "B1"),
-                "section": get_val(p, "section", "N01"),
-                "shelf_label": get_val(p, "shelf_label", "일반매대")
+                "floor": get_val(p, "floor", None) or meta.get("floor", "B1"),
+                "section": get_val(p, "section", None) or meta.get("section", "N01"),
+                "shelf_label": get_val(p, "shelf_label", None) or meta.get("shelf_label", "일반매대")
             },
-            "image_url": get_val(p, "image_url", ""),
+            "image_url": get_val(p, "image_url", "") or meta.get("image_url", ""),
             "meta": {
-                "category_major": get_val(p, "category_major"),
-                "category_middle": get_val(p, "category_middle")
+                "category_major": get_val(p, "category_major", None) or meta.get("major"),
+                "category_middle": get_val(p, "category_middle", None) or meta.get("middle")
             }
         })
     return formatted

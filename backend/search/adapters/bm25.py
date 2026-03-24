@@ -53,10 +53,7 @@ class LocalBM25:
     def query(self, query_text: str, *, top_k: int = 50) -> List[ScoredDoc]:
         q_tokens = _simple_tokenize(query_text)
         if not q_tokens:
-            return [
-                ScoredDoc(doc_id=self.docs[i].doc_id, score=0.0, extra={"rank": i + 1})
-                for i in range(min(top_k, len(self.docs)))
-            ]
+            return []
 
         scores: List[float] = [0.0 for _ in self.docs]
         for i, doc_toks in enumerate(self._doc_tokens):
@@ -75,7 +72,8 @@ class LocalBM25:
                 s += idf * (f * (self._k1 + 1)) / max(denom, 1e-9)
             scores[i] = s
 
-        idx_sorted = sorted(range(len(self.docs)), key=lambda i: scores[i], reverse=True)
+        idx_sorted = [idx for idx in range(len(self.docs)) if scores[idx] > 0.0]
+        idx_sorted = sorted(idx_sorted, key=lambda i: scores[i], reverse=True)
         idx_sorted = idx_sorted[: min(top_k, len(idx_sorted))]
 
         out: List[ScoredDoc] = []
@@ -128,11 +126,7 @@ class ElasticBM25Retriever:
     def query(self, query_text: str, *, top_k: int = 50) -> List[ScoredDoc]:
         qt = (query_text or "").strip()
         if not qt:
-            # 비교 실험용: 빈 쿼리면 0점으로라도 top_k 반환(로컬과 동일한 “항상 top_k” 규약)
-            return [
-                ScoredDoc(doc_id=self.docs[i].doc_id, score=0.0, extra={"rank": i + 1})
-                for i in range(min(top_k, len(self.docs)))
-            ]
+            return []
 
         url = f"{self.base_url.rstrip('/')}/{self.index}/_search"
         body: Dict[str, Any] = {

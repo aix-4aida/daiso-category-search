@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSpeech();
     initCarousel();
 
-    if (window.location.pathname.includes('results.html')) {
+    if (window.location.pathname.includes('results.html') || window.location.pathname.includes('results')) {
         executeSearchOnResultsPage();
     }
 });
@@ -132,7 +132,7 @@ async function executeSearchOnResultsPage() {
     const loadingView = document.getElementById('view-loading');
 
     // Start fetching data immediately
-    const fetchPromise = fetch('/api/search/text', {
+    const fetchPromise = fetch('/search/text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: text })
@@ -169,60 +169,82 @@ async function executeSearchOnResultsPage() {
 
 function simulateProgress(completionPromise) {
     return new Promise(resolve => {
-        let progress = 0;
+        let step = 0;
         const fill = document.getElementById('progress-fill');
         const text = document.getElementById('progress-text');
         const centerText = document.getElementById('loader-center-text');
 
         const wordCycle = ['어', '디', '다', '있', '소', '어', '어디', '어디다', '어디다있', '어디다있소'];
-        let wordIdx = 0;
         let isApiDone = false;
 
         completionPromise.then(() => { isApiDone = true; }).catch(() => { isApiDone = true; });
 
         const interval = setInterval(() => {
-            if (centerText) {
-                const currentWord = wordCycle[wordIdx % wordCycle.length];
-                centerText.innerText = currentWord;
-                if (currentWord.length >= 3) {
-                    centerText.style.fontSize = '28px';
-                    centerText.style.marginTop = '-5px';
-                } else if (currentWord.length === 2) {
-                    centerText.style.fontSize = '36px';
-                    centerText.style.marginTop = '-12px';
-                } else {
-                    centerText.style.fontSize = '48px';
-                    centerText.style.marginTop = '-20px';
+            if (step < 10) {
+                const currentWord = wordCycle[step];
+                if (centerText) {
+                    centerText.innerText = currentWord;
+                    if (currentWord.length >= 3) {
+                        centerText.style.fontSize = '28px';
+                    } else if (currentWord.length === 2) {
+                        centerText.style.fontSize = '36px';
+                    } else {
+                        centerText.style.fontSize = '48px';
+                    }
                 }
-                wordIdx++;
-            }
+                const progress = (step + 1) * 10;
 
-            if (!isApiDone) {
-                progress += (99 - progress) * 0.1;
-                if (progress > 99) progress = 99;
-            } else {
-                progress += 10;
-                if (progress >= 100) {
-                    progress = 100;
+                if (fill) fill.style.strokeDashoffset = 565 - (565 * progress) / 100;
+                if (text) text.innerText = `${progress}%`;
+
+                step++;
+
+                if (step === 10 && isApiDone) {
                     clearInterval(interval);
-                    if (fill) fill.style.strokeDashoffset = 0;
-                    if (text) text.innerText = `100%`;
-                    setTimeout(resolve, 200);
-                    return;
+                    setTimeout(resolve, 100);
+                }
+            } else {
+                if (isApiDone) {
+                    clearInterval(interval);
+                    setTimeout(resolve, 100);
                 }
             }
-
-            if (fill) fill.style.strokeDashoffset = 565 - (565 * progress) / 100;
-            if (text) text.innerText = `${Math.floor(progress)}%`;
-        }, 150);
+        }, 300); // 300ms per step = 3 seconds total animation
     });
 }
 
 // --- 4. UI Helpers ---
-// --- 4. UI Helpers ---
+async function loadRandomBanner() {
+    const container = document.querySelector('.banner-products');
+    if (!container) return; // Only run on pages that have the banner products grid
+    try {
+        const res = await fetch('/search/random?limit=4');
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        if (data.status === 'success' && data.products && data.products.length > 0) {
+            container.innerHTML = data.products.map(p => `
+                <div class="product-thumb" onclick="location.href='results.html?q=' + encodeURIComponent('${p.full_title}')">
+                    <div style="width:100%;height:100px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;text-align:center;padding:4px;word-break:keep-all;cursor:pointer;">
+                        ${p.title}
+                    </div>
+                    <div class="price-tag">
+                        <span class="category" style="font-size:10px;">${p.category}</span>
+                        <span class="price" style="font-size:11px;">${p.price}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (err) {
+        console.error('Failed to load random products:', err);
+    }
+}
+
 function initCarousel() {
     const track = document.getElementById('carousel-track');
     const dots = document.querySelectorAll('.carousel-dots .dot');
+
+    // Fetch random products for banner if container exists
+    loadRandomBanner();
 
     // Only initialize if carousel exists on the page
     if (!track || dots.length === 0) return;

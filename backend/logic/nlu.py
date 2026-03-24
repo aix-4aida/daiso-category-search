@@ -53,7 +53,7 @@ async def analyze_text(text: str, history: List[Dict[str, str]] = []) -> NLUResp
         model = genai.GenerativeModel(
             model_name=MODEL_NAME,
             system_instruction=SYSTEM_PROMPT_V1, # We will inject history into the prompt text below instead
-            generation_config={"response_mime_type": "application/json"}
+            generation_config={"response_mime_type": "application/json", "temperature": 0}
         )
         
         # Combine System Prompt + History + Current Input
@@ -121,7 +121,7 @@ async def infer_product_keywords(text: str) -> list[str]:
         genai = get_genai()
         model = genai.GenerativeModel(
             model_name=MODEL_NAME,
-            generation_config={"response_mime_type": "application/json"}
+            generation_config={"response_mime_type": "application/json", "temperature": 0}
         )
         prompt = AUX_PROMPT_KEYWORDS.format(text=text)
         response = await asyncio.to_thread(model.generate_content, prompt)
